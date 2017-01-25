@@ -4,7 +4,7 @@ import org.scalatest.FunSuite
 
 import scala.beans.BeanProperty
 
-class YAMLTest() extends FunSuite {
+class YAMLTest extends FunSuite {
   @BeanProperty var foo: String = _
   @BeanProperty var baz: Int = _
   var bar: String = _
@@ -17,6 +17,16 @@ class YAMLTest() extends FunSuite {
 
     val yaml = YAML.YAMLDecode(yamlString, this)
     assert(yaml.getFoo == "bar")
+    assert(yaml.getBaz == 443)
+  }
+
+  test("Yaml test miss an entry") {
+    val yamlString =
+      """
+        |#foo: 'bar'
+        |baz: 443
+      """.stripMargin
+    val yaml = YAML.YAMLDecode(yamlString, this)
     assert(yaml.getBaz == 443)
   }
 }
