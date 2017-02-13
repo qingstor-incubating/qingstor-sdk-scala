@@ -28,12 +28,27 @@ object Json {
   }
 
   // encode given Json string to AST Json
-  def encode(content: String): JsValue = content.parseJson
+  def encode(content: String): JsValue = {
+    if (content != null && content.nonEmpty)
+      content.parseJson
+    else
+      null
+  }
 
   // encode given map to AST Json
-  def encode(content: Map[String, Any]): JsValue = content.toJson
+  def encode(content: Map[String, Any]): JsValue = {
+    if (content != null && content.nonEmpty)
+      content.toJson
+    else
+      null
+  }
 
-  def encode(content: List[Any]): JsValue = content.toJson
+  def encode(content: List[Any]): JsValue = {
+    if (content != null && content.nonEmpty)
+      content.toJson
+    else
+      null
+  }
 
   def decode[T :JsonFormat](json: String): T = json.parseJson.convertTo[T]
 

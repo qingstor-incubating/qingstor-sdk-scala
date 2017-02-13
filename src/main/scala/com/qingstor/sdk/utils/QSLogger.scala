@@ -9,9 +9,9 @@ object QSLogger {
   private var level = "warn"
   logger.setLevel(Level.WARNING)
 
-  def getLevel =  this.level
+  def getLevel: String =  this.level
 
-  def setLevel(level: String) = {
+  def setLevel(level: String): Unit = {
     level match {
       case "debug" => logger.setLevel(Level.ALL)
       case "info" => logger.setLevel(Level.INFO)
@@ -23,23 +23,23 @@ object QSLogger {
     this.level = level
   }
 
-  def debug(msg: String) = {
+  def debug(msg: String): Unit = {
     logger.log(Level.ALL, msg)
   }
 
-  def info(msg: String) = {
+  def info(msg: String): Unit = {
     logger.log(Level.INFO, msg)
   }
 
-  def warn(msg: String) = {
+  def warn(msg: String): Unit = {
     logger.log(Level.WARNING, msg)
   }
 
-  def error(msg: String) = {
+  def error(msg: String): Unit = {
     logger.log(Level.SEVERE, msg)
   }
 
-  def fatal(msg: String) = {
+  def fatal(msg: String): Unit = {
     logger.log(Level.SEVERE, msg)
     scala.sys.exit(-1)
   }
