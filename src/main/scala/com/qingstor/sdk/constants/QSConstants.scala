@@ -10,4 +10,6 @@ object QSConstants {
   val HttpConnectionTimeout: Int = 60
   val HttpReadTimeout: Int = 100
   val HttpWriteTimeout: Int = 100
+
+  val APIGETServiceName = "GET Service"
 }

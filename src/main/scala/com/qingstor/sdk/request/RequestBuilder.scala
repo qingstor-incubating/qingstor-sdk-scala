@@ -2,26 +2,26 @@ package com.qingstor.sdk.request
 
 import java.io.File
 import java.nio.file.Paths
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import javax.activation.MimetypesFileTypeMap
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import com.qingstor.sdk.config.QSConfig
-import com.qingstor.sdk.request.QSRequest.{Input, Property}
-import com.qingstor.sdk.utils.Json
+import com.qingstor.sdk.constants.QSConstants
+import com.qingstor.sdk.request.Models.{Input, Property}
+import com.qingstor.sdk.utils.{Json, TimeUtil}
 
-class RequestBuilder(c: Property, i: Input) {
-  private val context = c
-  private val input = i
+class RequestBuilder(_property: Property, _input: Input) {
+  private val context = _property
+  private val input = _input
+  private val apiName = _property.apiName
   var parsedHeaders: Map[String, String] = Option(input.headers).getOrElse(Map.empty)
   var parsedBody: RequestEntity = HttpEntity.Empty
-  var parsedBodyString: String = _
+  var parsedBodyString: String = ""
 
   def build(): HttpRequest = {
     var request = HttpRequest()
-      .withUri(parseUriAndQuery)
+      .withUri(parseUrl)
       .withMethod(parseHttpMethod)
       .withProtocol(HttpProtocols.`HTTP/1.1`)
       .withEntity(parseBody())
@@ -37,13 +37,11 @@ class RequestBuilder(c: Property, i: Input) {
     case "DELETE" => HttpMethods.DELETE
   }
 
-  private def parseHost(config: QSConfig,
-                        zone: String,
-                        bucketName: String): String = {
-    var host = config.getHost
-    if (zone != null && zone.nonEmpty) host = zone + "." + host
-    if (bucketName != null && bucketName.nonEmpty) host = bucketName + "." + host
-    host
+  private def parseHost(config: QSConfig, zone: String): String = {
+    if (apiName.equals(QSConstants.APIGETServiceName) || zone == null || zone.isEmpty)
+      config.host
+    else
+      zone + "." + config.host
   }
 
   private def parseBody(): RequestEntity = {
@@ -61,17 +59,14 @@ class RequestBuilder(c: Property, i: Input) {
     parsedBody
   }
 
-  private def parseUriAndQuery: Uri = {
+  private def parseUrl: String = {
     val config = context.config
-    val bucketName = context.bucketName
+    val bucket = if (context.bucketName.nonEmpty) "/" + context.bucketName else context.bucketName
     val zone = context.zone
     val path = context.requestUri
-    Uri()
-      .withScheme(config.getProtocol)
-      .withHost(parseHost(config, zone, bucketName))
-      .withPort(config.getPort)
-      .withPath(Uri.Path(path))
-      .withQuery(Uri.Query(Option(input.params).getOrElse(Map.empty)))
+    val _queryString = Option(input.params).getOrElse(Map.empty).mkString("&").replace(" -> ", "=")
+    val queryString = if (_queryString.nonEmpty) "?" + _queryString.substring(0, _queryString.lastIndexOf("&")) else ""
+    new java.net.URI(config.protocol+"://"+parseHost(config, zone) + bucket + path + queryString).toASCIIString
   }
 
   private def parseContentType(file: File): ContentType = {
@@ -95,12 +90,12 @@ class RequestBuilder(c: Property, i: Input) {
         }
         case body: File => body.length()
       }
-      parsedHeaders += ("Content-Length" -> length.toString)
+      if (length > 0)
+        parsedHeaders += ("Content-Length" -> length.toString)
     }
     if (request.getHeader("Date").orElse(null) == null ||
         request.getHeader("Date").get().value() == "") {
-      val timeNow =
-        ZonedDateTime.now.format(DateTimeFormatter.RFC_1123_DATE_TIME)
+      val timeNow = TimeUtil.zonedDateTimeToString()
       parsedHeaders += ("Date" -> timeNow)
     }
     var headers = List[HttpHeader]()

@@ -10,7 +10,7 @@ import akka.http.scaladsl.model.{HttpHeader, HttpRequest, Uri}
 
 object QSSigner {
 
-  def getHeadAuthorization(request: HttpRequest, accessKeyID: String): String = {
+  def getHeadAuthorization(request: HttpRequest, accessKeyID: String, secretAccessKey: String): String = {
     val emptyHeader = RawHeader("empty", "")
     val method: String = request.method.value
     val contentMD5: String =
@@ -27,11 +27,10 @@ object QSSigner {
                                          date,
                                          canonicalizedHeaders,
                                          canonicalizedResource)
-    val authorization = calAuthorization(stringToSign, accessKeyID)
-    "QS " + accessKeyID + ":" + authorization
+    "QS " + accessKeyID + ":" + calAuthorization(stringToSign, secretAccessKey)
   }
 
-  def getQueryAuthorization(request: HttpRequest, accessKeyID: String, expire: Long): String = {
+  def getQueryAuthorization(request: HttpRequest, accessKeyID: String, secretAccessKey: String, expire: Long): String = {
     val emptyHeader = RawHeader("empty", "")
     val method: String = request.method.value
     val contentMD5: String =
@@ -43,9 +42,8 @@ object QSSigner {
       request.headers)
     val canonicalizedResource: String = parseCanonicalizedResource(request.uri)
     val stringToSign = parseStringToSign(method, contentMD5, contentType, expireString, canonicalizedHeaders, canonicalizedResource)
-    val authorization = calAuthorization(stringToSign, accessKeyID)
-    Map("access_key_id" -> accessKeyID, "expires" -> expireString, "signature" -> URLEncoder.encode(authorization, "UTF-8"))
-    String.format("access_key_id=%sexpires=%ssignature=%s", accessKeyID, expireString, URLEncoder.encode(authorization, "UTF-8"))
+    val authorization = calAuthorization(stringToSign, secretAccessKey)
+    String.format("access_key_id=%s&expires=%s&signature=%s", accessKeyID, expireString, URLEncoder.encode(authorization, "UTF-8"))
   }
 
   private def parseCanonicalizedHeaders(headers: Seq[HttpHeader]): String = {
@@ -77,8 +75,7 @@ object QSSigner {
       "response-content-disposition" -> true
     )
 
-    val path = uri.path.toString().replace("%3F", "?")
-    val bucketName = uri.toString().split('.')(0).split("://")(1)
+    val path = uri.path.toString()
     val queries = uri.query().toMap
     var subQueries = Map.empty[String, String]
     var subQueriesString = ""
@@ -93,10 +90,10 @@ object QSSigner {
       }
       subQueriesString = subQueriesString.substring(0, subQueriesString.lastIndexOf("&"))
     }
-    if (subQueriesString.isEmpty || path.contains("?"))
-      "/" + bucketName + path + subQueriesString
+    if (subQueries.isEmpty)
+      path + subQueriesString
     else
-      "/" + bucketName + path + "?" + subQueriesString
+      path + "?" + subQueriesString
   }
 
   private def parseStringToSign(method: String,
@@ -111,11 +108,11 @@ object QSSigner {
     method + "\n" + lineMD5 + "\n" + lineType + "\n" + date + "\n" + lineHeaders + resource
   }
 
-  private def calAuthorization(stringToSign: String, accessKeyID: String): String = {
-    val secret = new SecretKeySpec(accessKeyID.getBytes, "HmacSHA256")
+  private def calAuthorization(stringToSign: String, secretAccessKey: String): String = {
+    val secret = new SecretKeySpec(secretAccessKey.getBytes("UTF-8"), "HmacSHA256")
     val mac = Mac.getInstance("HmacSHA256")
     mac.init(secret)
-    val signData = mac.doFinal(stringToSign.getBytes)
+    val signData = mac.doFinal(stringToSign.getBytes("UTF-8"))
     Base64.getEncoder.encodeToString(signData)
   }
 }

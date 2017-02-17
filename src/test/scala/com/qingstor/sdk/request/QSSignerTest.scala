@@ -1,14 +1,14 @@
 package com.qingstor.sdk.request
 
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest, Uri}
-import org.scalatest.{FlatSpec, FunSuite}
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
+import org.scalatest.FunSuite
 
-class QSSignerTest extends FlatSpec {
+class QSSignerTest extends FunSuite {
 
-  it should """get authorization "su3v/vHFfEwkamaUDpdJhbvUEsBLoNlCU2/x2QA1TUY=" """ in {
+  test("Test getHeadAuthorization") {
     val url =
-      "https://bucket-name.zone.qingstor.com/?acl&upload_id=fde133b5f6d932cd9c79bac3c7318da1&part_number=0&other=abc"
+      "https://qingstor.com/?acl&upload_id=fde133b5f6d932cd9c79bac3c7318da1&part_number=0&other=abc"
     val headers = List(RawHeader("X-QS-Test-2", "Test 2"),
                        RawHeader("X-QS-Test-1", "Test 1"),
                        RawHeader("Date", "Mon, 01 Jan 0001 00:00:00 GMT"))
@@ -16,27 +16,26 @@ class QSSignerTest extends FlatSpec {
       .withUri(url)
       .withMethod(HttpMethods.GET)
       .withHeaders(headers)
-    val authorization = QSSigner.getHeadAuthorization(request, "ENV_ACCESS_KEY_ID")
-    assert(authorization == "QS ENV_ACCESS_KEY_ID:su3v/vHFfEwkamaUDpdJhbvUEsBLoNlCU2/x2QA1TUY=")
+    val signature = "QS ENV_ACCESS_KEY_ID:bvglZF9iMOv1RaCTxPYWxexmt1UN2m5WKngYnhDEp2c="
+    val authorization = QSSigner.getHeadAuthorization(request, "ENV_ACCESS_KEY_ID", "ENV_SECRET_ACCESS_KEY")
+    assert(authorization == signature)
   }
 
-  it should """get authorization "uJt2ADWkt+mpCMBGkTNYaZycV6iWuE19X/U0E0F5akM=" while there is chinese """ in {
-    val url = Uri()
-      .withScheme("https")
-      .withHost("bucket-name.zone.qingstor.com")
-      .withPath(Uri.Path("/中文"))
+  test("Test getHeadAuthorization chinese") {
+    val url = "https://zone.qingstor.com/bucket-name/中文"
     val headers = List(RawHeader("Date", "Mon, 01 Jan 0001 00:00:00 GMT"))
     val request = HttpRequest()
-      .withUri(url)
+      .withUri(new java.net.URI(url).toASCIIString)
       .withMethod(HttpMethods.GET)
       .withHeaders(headers)
-    val authorization = QSSigner.getHeadAuthorization(request, "ENV_ACCESS_KEY_ID")
-    assert(authorization == "QS ENV_ACCESS_KEY_ID:uJt2ADWkt+mpCMBGkTNYaZycV6iWuE19X/U0E0F5akM=")
+    val authorization = QSSigner.getHeadAuthorization(request, "ENV_ACCESS_KEY_ID", "ENV_SECRET_ACCESS_KEY")
+    val signature = "QS ENV_ACCESS_KEY_ID:XsTXX50kzqBf92zLG1aIUIJmZ0hqIHoaHgkumwnV3fs="
+    assert(authorization == signature)
   }
 
-  it should """return a map of access_key_id, expires, signature""" in {
+  test("Test getQueryAuthorization") {
     val url =
-      "https://bucket-name.zone.qingstor.com/?acl&upload_id=fde133b5f6d932cd9c79bac3c7318da1&part_number=0&other=abc"
+      "https://qingstor.com/?acl&upload_id=fde133b5f6d932cd9c79bac3c7318da1&part_number=0&other=abc"
     val headers = List(RawHeader("X-QS-Test-2", "Test 2"),
       RawHeader("X-QS-Test-1", "Test 1"),
       RawHeader("Date", "Mon, 01 Jan 0001 00:00:00 GMT"))
@@ -44,7 +43,8 @@ class QSSignerTest extends FlatSpec {
       .withUri(url)
       .withMethod(HttpMethods.GET)
       .withHeaders(headers)
-    val auth = QSSigner.getQueryAuthorization(request, "ENV_ACCESS_KEY_ID", 1479107162)
-    assert(auth == "access_key_id=ENV_ACCESS_KEY_IDexpires=1479107162signature=bVjfhBepfluw3wFTxsNVFYq0ycmoEaUZpHfc1g9Y3r4%3D")
+    val auth = QSSigner.getQueryAuthorization(request, "ENV_ACCESS_KEY_ID", "ENV_SECRET_ACCESS_KEY", -62135596800L)
+    val signature = "access_key_id=ENV_ACCESS_KEY_ID&expires=-62135596800&signature=gTdB%2FcmD6rjv8CbFRDfFbHc64q442rYNAp99Hm7fBl4%3D"
+    assert(auth == signature)
   }
 }

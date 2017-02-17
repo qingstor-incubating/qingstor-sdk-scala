@@ -1,57 +1,74 @@
 package com.qingstor.sdk.request
 
-import java.io.File
-
-import akka.actor.{Actor, Props}
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
-import com.qingstor.sdk.config.QSConfig
-import com.qingstor.sdk.request.QSRequest.{Input, Output, Property}
+import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
+import akka.stream.ActorMaterializer
+import com.qingstor.sdk.request.Models._
+import com.qingstor.sdk.utils.{Json, QSLogger}
+import spray.json.DefaultJsonProtocol._
+import spray.json.JsValue
 
-class QSRequest(c: Property, i: Input) extends Actor{
-  import context.dispatcher
-  import akka.pattern.pipe
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
-  private val property = c
-  private val input = i
+class QSRequest(_property: Property, _input: Input) {
+  private val property = _property
+  private val input = _input
   var HTTPRequest: HttpRequest = _
   var HTTPResponse: HttpResponse = _
 
-  final implicit val materializer = ActorMaterializer(ActorMaterializerSettings(context.system))
-  val http = Http(context.system)
+  private implicit val system = ActorSystem()
+  private implicit val materializer = ActorMaterializer()
+  private implicit val errorMessage = jsonFormat4(ErrorMessage)
+  private implicit val um: Unmarshaller[HttpEntity, JsValue] = {
+    Unmarshaller.byteStringUnmarshaller.mapWithCharset { (data, charset) =>
+      Json.encode(data.decodeString(charset.value))
+    }
+  }
+
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  def send(onSuccess: HttpResponse => Unit,
+           onError: ErrorMessage => Unit): Unit = {
+    if (!check())
+      QSLogger.fatal("Access Key ID or Secret Access Key can't be empty")
+    build()
+    sign()
+    val responseFuture = Http().singleRequest(HTTPRequest)
+    responseFuture onComplete {
+      case Failure(fail) =>
+        QSLogger.fatal("Send request failed: " + fail.getMessage)
+      case Success(response) =>
+        response match {
+          case resp @ HttpResponse(status, _, _, _) =>
+            if (status.isFailure())
+              onError(
+                Unmarshal(resp.entity)
+                  .to[JsValue]
+                  .value
+                  .get
+                  .get
+                  .convertTo[ErrorMessage])
+            else if (status.isSuccess()) onSuccess(resp)
+        }
+    }
+    Await.result(responseFuture, 5.second)
+  }
+
+  def signQueries(liveTime: Long): HttpRequest = {
+    val expires = System.currentTimeMillis() + liveTime
+    signQuery(expires)
+    HTTPRequest
+  }
 
   private def check(): Boolean = {
     val id = property.config.accessKeyID
     val secret = property.config.secretAccessKey
     id != null && secret != null && id != "" && secret != ""
-  }
-
-  override def preStart(): Unit = {
-    super.preStart()
-    println("preStart")
-//    check()
-//    build()
-//    sign()
-//    http.singleRequest(HTTPRequest).pipeTo(self)
-  }
-
-  def signQueries(liveTime: Long): Unit = {
-    val expires = System.currentTimeMillis() + liveTime
-    signQuery(expires)
-  }
-
-  override def receive: Receive = {
-    case _ => println("recieve" + _)
-    case request: HttpRequest =>
-      http.singleRequest(request).pipeTo(self)
-    case HttpResponse(StatusCodes.OK, headers, entity, _) =>
-      println(headers)
-      println(entity)
-    case HttpResponse(code, _, entity, _) =>
-      println("error code: " + code)
-      println(entity)
   }
 
   private def build() = {
@@ -60,14 +77,20 @@ class QSRequest(c: Property, i: Input) extends Actor{
 
   private def sign() = {
     val accessKeyID = property.config.getAccessKeyID
-    val authString = QSSigner.getHeadAuthorization(HTTPRequest, accessKeyID)
-    HTTPRequest.addHeader(RawHeader("Authorization", authString))
+    val secretAccessKey = property.config.getSecretAccessKey
+    val authString =
+      QSSigner.getHeadAuthorization(HTTPRequest, accessKeyID, secretAccessKey)
+    HTTPRequest = HTTPRequest.addHeader(RawHeader("Authorization", authString))
   }
 
   private def signQuery(expires: Long) = {
     val accessKeyID = property.config.getAccessKeyID
+    val secretAccessKey = property.config.getSecretAccessKey
     val authQueries =
-      QSSigner.getQueryAuthorization(HTTPRequest, accessKeyID, expires)
+      QSSigner.getQueryAuthorization(HTTPRequest,
+                                     accessKeyID,
+                                     secretAccessKey,
+                                     expires)
     val queries =
       if (HTTPRequest.uri.query().nonEmpty)
         HTTPRequest.uri.query() + "&" + authQueries
@@ -75,27 +98,4 @@ class QSRequest(c: Property, i: Input) extends Actor{
     val uri = HTTPRequest.uri.withQuery(Uri.Query(queries))
     HTTPRequest = HTTPRequest.withUri(uri)
   }
-}
-
-object QSRequest {
-
-  case class Input(
-      params: Map[String, String],
-      headers: Map[String, String],
-      elements: Map[String, Any] = null,
-      body: File = null
-  )
-
-  abstract class Output
-
-  case class Property(
-      config: QSConfig,
-      zone: String,
-      apiName: String,
-      method: String,
-      bucketName: String,
-      requestUri: String
-  )
-
-  def props(c: Property, i: Input): Props = Props(classOf[QSRequest], c, i)
 }
