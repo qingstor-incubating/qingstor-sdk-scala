@@ -1,35 +1,37 @@
-package com.qingstor.sdk.utils
+package com.qingstor.sdk.util
 
 import spray.json._
-import DefaultJsonProtocol._
+import spray.json.DefaultJsonProtocol._
 
-object Json {
+object JsonUtil {
 
-  implicit object AnyJsonFormat extends JsonFormat[Any] {
-    def write(x: Any) = x match {
+  object AnyJsonFormat extends JsonFormat[Any] {
+    override def write(x: Any): JsValue = x match {
       case n: Int => JsNumber(n)
       case s: String => JsString(s)
       case b: Boolean if b => JsTrue
       case b: Boolean if !b => JsFalse
-      case m: Map[String, Any] => encode(m)
-      case l: List[Any] => encode(l)
+      case m: Map[String, Any] => JsonUtil.encode(m)
+      case l: List[Any] => JsonUtil.encode(l)
       case _ => JsNull
     }
 
-    def read(value: JsValue) = value match {
+    override def read(value: JsValue): Any = value match {
       case JsNumber(n) => n.intValue()
       case JsString(s) => s
       case JsTrue => true
       case JsFalse => false
       case JsNull => null
-      case l: JsArray => decode(l)
-      case o: JsObject => decode(o)
+      case l: JsArray => JsonUtil.decode(l)
+      case o: JsObject => JsonUtil.decode(o)
     }
   }
 
+  implicit val anyJsonFormat = AnyJsonFormat
+
   // encode given Json string to AST Json
   def encode(content: String): JsValue = {
-    if (content != null && content.nonEmpty)
+    if (content != null && content.nonEmpty )
       content.parseJson
     else
       null

@@ -1,8 +1,6 @@
-package com.qingstor.sdk.utils
+package com.qingstor.sdk.util
 
 import java.util.logging.{Logger, Level}
-
-import com.qingstor.sdk.constants.QSConstants
 
 object QSLogger {
   private val logger = Logger.getLogger(this.getClass.getName)

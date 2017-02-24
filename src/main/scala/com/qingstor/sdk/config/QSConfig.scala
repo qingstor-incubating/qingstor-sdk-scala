@@ -2,38 +2,31 @@ package com.qingstor.sdk.config
 
 import java.io.{File, FileNotFoundException, FileWriter}
 
-import com.qingstor.sdk.constants.QSConstants
-import com.qingstor.sdk.utils.{QSLogger, YAML}
+import com.qingstor.sdk.constant.QSConstants
+import com.qingstor.sdk.util.{QSLogger, YamlUtil}
 
 import scala.beans.BeanProperty
 import scala.io.Source
 
-class QSConfig {
-  @BeanProperty var accessKeyID: String = ""
-  @BeanProperty var secretAccessKey: String = ""
-  @BeanProperty var host: String = "qingstor.com"
-  @BeanProperty var port: Int = 443
-  @BeanProperty var protocol: String = "https"
-  @BeanProperty var connectionRetries: Int = 3
-  @BeanProperty var logLevel: String = QSConstants.LogWarn
+class QSConfig(
+    private val _accessKeyID: String,
+    private val _secretAccessKey: String,
+    private val _host: String = "qingstor.com",
+    private val _port: Int = 443,
+    private val _protocol: String = "https",
+    private val _connectionRetries: Int = 3,
+    private val _logLevel: String = QSConstants.LogWarn
+) {
+  @BeanProperty var access_key_id: String = _accessKeyID
+  @BeanProperty var secret_access_key: String = _secretAccessKey
+  @BeanProperty var host: String = _host
+  @BeanProperty var port: Int = _port
+  @BeanProperty var protocol: String = _protocol
+  @BeanProperty var connection_retries: Int = _connectionRetries
+  @BeanProperty var log_level: String = _logLevel
 
-  // TODO: HTTP Connection
-
-  def this(id: String, secret: String) {
-    this()
-    this.accessKeyID = id
-    this.secretAccessKey = secret
-  }
-
-  def this(id: String, secret: String, host: String, port: Int, protocol: String, connRetries: Int, logLevel: String) {
-    this()
-    this.accessKeyID = id
-    this.secretAccessKey = secret
-    this.host = host
-    this.port = port
-    this.protocol = protocol
-    this.connectionRetries = connRetries
-    this.logLevel = logLevel
+  def this() = {
+    this(null, null)
   }
 }
 
@@ -56,13 +49,37 @@ object QSConfig {
       |logLevel: 'warn'
     """.stripMargin
 
+  def apply(
+      accessKeyID: String,
+      secretAccessKey: String,
+      host: String = "qingstor.com",
+      port: Int = 443,
+      protocol: String = "https",
+      connectionRetries: Int = 3,
+      logLevel: String = QSConstants.LogWarn
+  ): QSConfig =
+    new QSConfig(accessKeyID,
+                 secretAccessKey,
+                 host,
+                 port,
+                 protocol,
+                 connectionRetries,
+                 logLevel)
+
+  def apply(accessKeyID: String, secretAccessKey: String): QSConfig =
+    new QSConfig(accessKeyID, secretAccessKey)
+
+  def apply(): QSConfig = new QSConfig()
+
   // loadUserConfig loads user configuration in ~/.qingstor/config.yaml for Config.
   def loadUserConfig(): QSConfig = {
-    try{
+    try {
       loadConfigFromFile(DefaultConfigFile)
     } catch {
       case fnd: FileNotFoundException =>
-        QSLogger.warn("Installing default config file to \"" + convertToRealPath(DefaultConfigFile) +"\"" )
+        QSLogger.warn(
+          "Installing default config file to \"" + convertToRealPath(
+            DefaultConfigFile) + "\"")
         installDefaultUserConfig()
         loadUserConfig()
     }
@@ -77,7 +94,7 @@ object QSConfig {
 
   // loadConfigFromContent loads configuration from given string.
   def loadConfigFromContent(content: String): QSConfig = {
-    YAML.YAMLDecode(content, new QSConfig())
+    YamlUtil.YAMLDecode(content, QSConfig())
   }
 
   // installDefaultUserConfig install default configuration file to ~/.qingstor/
@@ -94,5 +111,6 @@ object QSConfig {
   private def userHome = scala.util.Properties.userHome
 
   // convertToRealPath convert '~/xxx' to real path
-  private def convertToRealPath(filepath: String): String = filepath.replaceFirst("~/", userHome+"/")
+  private def convertToRealPath(filepath: String): String =
+    filepath.replaceFirst("~/", userHome + "/")
 }

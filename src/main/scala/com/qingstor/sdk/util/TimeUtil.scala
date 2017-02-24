@@ -1,4 +1,4 @@
-package com.qingstor.sdk.utils
+package com.qingstor.sdk.util
 
 import java.time.format.DateTimeFormatter
 import java.time._

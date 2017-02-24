@@ -1,30 +1,30 @@
 package com.qingstor.sdk.config
 
-import com.qingstor.sdk.constants.QSConstants
+import com.qingstor.sdk.constant.QSConstants
 import org.scalatest.FunSuite
 
 class ConfigTest extends FunSuite{
 
   test("Config test") {
     val config = new QSConfig("AccessKeyID", "SecretAccessKey", "qingstor.com", 80, "http", 10, QSConstants.LogWarn)
-    assert(config.accessKeyID == "AccessKeyID")
-    assert(config.secretAccessKey == "SecretAccessKey")
+    assert(config.access_key_id == "AccessKeyID")
+    assert(config.secret_access_key == "SecretAccessKey")
     assert(config.host == "qingstor.com")
     assert(config.port == 80)
     assert(config.protocol == "http")
-    assert(config.connectionRetries == 10)
-    assert(config.logLevel == QSConstants.LogWarn)
+    assert(config.connection_retries == 10)
+    assert(config.log_level == QSConstants.LogWarn)
   }
 
   test("Default config test") {
     val config = new QSConfig()
-    assert(config.accessKeyID == "")
-    assert(config.secretAccessKey == "")
+    assert(config.access_key_id == "")
+    assert(config.secret_access_key == "")
     assert(config.host == "qingstor.com")
     assert(config.port == 443)
     assert(config.protocol == "https")
-    assert(config.connectionRetries == 3)
-    assert(config.logLevel == QSConstants.LogWarn)
+    assert(config.connection_retries == 3)
+    assert(config.log_level == QSConstants.LogWarn)
   }
 
   test("loadUserConfig") {
@@ -54,7 +54,7 @@ class ConfigTest extends FunSuite{
     assert(config.host == "api.qingstor.com")
     assert(config.port == 443)
     assert(config.protocol == "https")
-    assert(config.connectionRetries == 5)
-    assert(config.logLevel == QSConstants.LogError)
+    assert(config.connection_retries == 5)
+    assert(config.log_level == QSConstants.LogError)
   }
 }

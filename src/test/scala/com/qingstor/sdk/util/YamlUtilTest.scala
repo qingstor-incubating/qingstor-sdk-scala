@@ -1,10 +1,10 @@
-package com.qingstor.sdk.utils
+package com.qingstor.sdk.util
 
 import org.scalatest.FunSuite
 
 import scala.beans.BeanProperty
 
-class YAMLTest extends FunSuite {
+class YamlUtilTest extends FunSuite {
   @BeanProperty var foo: String = _
   @BeanProperty var baz: Int = _
   var bar: String = _
@@ -15,7 +15,7 @@ class YAMLTest extends FunSuite {
         |baz: 443
       """.stripMargin
 
-    val yaml = YAML.YAMLDecode(yamlString, this)
+    val yaml = YamlUtil.YAMLDecode(yamlString, this)
     assert(yaml.getFoo == "bar")
     assert(yaml.getBaz == 443)
   }
@@ -26,7 +26,7 @@ class YAMLTest extends FunSuite {
         |#foo: 'bar'
         |baz: 443
       """.stripMargin
-    val yaml = YAML.YAMLDecode(yamlString, this)
+    val yaml = YamlUtil.YAMLDecode(yamlString, this)
     assert(yaml.getBaz == 443)
   }
 }
