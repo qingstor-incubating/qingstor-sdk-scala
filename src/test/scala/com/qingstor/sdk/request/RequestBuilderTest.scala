@@ -35,7 +35,6 @@ class RequestBuilderTest extends FunSuite {
     assert(requestBuilder.parsedHeaders == Map[String, String]("Date" -> "Tue, 21 Feb 2017 09:32:34 GMT"))
     assert(requestBuilder.parsedParams == Map[String, Any]("bar" -> "100"))
     assert(requestBuilder.parsedBody == HttpEntity.Empty)
-    assert(requestBuilder.getBodyBytes.sameElements(Array[Byte]()))
     assert(request.method.equals(HttpMethods.GET))
     assert(request.uri.toString == "https://qingstor.com:443/abc/xyz?bar=100")
   }

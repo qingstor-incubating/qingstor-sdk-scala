@@ -78,3 +78,4 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 /src/test/resources/config.yml
+/src/test/scala/com/qingstor/sdk/util/Test.scala
