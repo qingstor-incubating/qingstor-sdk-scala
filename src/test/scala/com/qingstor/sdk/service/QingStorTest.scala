@@ -20,14 +20,16 @@ class QingStorTest extends FunSuite {
   test("QingStorTest") {
     val input = ListBucketsInput(location = "pek3a")
     val qingStor = QingStor(config)
-    val futureResp = qingStor.listBuckets(input)
-    futureResp onComplete {
-      case Success(response) =>
-        println(response.getStatusCode)
-        println(response.getRequestID)
-        println(response.getEntity)
-      case Failure(exception) => exception.printStackTrace()
+    val futureOutput = qingStor.listBuckets(input)
+    futureOutput onComplete {
+      case Success(out) =>
+        out match {
+          case Left(errorMessage) => println(errorMessage)
+          case Right(output) => println(output)
+        }
+      case Failure(exception) =>
+        exception.printStackTrace()
     }
-    Await.ready(futureResp, Duration.Inf)
+    Await.ready(futureOutput, Duration.Inf)
   }
 }
