@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.headers.RawHeader
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.model.QSModels.{Input, Operation}
-import com.qingstor.sdk.util.{JsonUtil, QSRequestUtil, TimeUtil}
+import com.qingstor.sdk.util.{JsonUtil, QSLogger, QSRequestUtil, TimeUtil}
 
 class RequestBuilder(op: Operation, in: Input) {
   private val operation = op
@@ -32,6 +32,13 @@ class RequestBuilder(op: Operation, in: Input) {
     case "HEAD" => HttpMethods.HEAD
     case "PUT" => HttpMethods.PUT
     case "DELETE" => HttpMethods.DELETE
+    case "OPTIONS" => HttpMethods.OPTIONS
+    case "CONNECT" => HttpMethods.CONNECT
+    case "PATCH" => HttpMethods.PATCH
+    case "TRACE" => HttpMethods.TRACE
+    case str: String =>
+      QSLogger.error("No such method %s, use GET instead".format(str))
+      HttpMethods.GET
   }
 
   private def parseParams(): Map[String, String] = {
