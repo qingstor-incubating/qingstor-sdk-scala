@@ -20,7 +20,8 @@ class QSRequest(_operation: Operation, _input: Input) {
     if (!check())
       QSLogger.fatal(
         "Fatal: Access Key ID or Secret Access Key can't be empty")
-    RequestBuilder(operation, input).build
+    val builder = RequestBuilder(operation, input)
+    builder.build
   }
 
   def sign(request: HttpRequest): HttpRequest = {

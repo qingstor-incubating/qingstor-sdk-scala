@@ -34,7 +34,7 @@ class ResponseUnpacker(private val _response: HttpResponse,
   }
 
   private def setupHeaders(obj: Any) = {
-    if (isRightStatusCode(response)) {
+    if (ResponseUnpacker.isRightStatusCode(response.status.intValue(), operation.statusCodes)) {
       val headersNameAndGetMethodname =
         QSRequestUtil.getResponseParams(obj, "headers")
       for ((headerName, methodName) <- headersNameAndGetMethodname) {
@@ -52,18 +52,13 @@ class ResponseUnpacker(private val _response: HttpResponse,
   private def setupEntity(obj: Any) = {
     QSRequestUtil.invokeMethod(obj, "setEntity", Array(response.entity))
   }
-
-  private def isRightStatusCode(response: HttpResponse): Boolean = {
-    val rightStatus = operation.statusCodes match {
-      case null => Array(200)
-      case Array.emptyIntArray => Array(200)
-      case _ => operation.statusCodes
-    }
-    rightStatus.contains(response.status.intValue())
-  }
 }
 
 object ResponseUnpacker {
   def apply(response: HttpResponse, operation: Operation) =
     new ResponseUnpacker(response, operation)
+
+  def isRightStatusCode(code: Int, rightCodes: Array[Int] = Array[Int](200)): Boolean = {
+    rightCodes.contains(code)
+  }
 }

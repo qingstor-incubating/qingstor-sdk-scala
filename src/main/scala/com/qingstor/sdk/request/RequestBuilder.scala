@@ -26,8 +26,6 @@ class RequestBuilder(op: Operation, in: Input) {
       .withHeaders(buildHeader())
       .withEntity(parsedBody)
 
-  def getBodyBytes: Array[Byte] = bodyBytes
-
   private def parseHttpMethod = operation.method.toUpperCase match {
     case "GET" => HttpMethods.GET
     case "POST" => HttpMethods.POST
@@ -56,11 +54,16 @@ class RequestBuilder(op: Operation, in: Input) {
       else operation.bucketName
     val zone = operation.zone
     val path = operation.requestUri
-    Uri().withScheme(config.protocol)
-      .withHost(parseHost(config, zone))
-      .withPort(config.port)
-      .withPath(Uri.Path(bucket + path))
-      .withQuery(Uri.Query(parsedParams))
+    val queries =
+      if (parsedParams.isEmpty) ""
+      if (path.contains("?")) "&" + Uri.Query(parsedParams)
+      else "?" + Uri.Query(parsedParams)
+//    Uri().withScheme(config.protocol)
+//      .withHost(parseHost(config, zone))
+//      .withPort(config.port)
+//      .withPath(Uri.Path(bucket + path))
+//      .withQuery(Uri.Query(parsedParams))
+    "%s://%s:%d%s%s".format(config.protocol, parseHost(config, zone), config.port, bucket + path, queries)
   }
 
   private def parseHeaders(): Map[String, String] = {
@@ -76,6 +79,9 @@ class RequestBuilder(op: Operation, in: Input) {
       val now = TimeUtil.zonedDateTimeToString()
       headers += ("Date" -> now)
     }
+    if (headers.getOrElse("Content-Type", "").isEmpty)
+      if (parsedBody.contentType.equals(ContentTypes.`application/json`))
+        headers += ("Content-Type" -> "application/json")
     headers
   }
 

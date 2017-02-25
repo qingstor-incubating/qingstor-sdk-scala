@@ -11,6 +11,7 @@ object QSModels {
   class QSHttpResponse() {
     protected var statusCode: Int = _
     protected var requestID: String = _
+    // TODO requestID 或许无用
     protected var entity: ResponseEntity = HttpEntity.Empty
 
     def setStatusCode(statusCode: Int): Unit = this.statusCode = statusCode
