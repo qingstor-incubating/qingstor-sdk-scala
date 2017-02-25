@@ -19,14 +19,14 @@ public class QSParamUtil {
                     if (annotation.location().equals(location)) {
                         Object value = method.invoke(model, (Object[]) null);
                         if (value != null) {
-                            Class cls = value.getClass();
-                            if (cls.equals(Integer.class)
-                                    || cls.equals(Long.class)
-                                    || cls.equals(Float.class)
-                                    || cls.equals(Double.class)
-                                    || cls.equals(Boolean.class)) {
-                                value = String.valueOf(value);
-                            }
+//                            Class cls = value.getClass();
+//                            if (cls.equals(Integer.class)
+//                                    || cls.equals(Long.class)
+//                                    || cls.equals(Float.class)
+//                                    || cls.equals(Double.class)
+//                                    || cls.equals(Boolean.class)) {
+//                                value = String.valueOf(value);
+//                            }
                             retParametersMap.put(annotation.name(), value);
                         }
                     }
