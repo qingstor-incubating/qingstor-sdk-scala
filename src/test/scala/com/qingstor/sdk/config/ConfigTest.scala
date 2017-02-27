@@ -38,17 +38,14 @@ class ConfigTest extends FunSuite{
     val content: String =
       """
         |# QingStor services configuration
-        |
-        |#accessKeyID: "ACCESS_KEY_ID"
-        |#secretAccessKey: "SECRET_ACCESS_KEY"
-        |
+        |#access_key_id: "ACCESS_KEY_ID"
+        |#secret_access_key: "SECRET_ACCESS_KEY"
         |host: "api.qingstor.com"
         |port: 443
         |protocol: 'https'
-        |connectionRetries: 5
-        |
+        |connection_retries: 5
         |# Valid log levels are "debug", "info", "warn", "error", and "fatal".
-        |logLevel: 'error'
+        |log_level: 'error'
       """.stripMargin
     val config = QSConfig.loadConfigFromContent(content)
     assert(config.host == "api.qingstor.com")

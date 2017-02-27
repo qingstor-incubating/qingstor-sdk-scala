@@ -44,7 +44,11 @@ class QSSignerTest extends FunSuite {
       .withMethod(HttpMethods.GET)
       .withHeaders(headers)
     val auth = QSSigner.getQueryAuthorization(request, "ENV_ACCESS_KEY_ID", "ENV_SECRET_ACCESS_KEY", -62135596800L)
-    val signature = "access_key_id=ENV_ACCESS_KEY_ID&expires=-62135596800&signature=gTdB%2FcmD6rjv8CbFRDfFbHc64q442rYNAp99Hm7fBl4%3D"
+    val signature = Map(
+      "access_key_id" -> "ENV_ACCESS_KEY_ID",
+      "expires" -> "-62135596800",
+      "signature" -> "gTdB%2FcmD6rjv8CbFRDfFbHc64q442rYNAp99Hm7fBl4%3D"
+    )
     assert(auth == signature)
   }
 }

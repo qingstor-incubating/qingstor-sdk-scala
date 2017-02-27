@@ -28,7 +28,7 @@ class RequestBuilderTest extends FunSuite {
       apiName = "Test API",
       method = "GET",
       requestUri = "/abc/xyz",
-      statusCodes = null
+      statusCodes = Array.emptyIntArray
     )
     val requestBuilder = RequestBuilder(operation, testInput)
     val request = requestBuilder.build
@@ -57,7 +57,7 @@ class RequestBuilderTest extends FunSuite {
       apiName = "Test API",
       method = "PUT",
       requestUri = "/",
-      statusCodes = null
+      statusCodes = Array.emptyIntArray
     )
     val requestBuilder = RequestBuilder(operation, testInputWithBody)
     val request = requestBuilder.build
