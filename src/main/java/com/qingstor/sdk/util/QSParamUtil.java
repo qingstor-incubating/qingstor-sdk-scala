@@ -1,6 +1,7 @@
 package com.qingstor.sdk.util;
 
 import com.qingstor.sdk.annotation.ParamAnnotation;
+import com.qingstor.sdk.constant.QSConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,14 +20,18 @@ public class QSParamUtil {
                     if (annotation.location().equals(location)) {
                         Object value = method.invoke(model, (Object[]) null);
                         if (value != null) {
-//                            Class cls = value.getClass();
-//                            if (cls.equals(Integer.class)
-//                                    || cls.equals(Long.class)
-//                                    || cls.equals(Float.class)
-//                                    || cls.equals(Double.class)
-//                                    || cls.equals(Boolean.class)) {
-//                                value = String.valueOf(value);
-//                            }
+                            if (location.equals(QSConstants.ParamsLocationParam())
+                                    || location.equals(QSConstants.ParamsLocationHeader())) {
+                                Class cls = value.getClass();
+                                if (cls.equals(Integer.class)
+                                        || cls.equals(Long.class)
+                                        || cls.equals(Float.class)
+                                        || cls.equals(Double.class)
+                                        || cls.equals(Boolean.class)
+                                        || cls.equals(Character.class)) {
+                                    value = String.valueOf(value);
+                                }
+                            }
                             retParametersMap.put(annotation.name(), value);
                         }
                     }

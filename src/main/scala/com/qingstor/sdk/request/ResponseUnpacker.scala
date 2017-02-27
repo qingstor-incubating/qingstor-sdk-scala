@@ -1,11 +1,18 @@
 package com.qingstor.sdk.request
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.stream.ActorMaterializer
 import com.qingstor.sdk.constant.QSConstants
-import com.qingstor.sdk.model.QSModels.{Operation, QSHttpResponse}
+import com.qingstor.sdk.model.QSModels.{ErrorMessage, Operation, Output, QSHttpResponse}
 import com.qingstor.sdk.util.{ClassUtil, QSRequestUtil}
+import spray.json.{JsValue, JsonFormat}
+import com.qingstor.sdk.service.CustomJsonProtocol._
 
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.reflect.ClassTag
 
 class ResponseUnpacker(private val _response: HttpResponse,
@@ -60,5 +67,41 @@ object ResponseUnpacker {
 
   def isRightStatusCode(code: Int, rightCodes: Array[Int] = Array[Int](200)): Boolean = {
     rightCodes.contains(code)
+  }
+
+  def unpackToOutputOrErrorMessage[T <: Output :JsonFormat]
+    (futureResponse: Future[QSHttpResponse], rightStatusCodes: Array[Int])
+    (implicit system: ActorSystem, mat: ActorMaterializer,
+      ec: ExecutionContextExecutor): Future[Either[ErrorMessage, T]]= {
+    futureResponse.flatMap { response =>
+      if (isRightStatusCode(response.getStatusCode, rightStatusCodes)) {
+        unpackToOutput[T](response).map(Right(_))
+      } else {
+        unpackToErrorMessage(response).map(Left(_))
+      }
+    }
+  }
+
+  def unpackToOutput[T <: Output :JsonFormat](response: QSHttpResponse)
+                                             (implicit system: ActorSystem,
+                                              mat: ActorMaterializer,
+                                              ec: ExecutionContextExecutor): Future[T] = {
+    Unmarshal(response.getEntity).to[JsValue].map(_.convertTo[T])
+  }
+
+  def unpackToErrorMessage(response: QSHttpResponse)
+                          (implicit system: ActorSystem,
+                           mat: ActorMaterializer,
+                           ec: ExecutionContextExecutor): Future[ErrorMessage] = {
+    response.getEntity.contentType match {
+      case ContentTypes.`application/json` =>
+        val errorFuture = Unmarshal(response.getEntity).to[JsValue]
+        errorFuture.map(_.convertTo[ErrorMessage])
+      case _ =>
+        Future {ErrorMessage(
+          requestID = response.getRequestID,
+          statusCode = Some(response.getStatusCode)
+        )}
+    }
   }
 }

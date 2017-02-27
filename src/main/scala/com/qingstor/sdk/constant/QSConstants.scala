@@ -18,6 +18,11 @@ object QSConstants {
 
   val APIGETService: String = "GET Service"
   val APIGetObject: String = "GET Object"
+  val APIPutObject: String = "PUT Object"
 
   val `X-QS-Request-ID`: String = "X-QS-Request-ID"
+
+  val ACLPermissions = List("READ", "WRITE", "FULL_CONTROL")
+  val GranteeTypes = List("user", "group")
+  val CORSHttpMethods = List("GET", "PUT", "POST", "DELETE", "HEAD")
 }

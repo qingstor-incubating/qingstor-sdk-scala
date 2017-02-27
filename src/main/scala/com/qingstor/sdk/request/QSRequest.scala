@@ -9,7 +9,6 @@ import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.util.QSLogger
 
 import scala.concurrent.Future
-
 import scala.reflect.ClassTag
 
 class QSRequest(_operation: Operation, _input: Input) {
@@ -44,7 +43,6 @@ class QSRequest(_operation: Operation, _input: Input) {
     var request = _request
     if (request == null)
       request = sign(build())
-    //    Await.ready(Http().singleRequest(request), Duration.Inf)
     Http(system).singleRequest(request).map { response =>
       ResponseUnpacker(response, operation).unpackResponse[T]()
     }
@@ -78,4 +76,5 @@ class QSRequest(_operation: Operation, _input: Input) {
 object QSRequest {
   def apply(operation: Operation, input: Input): QSRequest =
     new QSRequest(operation, input)
+  def apply(operation: Operation): QSRequest = new QSRequest(operation, null)
 }

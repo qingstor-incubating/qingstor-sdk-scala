@@ -5,12 +5,9 @@
 
 target/
 lib_managed/
-src_managed/
 project/boot/
-.history
 .cache
 ### Scala template
-*.class
 *.log
 
 # sbt specific
@@ -78,4 +75,5 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 /src/test/resources/config.yml
-/src/test/scala/com/qingstor/sdk/util/Test.scala
+/src/test/resources/application.conf
+/src/test/scala/com/qingstor/sdk/service/

@@ -11,7 +11,6 @@ object QSModels {
   class QSHttpResponse() {
     protected var statusCode: Int = _
     protected var requestID: String = _
-    // TODO requestID 或许无用
     protected var entity: ResponseEntity = HttpEntity.Empty
 
     def setStatusCode(statusCode: Int): Unit = this.statusCode = statusCode
@@ -29,10 +28,11 @@ object QSModels {
   }
 
   case class ErrorMessage(
-      code: String,
-      message: String,
-      request_id: String,
-      url: String
+      requestID: String,
+      statusCode: Option[Int] = None,
+      code: Option[String] = None,
+      message: Option[String] = None,
+      url: Option[String] = None
   )
 
   case class Operation(
@@ -43,11 +43,9 @@ object QSModels {
       statusCodes: Array[Int],
       zone: String = "",
       bucketName: String = ""
-  )
-
-  class Test {
-    var foo = ""
-
-    def getFoo: String = foo
+  ) {
+    require(config != null && apiName != null && method != null && requestUri != null && statusCodes != null)
+    require(requestUri.startsWith("/"),
+      "requestUri can't be empty and must start with '/'")
   }
 }

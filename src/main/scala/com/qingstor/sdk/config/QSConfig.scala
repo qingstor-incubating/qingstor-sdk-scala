@@ -26,7 +26,7 @@ class QSConfig(
   @BeanProperty var log_level: String = _logLevel
 
   def this() = {
-    this(null, null)
+    this("", "")
   }
 }
 
@@ -36,35 +36,21 @@ object QSConfig {
   private val DefaultConfigFileContent =
     """
       |# QingStor services configuration
-      |
-      |#accessKeyID: 'ACCESS_KEY_ID'
-      |#secretAccessKey: 'SECRET_ACCESS_KEY'
-      |
+      |#access_key_id: 'ACCESS_KEY_ID'
+      |#secret_access_key: 'SECRET_ACCESS_KEY'
       |host: 'qingstor.com'
       |port: 443
       |protocol: 'https'
-      |connectionRetries: 3
-      |
+      |connection_retries: 3
       |# Valid log levels are "debug", "info", "warn", "error", and "fatal".
-      |logLevel: 'warn'
+      |log_level: 'warn'
     """.stripMargin
 
   def apply(
-      accessKeyID: String,
-      secretAccessKey: String,
-      host: String = "qingstor.com",
-      port: Int = 443,
-      protocol: String = "https",
-      connectionRetries: Int = 3,
+      accessKeyID: String, secretAccessKey: String, host: String = "qingstor.com",
+      port: Int = 443, protocol: String = "https", connectionRetries: Int = 3,
       logLevel: String = QSConstants.LogWarn
-  ): QSConfig =
-    new QSConfig(accessKeyID,
-                 secretAccessKey,
-                 host,
-                 port,
-                 protocol,
-                 connectionRetries,
-                 logLevel)
+  ): QSConfig = new QSConfig(accessKeyID, secretAccessKey, host, port, protocol, connectionRetries, logLevel)
 
   def apply(accessKeyID: String, secretAccessKey: String): QSConfig =
     new QSConfig(accessKeyID, secretAccessKey)

@@ -15,7 +15,28 @@ class QingStorException(private val msg: String) extends Throwable{
 
 object QingStorException {
   def apply(error: ErrorMessage): QingStorException = {
-    val msg = String.format("QingStor error: code %s, message %s, request_id %s, url %s", error.code, error.message, error.request_id, error.url)
+    val errorMessage = "request_id " + error.requestID + (
+      error.statusCode match {
+        case Some(code) => ", status_code " + String.valueOf(code)
+        case None => ""
+      }
+    ) + (
+      error.code match {
+        case Some(code) => ", code " + code
+        case None => ""
+      }
+    ) + (
+      error.message match {
+        case Some(message) => ", message " + message
+        case None => ""
+      }
+    ) + (
+      error.url match {
+        case Some(url) => ", url " + url
+        case None => ""
+      }
+    )
+    val msg = "QingStor exception: %s".format(errorMessage)
     new QingStorException(msg)
   }
 
