@@ -32,20 +32,7 @@ class QingStor(private val _config: QSConfig)(
       statusCodes = Array[Int](200)
     )
     val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
-    futureResponse.flatMap[Either[ErrorMessage, ListBucketsOutput]] {
-      response =>
-        val futureJson = Unmarshal(response.getEntity).to[JsValue]
-        if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                               operation.statusCodes)) {
-          futureJson.map[Either[ErrorMessage, ListBucketsOutput]] { json =>
-            Right(json.convertTo[ListBucketsOutput])
-          }
-        } else {
-          futureJson.map[Either[ErrorMessage, ListBucketsOutput]] { json =>
-            Left(json.convertTo[ErrorMessage])
-          }
-        }
-    }
+    ResponseUnpacker.unpackToOutputOrErrorMessage[ListBucketsOutput](futureResponse, operation.statusCodes)
   }
 }
 
@@ -61,5 +48,5 @@ object QingStor {
     def getLocation: String = location
   }
 
-  case class ListBucketsOutput(count: Int, buckets: List[BucketModel])
+  case class ListBucketsOutput(count: Int, buckets: List[BucketModel]) extends Output
 }
