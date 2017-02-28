@@ -6,7 +6,7 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest, Uri}
+import akka.http.scaladsl.model._
 
 object QSSigner {
 
@@ -17,7 +17,11 @@ object QSSigner {
     val method: String = request.method.value
     val contentMD5: String =
       request.getHeader("Content-MD5").orElse(emptyHeader).value()
-    val contentType: String = request.entity.contentType.toString()
+    val contentType: String = request.entity.contentType match {
+      case ContentTypes.NoContentType => ""
+      case t: ContentType => t.toString()
+      case _ => ""
+    }
     val date: String = request.getHeader("Date").get().value()
     val canonicalizedHeaders: String = parseCanonicalizedHeaders(
       request.headers)
@@ -28,7 +32,6 @@ object QSSigner {
                                          date,
                                          canonicalizedHeaders,
                                          canonicalizedResource)
-    println(stringToSign)
     "QS " + accessKeyID + ":" + calAuthorization(stringToSign, secretAccessKey)
   }
 
@@ -40,7 +43,11 @@ object QSSigner {
     val method: String = request.method.value
     val contentMD5: String =
       request.getHeader("Content-MD5").orElse(emptyHeader).value()
-    val contentType: String = request.entity.contentType.toString()
+    val contentType: String = request.entity.contentType match {
+      case ContentTypes.NoContentType => ""
+      case t: ContentType => t.toString()
+      case _ => ""
+    }
     val expireString: String = expire.toString
     val canonicalizedHeaders: String = parseCanonicalizedHeaders(
       request.headers)
