@@ -25,7 +25,8 @@ class Object(private val _config: QSConfig,
   val bucketName: String = _bucketName
   val zone: String = _zone
 
-  def getObject(obj: ObjectKeyModel, input: Input): Future[Either[ErrorMessage, GetObjectOutput]] = {
+  def getObject(obj: ObjectKeyModel, input: Input)
+    : Future[Either[ErrorMessage, GetObjectOutput]] = {
     val operation = Operation(
       config = this.config,
       apiName = "GET Object",
@@ -167,18 +168,11 @@ object Object {
                              encryptionAlgorithm: String = "", contentBytes: Array[Byte] = Array.emptyByteArray
                              ) extends Output
 
-  case class PutObjectInput(`Content-Length`: Long, `Content-MD5`: String = null,
-                            `Content-Type`: String = null, Expect: String = null,
-                            body: File = null
-                           ) extends Input {
-    @ParamAnnotation(location = QSConstants.ParamsLocationHeader, name = "Content-Length")
-    def getContentLength: Long = this.`Content-Length`
+  case class PutObjectInput(`Content-MD5`: String = null, Expect: String = null,
+                            body: File = null) extends Input {
 
     @ParamAnnotation(location = QSConstants.ParamsLocationHeader, name = "Content-MD5")
     def getContentMD5: String = this.`Content-MD5`
-
-    @ParamAnnotation(location = QSConstants.ParamsLocationHeader, name = "Content-Type")
-    def getContentType: String = this.`Content-Type`
 
     @ParamAnnotation(location = QSConstants.ParamsLocationHeader, name = "Expect")
     def getExcept: String = this.Expect

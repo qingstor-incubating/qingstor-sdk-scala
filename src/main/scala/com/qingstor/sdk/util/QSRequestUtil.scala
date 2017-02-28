@@ -1,8 +1,10 @@
 package com.qingstor.sdk.util
 
 import scala.collection.JavaConverters._
-import java.io.{ByteArrayInputStream, InputStream}
+import java.io.{ByteArrayInputStream, File, InputStream}
 import java.nio.charset.{Charset, IllegalCharsetNameException}
+
+import akka.http.scaladsl.model._
 
 object QSRequestUtil {
   def getRequestParams(any: Any, location: String): Map[String, AnyRef] = {
@@ -31,4 +33,34 @@ object QSRequestUtil {
   def invokeMethod(any: Any, methodName: String, params: Array[AnyRef]): Any = {
     QSParamUtil.invokeMethod(any, methodName, params)
   }
+
+  def parseContentType(file: File): ContentType = {
+    if (file == null)
+      ContentTypes.NoContentType
+    else
+      ContentType(parseMediaType(file.getName), charset)
+  }
+
+  def parseMediaType(fileName: String): MediaType = {
+    if (fileName == null)
+      null
+    else {
+      val extension = parseFileExtension(fileName)
+      MediaTypes.forExtension(extension)
+    }
+  }
+
+  def parseFileExtension(fileName: String): String = {
+    if (fileName == null || fileName == "")
+      ""
+    else {
+      val extPos = fileName.lastIndexOf(".")
+      if (extPos == -1)
+        ""
+      else
+        fileName.substring(extPos + 1)
+    }
+  }
+
+  private val charset = () => HttpCharsets.`UTF-8`
 }

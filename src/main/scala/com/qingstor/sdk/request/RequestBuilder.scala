@@ -1,6 +1,6 @@
 package com.qingstor.sdk.request
 
-import java.io._
+import java.io.File
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
@@ -79,14 +79,6 @@ class RequestBuilder(op: Operation, in: Input) {
       headers = QSRequestUtil
         .getRequestParams(input, QSConstants.ParamsLocationHeader)
         .asInstanceOf[Map[String, String]]
-      if (headers.getOrElse("Content-Length", "").isEmpty) {
-        val length = parsedBody.contentLengthOption.getOrElse(0)
-        if (length != 0)
-          headers += ("Content-Length" -> length.toString)
-      }
-      if (headers.getOrElse("Content-Type", "").isEmpty)
-        if (parsedBody.contentType.equals(ContentTypes.`application/json`))
-          headers += ("Content-Type" -> "application/json")
     }
     if (headers.getOrElse("Date", "").isEmpty) {
       val now = TimeUtil.zonedDateTimeToString()
@@ -111,14 +103,9 @@ class RequestBuilder(op: Operation, in: Input) {
           val Body = body.getOrElse("Body", "")
           Body match {
             case bodyString: String =>
-              HttpEntity(bodyString)
-            case ins: InputStream =>
-              val bis = new BufferedInputStream(ins)
-              val bytes = new Array[Byte](bis.available())
-              bis.read(bytes)
-              HttpEntity(bytes)
+              HttpEntity(ContentTypes.`text/plain(UTF-8)`, bodyString)
             case file: File =>
-              HttpEntity.fromPath(ContentTypes.NoContentType, file.toPath)
+              HttpEntity.fromPath(QSRequestUtil.parseContentType(file), file.toPath)
           }
         } else {
           val bytes = JsonUtil.encode(body).compactPrint.getBytes

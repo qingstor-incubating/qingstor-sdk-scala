@@ -17,8 +17,7 @@ object QSSigner {
     val method: String = request.method.value
     val contentMD5: String =
       request.getHeader("Content-MD5").orElse(emptyHeader).value()
-    val contentType: String =
-      request.getHeader("Content-Type").orElse(emptyHeader).value()
+    val contentType: String = request.entity.contentType.toString()
     val date: String = request.getHeader("Date").get().value()
     val canonicalizedHeaders: String = parseCanonicalizedHeaders(
       request.headers)
@@ -29,6 +28,7 @@ object QSSigner {
                                          date,
                                          canonicalizedHeaders,
                                          canonicalizedResource)
+    println(stringToSign)
     "QS " + accessKeyID + ":" + calAuthorization(stringToSign, secretAccessKey)
   }
 
@@ -40,8 +40,7 @@ object QSSigner {
     val method: String = request.method.value
     val contentMD5: String =
       request.getHeader("Content-MD5").orElse(emptyHeader).value()
-    val contentType: String =
-      request.getHeader("Content-Type").orElse(emptyHeader).value()
+    val contentType: String = request.entity.contentType.toString()
     val expireString: String = expire.toString
     val canonicalizedHeaders: String = parseCanonicalizedHeaders(
       request.headers)
