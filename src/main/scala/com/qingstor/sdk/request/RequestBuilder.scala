@@ -105,6 +105,8 @@ class RequestBuilder(op: Operation, in: Input) {
               HttpEntity(givenContentType.getOrElse(ContentTypes.`text/plain(UTF-8)`), bodyString.getBytes)
             case file: File =>
               HttpEntity.fromPath(givenContentType.getOrElse(QSRequestUtil.parseContentType(file)), file.toPath)
+            case bytes: Array[Byte] =>
+              HttpEntity(bytes)
           }
         } else {
           val bytes = JsonUtil.encode(body).compactPrint.getBytes

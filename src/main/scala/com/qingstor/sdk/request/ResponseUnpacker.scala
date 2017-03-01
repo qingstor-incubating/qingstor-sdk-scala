@@ -2,7 +2,6 @@ package com.qingstor.sdk.request
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.stream.ActorMaterializer
@@ -22,28 +21,23 @@ class ResponseUnpacker(private val _response: HttpResponse,
 
   def unpackResponse[T <: QSHttpResponse :ClassTag](): T = {
     val clazz = ClassUtil.ClassBuilder[T]
-    setupStatusCodeAndRequestID(clazz)
+    setupStatusCode(clazz)
     setupHeaders(clazz)
     setupEntity(clazz)
     clazz
   }
 
-  private def setupStatusCodeAndRequestID(obj: Any) = {
+  private def setupStatusCode(obj: Any) = {
     val statusCode = response.status.intValue()
     QSRequestUtil.invokeMethod(obj,
       "setStatusCode",
       Array(int2Integer(statusCode)))
-    val emptyHeader = RawHeader(QSConstants.`X-QS-Request-ID`, "")
-    val optionHeaders =
-      response.headers.find(_.name() == QSConstants.`X-QS-Request-ID`)
-    val requestID = optionHeaders.getOrElse(emptyHeader).value()
-    QSRequestUtil.invokeMethod(obj, "setRequestID", Array(requestID))
   }
 
   private def setupHeaders(obj: Any) = {
     if (ResponseUnpacker.isRightStatusCode(response.status.intValue(), operation.statusCodes)) {
       val headersNameAndGetMethodname =
-        QSRequestUtil.getResponseParams(obj, "headers")
+        QSRequestUtil.getResponseParams(obj, QSConstants.ParamsLocationHeader)
       for ((headerName, methodName) <- headersNameAndGetMethodname) {
         val header = response.headers.find(h => h.name().equals(headerName))
         if (header.isDefined) {
