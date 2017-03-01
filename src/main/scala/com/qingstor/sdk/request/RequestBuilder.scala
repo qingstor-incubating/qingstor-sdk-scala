@@ -1,9 +1,11 @@
 package com.qingstor.sdk.request
 
 import java.io.File
+import java.net.URI
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
+import akka.util.ByteString
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.model.QSModels.{Input, Operation}
@@ -13,9 +15,10 @@ class RequestBuilder(op: Operation, in: Input) {
   private val operation = op
   private val input = in
   private val apiName = op.apiName
+  private var givenContentType: Either[List[ErrorInfo], ContentType] = _
   val parsedParams: Map[String, String] = parseParams()
-  val parsedBody: RequestEntity = parseBody()
   val parsedHeaders: Map[String, String] = parseHeaders()
+  val parsedBody: RequestEntity = parseBody()
 
   def build: HttpRequest = {
     HttpRequest()
@@ -60,17 +63,12 @@ class RequestBuilder(op: Operation, in: Input) {
       if (operation.bucketName.nonEmpty) "/" + operation.bucketName
       else operation.bucketName
     val zone = operation.zone
-    val path = operation.requestUri
-    val queries =
+    val path = new URI(operation.requestUri).toASCIIString
+    val queries = new URI(
       if (parsedParams.isEmpty) ""
       else if (path.contains("?")) "&" + Uri.Query(parsedParams)
-      else "?" + Uri.Query(parsedParams)
-    Uri().withScheme(config.protocol)
-      .withHost(parseHost(config, zone))
-      .withPort(config.port)
-      .withPath(Uri.Path(bucket + path))
-      .withQuery(Uri.Query(parsedParams))
-//    "%s://%s:%d%s%s".format(config.protocol, parseHost(config, zone), config.port, bucket + path, queries)
+      else "?" + Uri.Query(parsedParams)).toASCIIString
+    Uri("%s://%s:%d%s%s".format(config.protocol, parseHost(config, zone), config.port, bucket + path, queries))
   }
 
   private def parseHeaders(): Map[String, String] = {
@@ -84,7 +82,8 @@ class RequestBuilder(op: Operation, in: Input) {
       val now = TimeUtil.zonedDateTimeToString()
       headers += ("Date" -> now)
     }
-    headers
+    givenContentType = ContentType.parse(headers.getOrElse("Content-Type", ""))
+    headers.filterNot(entry => entry._1.equals("Content-Type"))
   }
 
   private def parseBody(): RequestEntity = {
@@ -93,27 +92,27 @@ class RequestBuilder(op: Operation, in: Input) {
         QSRequestUtil.getRequestParams(input, QSConstants.ParamsLocationElement)
       if (elements.nonEmpty) {
         val bytes = JsonUtil.encode(elements).compactPrint.getBytes
-        HttpEntity(ContentTypes.`application/json`, bytes)
+        HttpEntity(givenContentType.getOrElse(ContentTypes.`application/json`), bytes)
       } else {
         val body: Map[String, AnyRef] = QSRequestUtil
           .getRequestParams(input, QSConstants.ParamsLocationBody)
         if (body.isEmpty)
-          HttpEntity.Empty
+          HttpEntity(givenContentType.getOrElse(ContentTypes.NoContentType), ByteString.empty)
         else if (body.contains("Body")) {
           val Body = body.getOrElse("Body", "")
           Body match {
             case bodyString: String =>
-              HttpEntity(ContentTypes.`text/plain(UTF-8)`, bodyString)
+              HttpEntity(givenContentType.getOrElse(ContentTypes.`text/plain(UTF-8)`), bodyString.getBytes)
             case file: File =>
-              HttpEntity.fromPath(QSRequestUtil.parseContentType(file), file.toPath)
+              HttpEntity.fromPath(givenContentType.getOrElse(QSRequestUtil.parseContentType(file)), file.toPath)
           }
         } else {
           val bytes = JsonUtil.encode(body).compactPrint.getBytes
-          HttpEntity(ContentTypes.`application/json`, bytes)
+          HttpEntity(givenContentType.getOrElse(ContentTypes.`application/json`), bytes)
         }
       }
     } else {
-      HttpEntity.Empty
+      HttpEntity(givenContentType.getOrElse(ContentTypes.NoContentType), ByteString.empty)
     }
   }
 

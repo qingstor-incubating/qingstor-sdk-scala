@@ -43,6 +43,7 @@ class QSRequest(_operation: Operation, _input: Input) {
     var request = _request
     if (request == null)
       request = sign(build())
+    println(request.toString())
     Http(system).singleRequest(request).map { response =>
       ResponseUnpacker(response, operation).unpackResponse[T]()
     }

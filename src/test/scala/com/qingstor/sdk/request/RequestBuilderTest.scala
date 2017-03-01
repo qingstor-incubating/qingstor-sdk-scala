@@ -39,18 +39,17 @@ class RequestBuilderTest extends FunSuite {
     assert(request.uri.toString == "https://qingstor.com:443/abc/xyz?bar=100")
   }
 
-  case class TestInputWithBody(date: String, body: InputStream) extends Input {
+  case class TestInputWithBody(date: String, body: File) extends Input {
     @ParamAnnotation(location = QSConstants.ParamsLocationHeader, name = "Date")
     def getDate: String = date
 
     @ParamAnnotation(location = QSConstants.ParamsLocationBody, name = "Body")
-    def getBody: InputStream = body
+    def getBody: File = body
   }
 
   test("Test RequestBuilder with Body") {
     val file = new File("/Users/Chris/test.jpg")
-    val fins = new FileInputStream(file)
-    val testInputWithBody = TestInputWithBody(date = "Tue, 21 Feb 2017 09:32:34 GMT", body = fins)
+    val testInputWithBody = TestInputWithBody(date = "Tue, 21 Feb 2017 09:32:34 GMT", body = file)
     val config = QSConfig()
     val operation = Operation(
       config = config,
@@ -62,7 +61,8 @@ class RequestBuilderTest extends FunSuite {
     val requestBuilder = RequestBuilder(operation, testInputWithBody)
     val request = requestBuilder.build
     val length = file.length()
-    assert(requestBuilder.parsedHeaders == Map("Date" -> "Tue, 21 Feb 2017 09:32:34 GMT", "Content-Length" -> length.toString))
+    assert(requestBuilder.parsedHeaders == Map("Date" -> "Tue, 21 Feb 2017 09:32:34 GMT"))
+    assert(request.entity.contentLengthOption.contains(length))
     assert(requestBuilder.parsedParams == Map.empty)
     assert(request.method.equals(HttpMethods.PUT))
     assert(request.uri.toString() == "https://qingstor.com:443/")
