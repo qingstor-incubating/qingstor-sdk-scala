@@ -46,4 +46,7 @@ object Types {
       """allowed_methods must be member(s) of "%s" """.format(QSConstants.CORSHttpMethods.mkString(",")))
   }
 
+  case class PartModel(part_number: Int, size: Option[Long] = None,
+                       created: Option[ZonedDateTime] = None, etag: Option[String] = None)
+
 }

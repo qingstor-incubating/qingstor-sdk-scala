@@ -4,9 +4,10 @@ import java.time.ZonedDateTime
 
 import com.qingstor.sdk.model.QSModels.ErrorMessage
 import com.qingstor.sdk.service.Bucket._
+import com.qingstor.sdk.service.Object.{InitiateMultipartUploadOutput, ListMultipartOutput}
 import com.qingstor.sdk.service.QingStor.ListBucketsOutput
 import com.qingstor.sdk.service.Types._
-import com.qingstor.sdk.util.{JsonUtil, QSLogger}
+import com.qingstor.sdk.util.JsonUtil
 import spray.json._
 
 object CustomJsonProtocol extends DefaultJsonProtocol {
@@ -71,7 +72,7 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
       }
       CORSRulesModel(
         allowed_origin = allowedOrigin,
-        allowed_methods = allowedMethods,
+        allowed_methods = allowedMethods.mapConserve(_.toUpperCase),
         allowed_headers = allowedHeaders,
         max_age_seconds = maxAgeSeconds,
         expose_headers = exposeHeaders
@@ -95,6 +96,41 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
     }
   }
   implicit val corsRulesModelFormat = CORSRulesModelFormat
+  object PartModelFormat extends RootJsonFormat[PartModel] {
+    override def read(json: JsValue): PartModel = {
+      val map = json.asJsObject.fields
+      val partNum = map("part_number").asInstanceOf[JsNumber].value.intValue()
+      val size = map.get("size").flatMap[Long] {
+        case num: JsNumber => Some(num.value.longValue())
+        case _ => None
+      }
+      val created = map.get("created").flatMap[ZonedDateTime] {
+        case str: JsString => Some(str.convertTo[ZonedDateTime])
+        case _ => None
+      }
+      val etag = map.get("etag").flatMap[String] {
+        case str: JsString => Some(str.value)
+        case _ => None
+      }
+      PartModel(
+        part_number = partNum,
+        size = size,
+        created = created,
+        etag = etag
+      )
+    }
+
+    override def write(obj: PartModel): JsValue = {
+      val map = Map(
+        "part_number" -> JsNumber(obj.part_number),
+        "size" -> obj.size.toJson,
+        "created" -> obj.created.toJson,
+        "etag" -> obj.etag.toJson
+      ).filter(entry => entry._2 != JsNull)
+      JsObject(map)
+    }
+  }
+  implicit val partModelFormat = PartModelFormat
 
   object ErrorMessageFormat extends RootJsonFormat[ErrorMessage] {
     override def read(json: JsValue): ErrorMessage = {
@@ -142,7 +178,8 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
   implicit val getBucketACLOuputFormat = jsonFormat2(GetBucketACLOuput)
   implicit val getBucketCORSOutputFormat = jsonFormat1(GetBucketCORSOutput)
   implicit val listObjectsOutputFormat = jsonFormat9(ListObjectsOutput)
-
+  implicit val initiateMultipartUploadOutputFormat = jsonFormat3(InitiateMultipartUploadOutput)
+  implicit val listMultipartOutputFormat = jsonFormat2(ListMultipartOutput)
   object DeleteMultipleObjectsOutputFormat extends RootJsonFormat[DeleteMultipleObjectsOutput] {
     override def write(obj: DeleteMultipleObjectsOutput): JsValue = {
       val deleted = obj.deleted
@@ -165,8 +202,7 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
     override def write(x: Any): JsValue = x match {
       case n: Int => JsNumber(n)
       case s: String => JsString(s)
-      case b: Boolean if b => JsTrue
-      case b: Boolean if !b => JsFalse
+      case b: Boolean => JsBoolean(b)
       case m: Map[String, Any] => JsonUtil.encode(m)
       case l: List[Any] => JsonUtil.encode(l)
       case m: ObjectKeyModel => m.toJson
@@ -176,6 +212,7 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
       case m: GranteeModel => m.toJson
       case m: ACLModel => m.toJson
       case m: CORSRulesModel => m.toJson
+      case m: PartModel => m.toJson
       case _ => serializationError("Can't serialize such type")
     }
 

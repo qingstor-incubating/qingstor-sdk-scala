@@ -2,9 +2,11 @@ package com.qingstor.sdk.util;
 
 import com.qingstor.sdk.annotation.ParamAnnotation;
 import com.qingstor.sdk.constant.QSConstants;
+import scala.Option;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,9 +21,12 @@ public class QSParamUtil {
                 if (annotation != null) {
                     if (annotation.location().equals(location)) {
                         Object value = method.invoke(model, (Object[]) null);
-                        if (value != null) {
+                        if (value != null && value.getClass() != scala.None$.class) {
                             if (location.equals(QSConstants.ParamsLocationParam())
                                     || location.equals(QSConstants.ParamsLocationHeader())) {
+                                if (value.getClass().equals(scala.Some.class)){
+                                    value = ((scala.Some)value).get();
+                                }
                                 Class cls = value.getClass();
                                 if (cls.equals(Integer.class)
                                         || cls.equals(Long.class)
@@ -31,6 +36,8 @@ public class QSParamUtil {
                                         || cls.equals(Character.class)) {
                                     value = String.valueOf(value);
                                 }
+                                if (cls.equals(ZonedDateTime.class))
+                                    value = value.toString();
                             }
                             retParametersMap.put(annotation.name(), value);
                         }

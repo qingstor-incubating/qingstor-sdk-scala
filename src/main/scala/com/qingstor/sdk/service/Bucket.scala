@@ -142,25 +142,25 @@ object Bucket {
     ec: ExecutionContextExecutor): Bucket =
     new Bucket(config, bucketName, zone)
 
-  case class ListObjectsInput(prefix: String = null,
-                              delimiter: Char = 0,
-                              marker: String = null,
-                              limit: Int = 200 ) extends Input{
-    require(limit <= 1000, "limit can't larger than 1000")
+  case class ListObjectsInput(prefix: Option[String] = None,
+                              delimiter: Option[String] = None,
+                              marker: Option[String] = None,
+                              limit: Option[Int] = None ) extends Input{
+    require(limit.isEmpty || limit.get <= 1000, "limit can't larger than 1000")
     @ParamAnnotation(location = QSConstants.ParamsLocationParam, name = "prefix")
-    def getPrefix: String = this.prefix
+    def getPrefix: Option[String] = this.prefix
 
     @ParamAnnotation(location = QSConstants.ParamsLocationParam, name = "delimiter")
-    def getDelimiter: Char = this.delimiter
+    def getDelimiter: Option[String] = this.delimiter
 
     @ParamAnnotation(location = QSConstants.ParamsLocationParam, name = "marker")
-    def getMarker: String = this.marker
+    def getMarker: Option[String] = this.marker
 
     @ParamAnnotation(location = QSConstants.ParamsLocationParam, name = "limit")
-    def getLimit: Int = this.limit
+    def getLimit: Option[Int] = this.limit
   }
   case class ListObjectsOutput(name: String, keys: List[ObjectModel], prefix: String,
-                               owner: OwnerModel, delimiter: Char, limit: Int,
+                               owner: OwnerModel, delimiter: String, limit: Int,
                                marker: String, next_marker: String, common_prefixes: List[String]) extends Output
 
   case class DeleteMultipleObjectsInput(contentMD5: String,

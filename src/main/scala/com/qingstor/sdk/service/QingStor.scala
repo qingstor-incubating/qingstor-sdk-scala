@@ -42,10 +42,10 @@ object QingStor {
                               ec: ExecutionContextExecutor): QingStor =
     new QingStor(config)
 
-  case class ListBucketsInput(location: String = null) extends Input {
+  case class ListBucketsInput(location: Option[String] = None) extends Input {
     @ParamAnnotation(location = QSConstants.ParamsLocationHeader,
                      name = "Location")
-    def getLocation: String = location
+    def getLocation: Option[String] = location
   }
 
   case class ListBucketsOutput(count: Int, buckets: List[BucketModel]) extends Output
