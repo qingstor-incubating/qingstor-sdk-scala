@@ -38,7 +38,7 @@ class Object(private val _config: QSConfig,
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, operation.statusCodes)) {
         val bytesFuture = Unmarshal(response.getEntity).to[Array[Byte]]
@@ -66,7 +66,7 @@ class Object(private val _config: QSConfig,
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, operation.statusCodes)) {
         Future{ Right(response.getStatusCode) }
@@ -87,7 +87,7 @@ class Object(private val _config: QSConfig,
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     ResponseUnpacker.unpackToOutputOrErrorMessage[
       InitiateMultipartUploadOutput](futureResponse, operation.statusCodes)
   }
@@ -103,7 +103,7 @@ class Object(private val _config: QSConfig,
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, operation.statusCodes)) {
         Future {
@@ -129,7 +129,7 @@ class Object(private val _config: QSConfig,
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     ResponseUnpacker.unpackToOutputOrErrorMessage[ListMultipartOutput](futureResponse, operation.statusCodes)
   }
 
@@ -144,7 +144,7 @@ class Object(private val _config: QSConfig,
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, operation.statusCodes)) {
         Future { Right(response.getStatusCode) }
@@ -165,7 +165,7 @@ class Object(private val _config: QSConfig,
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, operation.statusCodes)) {
         Future {

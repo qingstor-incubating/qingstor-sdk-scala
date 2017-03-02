@@ -19,8 +19,8 @@ class ResponseUnpacker(private val _response: HttpResponse,
   private val response = _response
   private val operation = _operation
 
-  def unpackResponse[T <: QSHttpResponse :ClassTag](): T = {
-    val clazz = ClassUtil.ClassBuilder[T]
+  def unpackResponse(): QSHttpResponse = {
+    val clazz = ClassUtil.ClassBuilder[QSHttpResponse]
     setupStatusCode(clazz)
     setupHeaders(clazz)
     setupEntity(clazz)

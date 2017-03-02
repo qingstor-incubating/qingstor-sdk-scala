@@ -36,15 +36,15 @@ class QSRequest(_operation: Operation, _input: Input) {
     signQuery(request, expires)
   }
 
-  def send[T <: QSHttpResponse: ClassTag](_request: HttpRequest = null)(
+  def send(_request: HttpRequest = null)(
       implicit system: ActorSystem,
-      mat: ActorMaterializer): Future[T] = {
+      mat: ActorMaterializer): Future[QSHttpResponse] = {
     import system.dispatcher
     var request = _request
     if (request == null)
       request = sign(build())
     Http(system).singleRequest(request).map { response =>
-      ResponseUnpacker(response, operation).unpackResponse[T]()
+      ResponseUnpacker(response, operation).unpackResponse()
     }
   }
 

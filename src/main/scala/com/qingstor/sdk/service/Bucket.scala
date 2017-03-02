@@ -35,7 +35,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     ResponseUnpacker.unpackToOutputOrErrorMessage[ListObjectsOutput](futureResponse, operation.statusCodes)
   }
 
@@ -50,7 +50,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     ResponseUnpacker.unpackToOutputOrErrorMessage[DeleteMultipleObjectsOutput](futureResponse,
       operation.statusCodes)
   }
@@ -65,7 +65,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation).send()
     futureResponse.map( _.getStatusCode )
   }
 
@@ -79,7 +79,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketStatisticsOutput](futureResponse,
       operation.statusCodes)
   }
@@ -94,7 +94,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketACLOuput](futureResponse,
       operation.statusCodes)
   }
@@ -109,7 +109,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketCORSOutput](futureResponse,
       operation.statusCodes)
   }
@@ -124,7 +124,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       bucketName = this.bucketName,
       zone = this.zone
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, operation.statusCodes))
         Future { Right(response.getStatusCode) }

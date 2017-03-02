@@ -31,7 +31,7 @@ class QingStor(private val _config: QSConfig)(
       requestUri = "/",
       statusCodes = Array[Int](200)
     )
-    val futureResponse = QSRequest(operation, input).send[QSHttpResponse]()
+    val futureResponse = QSRequest(operation, input).send()
     ResponseUnpacker.unpackToOutputOrErrorMessage[ListBucketsOutput](futureResponse, operation.statusCodes)
   }
 }
