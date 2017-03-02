@@ -30,7 +30,7 @@ class ResponseUnpackerTest extends FunSuite{
       entity = entity
     )
     val unpacker = ResponseUnpacker(response, operation)
-    val testResp = unpacker.unpackResponse[QSHttpResponse]()
+    val testResp = unpacker.unpackResponse()
     assert(testResp.getDate.equals("Sun, 16 Aug 2015 09:05:00 GMT"))
     assert(testResp.getStatusCode == 200)
     assert(testResp.getRequestID.equals("aa08cf7a43f611e5886952542e6ce14b"))
@@ -50,7 +50,7 @@ class ResponseUnpackerTest extends FunSuite{
       entity = entity
     )
 
-    val testResponse = ResponseUnpacker(response, operation).unpackResponse[QSHttpResponse]()
+    val testResponse = ResponseUnpacker(response, operation).unpackResponse()
     assert(testResponse.getEntity.contentLengthOption.get == file.length())
   }
 }

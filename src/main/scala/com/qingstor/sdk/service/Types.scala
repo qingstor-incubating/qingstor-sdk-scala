@@ -49,4 +49,20 @@ object Types {
   case class PartModel(part_number: Int, size: Option[Long] = None,
                        created: Option[ZonedDateTime] = None, etag: Option[String] = None)
 
+  case class StringModel(Referer: List[String])
+  case class IPModel(source_ip: List[String])
+  case class NullModel(Referer: Boolean)
+  case class ConditionModel(string_like: Option[StringModel] = None, string_not_like: Option[StringModel] = None,
+                            ip_address: Option[IPModel] = None, not_ip_address: Option[IPModel] = None,
+                            is_null: Option[NullModel] = None)
+  case class StatementModel(id: String, user: Either[String, List[String]], action: List[String],
+                            effect: String, resource: List[String], condition: List[ConditionModel]) {
+    require(action.nonEmpty, "StatementModel: action can't be empty!")
+    require(effect != null && effect.nonEmpty, "StatementModel: effect can't be empty")
+    require(QSConstants.StatementEffects.contains(effect),
+      "StatementModel: value of effect must be one of \"%s\"".format(QSConstants.StatementEffects.mkString(",")))
+    require(id != null && id.nonEmpty, "StatementModel: id can't be empty!")
+    require(resource != null && resource.nonEmpty, "StatementModel: resource can't be empty!")
+    require(user.fold[String](str => str, list => list.mkString("")).nonEmpty, "StatementModel: user can't be empty!")
+  }
 }

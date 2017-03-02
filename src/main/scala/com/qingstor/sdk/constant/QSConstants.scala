@@ -25,4 +25,5 @@ object QSConstants {
   val ACLPermissions = List("READ", "WRITE", "FULL_CONTROL")
   val GranteeTypes = List("user", "group")
   val CORSHttpMethods = List("GET", "PUT", "POST", "DELETE", "HEAD")
+  val StatementEffects = List("allow", "deny")
 }

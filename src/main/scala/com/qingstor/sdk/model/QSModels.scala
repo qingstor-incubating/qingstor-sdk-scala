@@ -9,6 +9,7 @@ object QSModels {
 
   abstract class Output
   abstract class Input
+
   class QSHttpResponse() {
     private var statusCode: Int = _
     private var requestID: String = _

@@ -133,6 +133,21 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       }
     }
   }
+
+  def getBucketPolicy(input: GetBucketPolicyInput): Future[Either[ErrorMessage, GetBucketPolicyOutput]] = {
+    val operation = Operation(
+      config = this.config,
+      apiName = "GET Bucket Policy",
+      method = "GET",
+      requestUri = "/?policy",
+      statusCodes = Array[Int](200),
+      bucketName = this.bucketName,
+      zone = this.zone
+    )
+    val futureResponse = QSRequest(operation, input).send()
+    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketPolicyOutput](futureResponse,
+      operation.statusCodes)
+  }
 }
 
 object Bucket {
@@ -205,4 +220,7 @@ object Bucket {
     @ParamAnnotation(location = QSConstants.ParamsLocationElement, name = "cors_rules")
     def getCORSRules: List[CORSRulesModel] = this.cORSRules
   }
+
+  case class GetBucketPolicyInput() extends Input
+  case class GetBucketPolicyOutput(statement: List[StatementModel]) extends Output
 }

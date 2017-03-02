@@ -50,7 +50,7 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
       JsObject(maps)
     }
   }
-  implicit val granteeModelFormat = GranteeModelFormat
+  implicit val granteeModelFormat = jsonFormat3(GranteeModel)
   implicit val aclModelFormat = jsonFormat2(ACLModel)
   object CORSRulesModelFormat extends RootJsonFormat[CORSRulesModel] {
     override def read(json: JsValue): CORSRulesModel = {
@@ -95,42 +95,13 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
       JsObject(maps)
     }
   }
-  implicit val corsRulesModelFormat = CORSRulesModelFormat
-  object PartModelFormat extends RootJsonFormat[PartModel] {
-    override def read(json: JsValue): PartModel = {
-      val map = json.asJsObject.fields
-      val partNum = map("part_number").asInstanceOf[JsNumber].value.intValue()
-      val size = map.get("size").flatMap[Long] {
-        case num: JsNumber => Some(num.value.longValue())
-        case _ => None
-      }
-      val created = map.get("created").flatMap[ZonedDateTime] {
-        case str: JsString => Some(str.convertTo[ZonedDateTime])
-        case _ => None
-      }
-      val etag = map.get("etag").flatMap[String] {
-        case str: JsString => Some(str.value)
-        case _ => None
-      }
-      PartModel(
-        part_number = partNum,
-        size = size,
-        created = created,
-        etag = etag
-      )
-    }
-
-    override def write(obj: PartModel): JsValue = {
-      val map = Map(
-        "part_number" -> JsNumber(obj.part_number),
-        "size" -> obj.size.toJson,
-        "created" -> obj.created.toJson,
-        "etag" -> obj.etag.toJson
-      ).filter(entry => entry._2 != JsNull)
-      JsObject(map)
-    }
-  }
-  implicit val partModelFormat = PartModelFormat
+  implicit val corsRulesModelFormat = jsonFormat5(CORSRulesModel)
+  implicit val partModelFormat = jsonFormat4(PartModel)
+  implicit val stringModelFormat = jsonFormat1(StringModel)
+  implicit val ipModelFormat = jsonFormat1(IPModel)
+  implicit val nullModelFormat = jsonFormat1(NullModel)
+  implicit val conditionModelFormat = jsonFormat5(ConditionModel)
+  implicit val statementModelFormat = jsonFormat6(StatementModel)
 
   object ErrorMessageFormat extends RootJsonFormat[ErrorMessage] {
     override def read(json: JsValue): ErrorMessage = {
@@ -196,7 +167,8 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
       DeleteMultipleObjectsOutput(listDeleted, listErrors)
     }
   }
-  implicit val deleteMultipleOutputFormat = DeleteMultipleObjectsOutputFormat
+  implicit val deleteMultipleObjectsOutputFormat = jsonFormat2(DeleteMultipleObjectsOutput)
+  implicit val getBucketPolicyOutputFormat = jsonFormat1(GetBucketPolicyOutput)
 
   object AnyJsonFormat extends JsonFormat[Any] {
     override def write(x: Any): JsValue = x match {
@@ -213,6 +185,11 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
       case m: ACLModel => m.toJson
       case m: CORSRulesModel => m.toJson
       case m: PartModel => m.toJson
+      case m: StringModel => m.toJson
+      case m: IPModel => m.toJson
+      case m: NullModel => m.toJson
+      case m: ConditionModel => m.toJson
+      case m: StatementModel => m.toJson
       case _ => serializationError("Can't serialize such type")
     }
 
