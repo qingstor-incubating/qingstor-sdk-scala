@@ -1,0 +1,178 @@
+{{$service := .Data.Service}}
+{{$subServices := .Data.SubServices }}
+
+package com.qingstor.sdk.service
+
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import com.qingstor.sdk.config.QSConfig
+import com.qingstor.sdk.model.QSModels._
+import com.qingstor.sdk.request.{QSRequest, ResponseUnpacker}
+import com.qingstor.sdk.service.Types.BucketModel
+import com.qingstor.sdk.annotation.ParamAnnotation
+import com.qingstor.sdk.constant.QSConstants
+import com.qingstor.sdk.service.QingStor.ListBucketsOutput
+import CustomJsonProtocol._
+
+import scala.concurrent.{ExecutionContextExecutor, Future}
+
+{{if $service.Description}}// {{$service.Name | camelCase}}Service: {{$service.Description}}{{end}}
+class QingStor(private val _config: QSConfig)(
+	implicit val system: ActorSystem,
+	val mat: ActorMaterializer,
+	val ec: ExecutionContextExecutor) {
+	val config: QSConfig = _config
+
+	{{range $operation := $service.Operations}}
+	{{$request := $operation.Request}}
+	{{$response := $operation.Response}}
+	//{{$operation.ID}}: {{$operation.Description}}
+	//DocumentationURL: {{$operation.DocumentationURL}}
+	def {{$operation.ID | camelCase |lowerFirst}}(input: {{$operation.ID -}}Input)
+		: Future[Either[ErrorMessage, {{$operation.ID -}}Output]] = {
+		val operation = Operation(
+			config = config,
+			apiName = "{{$operation.Name}}",
+			method = "{{$request.Method}}",
+			requestUri = "{{$request.URI}}",
+			statusCodes = Array[Int](
+							{{range $statusCodeNumber, $statusCode := $response.StatusCodes -}}
+								{{$statusCodeNumber}},
+								{{- if $statusCode.Description -}}
+									// {{$statusCode.Description}}
+								{{- end}}
+							{{end -}}
+					)
+				)
+		val futureResponse = QSRequest(operation, input).send()
+		ResponseUnpacker.unpackToOutputOrErrorMessage[{{$operation.ID -}}Output](
+			futureResponse,
+			operation.statusCodes
+		)
+	}
+	{{end}}
+}
+
+{{define "Type"}}
+	{{- $typeName := . -}}
+	{{- if eq $typeName "string" -}}
+		String
+	{{- else if eq $typeName "boolean" -}}
+		Boolean
+	{{- else if eq $typeName "integer" -}}
+		Int
+	{{- else if eq $typeName "timestamp" -}}
+		String
+	{{- else if eq $typeName "binary" -}}
+		File
+	{{- else if eq $typeName "array" -}}
+		List
+	{{- else if eq $typeName "object" -}}
+		interface{}
+	{{- else if eq $typeName "map" -}}
+		Map
+	{{- else if eq $typeName "any" -}}
+		Any
+	{{- else -}}
+		{{$typeName | camelCase}}Model
+	{{- end -}}
+{{end}}
+
+{{define "PropertyType"}}
+	{{- $property := index . 0 -}}
+	{{- $isRequired := index . 1 -}}
+	{{- if eq $property.Type "object" -}}
+		{{template "Type" $property.ExtraType}}
+	{{- else if eq $property.Type "array" -}}
+		{{- if $isRequired -}}
+			List[{{template "Type" $property.ExtraType}}]
+		{{- else -}}
+			Option[List[{{template "Type" $property.ExtraType}}]]
+		{{- end -}}
+	{{- else if eq $property.Type "map" -}}
+		{{- if $isRequired -}}
+			Map[String]{{template "Type" $property.ExtraType}}
+		{{- else -}}
+			Option[Map[String]{{template "Type" $property.ExtraType}}]
+		{{- end -}}
+	{{- else if eq $property.Type "any" -}}
+		{{- if $isRequired -}}
+			{{template "Type" $property.Type}}
+		{{- else -}}
+			Option[{{template "Type" $property.Type}}]
+		{{- end -}}
+	{{- else -}}
+		{{- if $isRequired -}}
+			{{template "Type" $property.Type}}
+		{{- else -}}
+			Option[{{template "Type" $property.Type}}]
+		{{- end -}}
+	{{- end -}}
+{{end}}
+
+object QingStor {
+	def apply(config: QSConfig)(implicit
+		system: ActorSystem,
+		mat: ActorMaterializer,
+		ec: ExecutionContextExecutor): QingStor =
+			new QingStor(config)
+	{{range $operation := $service.Operations}}
+	{{$request := $operation.Request}}
+	{{$response := $operation.Response}}
+	case class {{$operation.ID}}Input(
+		{{if gt (len $request.Params.Properties) 0 -}}
+		{{- range $property := $request.Params.Properties -}}
+			{{$property.Name | camelCase | lowerFirst}}: {{template "PropertyType" passThrough $property $property.IsRequired}}
+			{{- if not $property.IsRequired}} = None {{- end}},
+		{{- end -}}
+		{{- end -}}
+		{{if gt (len $request.Headers.Properties) 0 -}}
+		{{- range $property := $request.Headers.Properties -}}
+			{{$property.Name | camelCase | lowerFirst}}: {{template "PropertyType" passThrough $property $property.IsRequired}}
+			{{- if not $property.IsRequired}} = None {{- end}},
+		{{- end -}}
+		{{- end -}}
+		{{if gt (len $request.Elements.Properties) 0}}
+		{{- range $property := $request.Elements.Properties -}}
+			{{$property.Name | camelCase | lowerFirst}}: {{template "PropertyType" passThrough $property $property.IsRequired}}
+			{{- if not $property.IsRequired}} = None {{- end}},
+		{{- end -}}
+		{{- end }}
+		) extends Input {
+		{{if gt (len $request.Params.Properties) 0 -}}
+		{{- range $property := $request.Params.Properties -}}
+			@ParamAnnotation(location = QSConstants.ParamsLocationParam, name = "{{$property.Name | normalized}}")
+			def get{{- $property.Name | camelCase}} = this.{{- $property.Name | camelCase | lowerFirst}}
+		{{- end -}}
+		{{- end -}}
+		{{if gt (len $request.Headers.Properties) 0 -}}
+		{{- range $property := $request.Headers.Properties -}}
+			@ParamAnnotation(location = QSConstants.ParamsLocationHeader, name = "{{$property.Name | normalized}}")
+			def get{{- $property.Name | camelCase}} = this.{{- $property.Name | camelCase | lowerFirst}}
+		{{- end -}}
+		{{- end -}}
+		{{if gt (len $request.Elements.Properties) 0}}
+		{{- range $property := $request.Params.Properties -}}
+			@ParamAnnotation(location = QSConstants.ParamsLocationElement, name = "{{$property.Name | normalized}}")
+			def get{{- $property.Name | camelCase}} = this.{{- $property.Name | camelCase | lowerFirst}}
+		{{- end -}}
+		{{- end }}
+	}
+
+	case class {{$operation.ID}}Output (
+		{{if gt (len $response.Headers.Properties) 0 -}}
+		{{- range $property := $response.Headers.Properties}}
+			{{$property.Name | camelCase | lowerFirst}}: {{template "PropertyType" passThrough $property $property.IsRequired}}
+			{{- if not $property.IsRequired}} = None {{- end}},
+		{{- end -}}
+		{{- end -}}
+		{{if gt (len $response.Elements.Properties) 0}}
+		{{- range $property := $response.Elements.Properties}}
+			{{$property.Name | camelCase | lowerFirst}}: {{template "PropertyType" passThrough $property $property.IsRequired}}
+			{{- if not $property.IsRequired}} = None {{- end}},
+		{{- end -}}
+		{{- end }}
+	) extends Output
+	{{end}}
+}
+
