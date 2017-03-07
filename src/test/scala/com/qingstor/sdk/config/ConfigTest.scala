@@ -6,7 +6,7 @@ import org.scalatest.FunSuite
 class ConfigTest extends FunSuite{
 
   test("Config test") {
-    val config = new QSConfig("AccessKeyID", "SecretAccessKey", "qingstor.com", 80, "http", 10, QSConstants.LogWarn)
+    val config = QSConfig("AccessKeyID", "SecretAccessKey", "qingstor.com", 80, "http", 10, QSConstants.LogWarn)
     assert(config.access_key_id == "AccessKeyID")
     assert(config.secret_access_key == "SecretAccessKey")
     assert(config.host == "qingstor.com")
@@ -17,7 +17,7 @@ class ConfigTest extends FunSuite{
   }
 
   test("Default config test") {
-    val config = new QSConfig()
+    val config = QSConfig()
     assert(config.access_key_id == "")
     assert(config.secret_access_key == "")
     assert(config.host == "qingstor.com")
@@ -36,8 +36,7 @@ class ConfigTest extends FunSuite{
 
   test("loadConfigFromContent") {
     val content: String =
-      """
-        |# QingStor services configuration
+      """|# QingStor services configuration
         |#access_key_id: "ACCESS_KEY_ID"
         |#secret_access_key: "SECRET_ACCESS_KEY"
         |host: "api.qingstor.com"
@@ -45,8 +44,7 @@ class ConfigTest extends FunSuite{
         |protocol: 'https'
         |connection_retries: 5
         |# Valid log levels are "debug", "info", "warn", "error", and "fatal".
-        |log_level: 'error'
-      """.stripMargin
+        |log_level: 'error'""".stripMargin
     val config = QSConfig.loadConfigFromContent(content)
     assert(config.host == "api.qingstor.com")
     assert(config.port == 443)
