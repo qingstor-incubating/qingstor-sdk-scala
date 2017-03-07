@@ -1,39 +1,30 @@
 package com.qingstor.sdk.util
 
 import scala.collection.JavaConverters._
-import java.io.{ByteArrayInputStream, File, InputStream}
-import java.nio.charset.{Charset, IllegalCharsetNameException}
+import java.io.File
 
 import akka.http.scaladsl.model._
 
 object QSRequestUtil {
+  // get all the non-null and non-None params of the specified location from Input
   def getRequestParams(any: Any, location: String): Map[String, AnyRef] = {
     val jMap = QSParamUtil.getRequestParams(any, location)
     mapAsScalaMap(jMap).toMap
   }
 
-  @throws[IllegalCharsetNameException]
-  def inputStreamFromString(string: String, charset: String = "UTF-8"): InputStream = {
-    if (!Charset.isSupported(charset))
-      throw new IllegalCharsetNameException("""Charset "%s" is not support""".format(charset))
-    new ByteArrayInputStream(string.getBytes(charset))
-  }
-
-  def bytesToString(bytes: Array[Byte], charset: String = "UTF-8"): String = {
-    if (!Charset.isSupported(charset))
-      throw new IllegalCharsetNameException("""Charset "%s" is not support""".format(charset))
-    new String(bytes, charset)
-  }
-
+  // get all the needed params of the specified location from Output
+  // return map contains the of this param and its get method name
   def getResponseParams(any: Any, location: String): Map[String, String] = {
     val jMap = QSParamUtil.getResponseParams(any, location)
     mapAsScalaMap[String, String](jMap).toMap
   }
 
+  // invoke a method specified by @methodName of class any
   def invokeMethod(any: Any, methodName: String, params: Array[AnyRef]): Any = {
     QSParamUtil.invokeMethod(any, methodName, params)
   }
 
+  // parse Content-Type of a file according to its extension
   def parseContentType(file: File): ContentType = {
     if (file == null)
       ContentTypes.NoContentType

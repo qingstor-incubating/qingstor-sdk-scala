@@ -2,8 +2,6 @@ package com.qingstor.sdk.util
 
 import java.time.format.DateTimeFormatter
 import java.time._
-import java.time.temporal.ChronoField
-import java.util.Date
 
 object TimeUtil {
   def zonedDateTimeToString(time: ZonedDateTime = ZonedDateTime.now()): String = {

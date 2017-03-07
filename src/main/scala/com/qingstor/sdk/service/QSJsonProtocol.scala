@@ -4,13 +4,13 @@ import java.time.ZonedDateTime
 
 import com.qingstor.sdk.model.QSModels.ErrorMessage
 import com.qingstor.sdk.service.Bucket._
-import com.qingstor.sdk.service.Object.{InitiateMultipartUploadOutput, ListMultipartOutput}
-import com.qingstor.sdk.service.QingStor.ListBucketsOutput
+import com.qingstor.sdk.service.Object._
+import com.qingstor.sdk.service.QingStor._
 import com.qingstor.sdk.service.Types._
 import com.qingstor.sdk.util.JsonUtil
 import spray.json._
 
-object CustomJsonProtocol extends DefaultJsonProtocol {
+object QSJsonProtocol extends DefaultJsonProtocol {
 
   object ZonedDateTimeJson extends JsonFormat[ZonedDateTime] {
     override def write(obj: ZonedDateTime): JsValue = obj match {
@@ -23,8 +23,8 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
   implicit val objectKeyModelFormat = jsonFormat1(ObjectKeyModel)
   implicit val objectModelFormat = jsonFormat7(ObjectModel)
   implicit val zonedDateTimeFormat = ZonedDateTimeJson
-  implicit val bucketModelFormat: RootJsonFormat[BucketModel] = jsonFormat4(BucketModel)
-  implicit val deleteErrorModelFormat: RootJsonFormat[DeleteErrorModel] = jsonFormat3(DeleteErrorModel)
+  implicit val bucketModelFormat = jsonFormat4(BucketModel)
+  implicit val deleteErrorModelFormat = jsonFormat3(DeleteErrorModel)
   implicit val ownerModelFormat = jsonFormat2(OwnerModel)
   object GranteeModelFormat extends RootJsonFormat[GranteeModel] {
     override def read(json: JsValue): GranteeModel = {
@@ -170,13 +170,16 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
   implicit val deleteMultipleObjectsOutputFormat = jsonFormat2(DeleteMultipleObjectsOutput)
   implicit val getBucketPolicyOutputFormat = jsonFormat1(GetBucketPolicyOutput)
 
+  // JsonFormator for Any
   object AnyJsonFormat extends JsonFormat[Any] {
-    override def write(x: Any): JsValue = x match {
-      case n: Int => JsNumber(n)
-      case s: String => JsString(s)
-      case b: Boolean => JsBoolean(b)
-      case m: Map[String, Any] => JsonUtil.encode(m)
-      case l: List[Any] => JsonUtil.encode(l)
+    override def write(obj: Any): JsValue = obj match {
+      case int: Int => JsNumber(int)
+      case long: Long => JsNumber(long)
+      case str: String => JsString(str)
+      case bool: Boolean => JsBoolean(bool)
+      case map: Map[_, _] if map.keySet.forall(_.isInstanceOf[String]) =>
+        JsonUtil.encode(map.asInstanceOf[Map[String, Any]])
+      case list: List[Any] => JsonUtil.encode(list)
       case m: ObjectKeyModel => m.toJson
       case m: BucketModel => m.toJson
       case m: DeleteErrorModel => m.toJson
@@ -193,14 +196,13 @@ object CustomJsonProtocol extends DefaultJsonProtocol {
       case _ => serializationError("Can't serialize such type")
     }
 
-    override def read(value: JsValue): Any = value match {
-      case JsNumber(n) => n.intValue()
-      case JsString(s) => s
-      case JsTrue => true
-      case JsFalse => false
+    override def read(json: JsValue): Any = json match {
+      case JsNumber(num) => num.longValue()
+      case JsString(str) => str
+      case JsBoolean(bool) => bool
       case JsNull => null
-      case l: JsArray => JsonUtil.decode(l)
-      case o: JsObject => JsonUtil.decode(o)
+      case array: JsArray => JsonUtil.decode(array)
+      case obj: JsObject => JsonUtil.decode(obj)
       case _ => deserializationError("Can't deserialize such type")
     }
   }

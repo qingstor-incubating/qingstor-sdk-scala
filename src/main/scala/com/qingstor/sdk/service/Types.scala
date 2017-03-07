@@ -5,6 +5,7 @@ import java.time.ZonedDateTime
 import com.qingstor.sdk.constant.QSConstants
 
 object Types {
+  abstract class TypeModel
   case class BucketModel(name: String,
                          location: String,
                          url: String,
@@ -72,13 +73,13 @@ object Types {
                             string_not_like: Option[StringModel] = None,
                             ip_address: Option[IPModel] = None,
                             not_ip_address: Option[IPModel] = None,
-                            is_null: Option[NullModel] = None)
+                            is_null: Option[NullModel] = None) extends TypeModel
   case class StatementModel(id: String,
                             user: Either[String, List[String]],
                             action: List[String],
                             effect: String,
                             resource: List[String],
-                            condition: List[ConditionModel]) {
+                            condition: List[ConditionModel]) extends TypeModel{
     require(action.nonEmpty, "StatementModel: action can't be empty!")
     require(effect != null && effect.nonEmpty,
             "StatementModel: effect can't be empty")

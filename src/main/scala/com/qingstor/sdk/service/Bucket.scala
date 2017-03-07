@@ -7,20 +7,21 @@ import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.request.{QSRequest, ResponseUnpacker}
 import com.qingstor.sdk.service.Bucket._
 import com.qingstor.sdk.service.Types._
-import akka.http.scaladsl.unmarshalling.Unmarshal
 import com.qingstor.sdk.annotation.ParamAnnotation
 import com.qingstor.sdk.constant.QSConstants
-import com.qingstor.sdk.util.{JsonUtil, QSLogger, QSRequestUtil, SecurityUtil}
-import CustomJsonProtocol._
+import com.qingstor.sdk.util.{JsonUtil, QSRequestUtil, SecurityUtil}
+import QSJsonProtocol._
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
-  implicit val system: ActorSystem,
+  implicit
+  val system: ActorSystem,
   val mat: ActorMaterializer,
-  val ec: ExecutionContextExecutor) {
+  val ec: ExecutionContextExecutor
+) {
   val config: QSConfig = _config
   val bucketName: String = _bucketName
   val zone: String = _zone
@@ -39,8 +40,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     ResponseUnpacker.unpackToOutputOrErrorMessage[ListObjectsOutput](futureResponse, operation.statusCodes)
   }
 
-  def deleteMultipleObjects(input: Input)
-  : Future[Either[ErrorMessage, DeleteMultipleObjectsOutput]] = {
+  def deleteMultipleObjects(input: Input): Future[Either[ErrorMessage, DeleteMultipleObjectsOutput]] = {
     val operation = Operation(
       config = this.config,
       apiName = "Delete Multiple Objects",
@@ -51,8 +51,10 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       zone = this.zone
     )
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[DeleteMultipleObjectsOutput](futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker.unpackToOutputOrErrorMessage[DeleteMultipleObjectsOutput](
+      futureResponse,
+      operation.statusCodes
+    )
   }
 
   def headBucket(): Future[Int] = {
@@ -66,7 +68,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       zone = this.zone
     )
     val futureResponse = QSRequest(operation).send()
-    futureResponse.map( _.getStatusCode )
+    futureResponse.map(_.getStatusCode)
   }
 
   def getBucketStatistics(input: Input): Future[Either[ErrorMessage, GetBucketStatisticsOutput]] = {
@@ -80,8 +82,10 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       zone = this.zone
     )
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketStatisticsOutput](futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketStatisticsOutput](
+      futureResponse,
+      operation.statusCodes
+    )
   }
 
   def getBucketACL(input: Input): Future[Either[ErrorMessage, GetBucketACLOuput]] = {
@@ -95,8 +99,10 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       zone = this.zone
     )
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketACLOuput](futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketACLOuput](
+      futureResponse,
+      operation.statusCodes
+    )
   }
 
   def getBucketCORS(input: Input): Future[Either[ErrorMessage, GetBucketCORSOutput]] = {
@@ -110,8 +116,10 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       zone = this.zone
     )
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketCORSOutput](futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketCORSOutput](
+      futureResponse,
+      operation.statusCodes
+    )
   }
 
   def putBucketCORS(input: Input): Future[Either[ErrorMessage, Int]] = {
@@ -145,22 +153,28 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
       zone = this.zone
     )
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketPolicyOutput](futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketPolicyOutput](
+      futureResponse,
+      operation.statusCodes
+    )
   }
 }
 
 object Bucket {
   def apply(config: QSConfig, bucketName: String, zone: String)(
-    implicit system: ActorSystem,
+    implicit
+    system: ActorSystem,
     mat: ActorMaterializer,
-    ec: ExecutionContextExecutor): Bucket =
+    ec: ExecutionContextExecutor
+  ): Bucket =
     new Bucket(config, bucketName, zone)
 
-  case class ListObjectsInput(prefix: Option[String] = None,
-                              delimiter: Option[String] = None,
-                              marker: Option[String] = None,
-                              limit: Option[Int] = None ) extends Input{
+  case class ListObjectsInput(
+    prefix: Option[String] = None,
+    delimiter: Option[String] = None,
+    marker: Option[String] = None,
+    limit: Option[Int] = None
+  ) extends Input {
     require(limit.isEmpty || limit.get <= 1000, "limit can't larger than 1000")
     @ParamAnnotation(location = QSConstants.ParamsLocationParam, name = "prefix")
     def getPrefix: Option[String] = this.prefix
@@ -175,12 +189,14 @@ object Bucket {
     def getLimit: Option[Int] = this.limit
   }
   case class ListObjectsOutput(name: String, keys: List[ObjectModel], prefix: String,
-                               owner: OwnerModel, delimiter: String, limit: Int,
-                               marker: String, next_marker: String, common_prefixes: List[String]) extends Output
+    owner: OwnerModel, delimiter: String, limit: Int,
+    marker: String, next_marker: String, common_prefixes: List[String]) extends Output
 
-  case class DeleteMultipleObjectsInput(contentMD5: String,
-                                        quiet: Boolean = false,
-                                        objects: List[ObjectKeyModel]) extends Input {
+  case class DeleteMultipleObjectsInput(
+    contentMD5: String,
+    quiet: Boolean = false,
+    objects: List[ObjectKeyModel]
+  ) extends Input {
     require(contentMD5 != null && contentMD5 != "", "ContentMD5 can't be empty")
     require(objects != null && objects.nonEmpty, "Objects to be deleted can't be empty")
 
@@ -197,9 +213,10 @@ object Bucket {
       DeleteMultipleObjectsInput(md5, this.getQuiet, this.getObjects)
     }
   }
-  case class DeleteMultipleObjectsOutput(deleted: List[ObjectKeyModel] = List.empty,
-                                         errors: List[DeleteErrorModel] =
-                                         List.empty) extends Output
+  case class DeleteMultipleObjectsOutput(
+    deleted: List[ObjectKeyModel] = List.empty,
+    errors: List[DeleteErrorModel] = List.empty
+  ) extends Output
 
   def getContentMD5OfDeleteMultipleObjectsInput(input: DeleteMultipleObjectsInput): String = {
     val elements = QSRequestUtil.getRequestParams(input, QSConstants.ParamsLocationElement)

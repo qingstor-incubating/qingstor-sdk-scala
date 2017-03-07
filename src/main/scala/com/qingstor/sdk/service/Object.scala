@@ -15,7 +15,7 @@ import com.qingstor.sdk.service.Object._
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import java.io.File
 
-import CustomJsonProtocol._
+import QSJsonProtocol._
 import com.qingstor.sdk.service.Types.PartModel
 
 class Object(private val _config: QSConfig,

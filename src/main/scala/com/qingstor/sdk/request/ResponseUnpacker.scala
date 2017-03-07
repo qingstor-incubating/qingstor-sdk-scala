@@ -6,21 +6,19 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.stream.ActorMaterializer
 import com.qingstor.sdk.constant.QSConstants
-import com.qingstor.sdk.model.QSModels.{ErrorMessage, Operation, Output, QSHttpResponse}
-import com.qingstor.sdk.util.{ClassUtil, QSRequestUtil}
+import com.qingstor.sdk.model.QSModels._
+import com.qingstor.sdk.util.QSRequestUtil
 import spray.json.{JsValue, JsonFormat}
-import com.qingstor.sdk.service.CustomJsonProtocol._
+import com.qingstor.sdk.service.QSJsonProtocol._
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.reflect.ClassTag
 
-class ResponseUnpacker(private val _response: HttpResponse,
-                       private val _operation: Operation) {
+class ResponseUnpacker(_response: HttpResponse, _operation: Operation) {
   private val response = _response
   private val operation = _operation
 
   def unpackResponse(): QSHttpResponse = {
-    val clazz = ClassUtil.ClassBuilder[QSHttpResponse]
+    val clazz = new QSHttpResponse()
     setupStatusCode(clazz)
     setupHeaders(clazz)
     setupEntity(clazz)

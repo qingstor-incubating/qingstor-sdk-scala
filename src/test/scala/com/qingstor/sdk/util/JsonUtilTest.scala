@@ -1,12 +1,11 @@
 package com.qingstor.sdk.util
 
-import com.qingstor.sdk.service.Bucket.DeleteMultipleObjectsOutput
 import org.scalatest.FunSuite
 import spray.json._
-import com.qingstor.sdk.service.CustomJsonProtocol._
+import spray.json.DefaultJsonProtocol._
 
 class JsonUtilTest extends FunSuite{
-  test("Json decode to any class test") {
+  test("Json decode to case class test") {
     val rawJSON: String =
       """
         |{
@@ -18,11 +17,8 @@ class JsonUtilTest extends FunSuite{
       """.stripMargin
     case class Obj(a: String)
     case class RawJson(foo: String, baz: Int, list: List[Int], obj: Obj)
-    object TestJsonProtocol extends DefaultJsonProtocol {
-      implicit val objFormat = jsonFormat(Obj, "a")
-      implicit val testFormat = jsonFormat(RawJson, "foo", "baz", "list", "obj")
-    }
-    import TestJsonProtocol._
+    implicit val objFormat = jsonFormat(Obj, "a")
+    implicit val testFormat = jsonFormat(RawJson, "foo", "baz", "list", "obj")
 
     val json = JsonUtil.decode[RawJson](rawJSON)
     assert(json.foo == "bar")

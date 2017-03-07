@@ -9,7 +9,6 @@ import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.util.QSLogger
 
 import scala.concurrent.Future
-import scala.reflect.ClassTag
 
 class QSRequest(_operation: Operation, _input: Input) {
   private val operation = _operation
