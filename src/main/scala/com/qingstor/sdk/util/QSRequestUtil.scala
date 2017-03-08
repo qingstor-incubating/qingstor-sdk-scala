@@ -13,7 +13,7 @@ object QSRequestUtil {
   }
 
   // get all the needed params of the specified location from Output
-  // return map contains the of this param and its get method name
+  // return map contains the name of this param and its get method name
   def getResponseParams(any: Any, location: String): Map[String, String] = {
     val jMap = QSParamUtil.getResponseParams(any, location)
     mapAsScalaMap[String, String](jMap).toMap
