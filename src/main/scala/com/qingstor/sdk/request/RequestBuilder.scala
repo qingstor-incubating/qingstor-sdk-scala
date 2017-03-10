@@ -122,7 +122,8 @@ class RequestBuilder(op: Operation, in: Input) {
     var listHeaders = List[HttpHeader]()
     if (parsedHeaders.nonEmpty) {
       for ((key, value) <- parsedHeaders) {
-        listHeaders = RawHeader(key, value) :: listHeaders
+        if (!key.equals("Content-Length"))
+          listHeaders = RawHeader(key, value) :: listHeaders
       }
     }
     listHeaders
