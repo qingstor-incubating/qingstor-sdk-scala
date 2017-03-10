@@ -9,7 +9,7 @@ import com.qingstor.sdk.request.{QSRequest, ResponseUnpacker}
 import com.qingstor.sdk.service.Types._
 import com.qingstor.sdk.annotation.ParamAnnotation
 import com.qingstor.sdk.constant.QSConstants
-import com.qingstor.sdk.service.Types.QSJsonProtocol._
+import com.qingstor.sdk.service.QSJsonProtocol._
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import scala.concurrent.{ExecutionContextExecutor, Future}
@@ -33,6 +33,12 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
 }
 
 object Bucket {
+    def apply(config: QSConfig, bucketName: String, zone: String)(
+        implicit system: ActorSystem,
+        mat: ActorMaterializer,
+        ec: ExecutionContextExecutor
+    ): Bucket = new Bucket(config, bucketName, zone)
+
     {{- range $_, $operation := $subService.Operations}}
         {{template "RenderProperty" passThrough $operation}}
     {{- end}}
@@ -57,6 +63,18 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
 }
 
 object Object {
+    def apply(config: QSConfig, bucketName: String, zone: String)(
+        implicit system: ActorSystem,
+        mat: ActorMaterializer,
+        ec: ExecutionContextExecutor
+    ): Object = new Object(config, bucketName, zone)
+
+    def apply(bucket: Bucket)(
+        implicit system: ActorSystem,
+        mat: ActorMaterializer,
+        ec: ExecutionContextExecutor
+    ): Object = new Object(bucket.config, bucket.bucketName, bucket.zone)
+
     {{range $_, $operation := $subService.Operations}}
         {{template "RenderProperty" passThrough $operation}}
     {{end}}

@@ -12,11 +12,11 @@ import com.qingstor.sdk.service.Types.BucketModel
 import com.qingstor.sdk.annotation.ParamAnnotation
 import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.service.QingStor._
-import com.qingstor.sdk.service.Types.QSJsonProtocol._
+import com.qingstor.sdk.service.QSJsonProtocol._
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 {{if $service.Description}}// {{$service.Name | camelCase}}Service: {{$service.Description}}{{end}}
-class QingStor(private val _config: QSConfig)(
+class QingStor(_config: QSConfig)(
 	implicit val system: ActorSystem,
 	val mat: ActorMaterializer,
 	val ec: ExecutionContextExecutor) {
