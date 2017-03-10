@@ -59,16 +59,16 @@ class RequestBuilder(op: Operation, in: Input) {
 
   private def parseUri: Uri = {
     val config = operation.config
-    val bucket =
-      if (operation.bucketName.nonEmpty) "/" + operation.bucketName
-      else operation.bucketName
     val zone = operation.zone
-    val path = new URI(operation.requestUri).toASCIIString
+    val requestURI = operation.requestUri.replace(QSConstants.BucketNamePlaceHolder, operation.bucketName)
+                                          .replace(QSConstants.ObjectKeyPlaceHolder, operation.objectKey)
+    val path = new URI(requestURI).toASCIIString
     val queries = new URI(
       if (parsedParams.isEmpty) ""
       else if (path.contains("?")) "&" + Uri.Query(parsedParams)
-      else "?" + Uri.Query(parsedParams)).toASCIIString
-    Uri("%s://%s:%d%s%s".format(config.protocol, parseHost(config, zone), config.port, bucket + path, queries))
+      else "?" + Uri.Query(parsedParams)
+    ).toASCIIString
+    Uri("%s://%s:%d%s%s".format(config.protocol, parseHost(config, zone), config.port, path, queries))
   }
 
   private def parseHeaders(): Map[String, String] = {
