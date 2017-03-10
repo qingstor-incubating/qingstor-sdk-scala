@@ -1,12 +1,12 @@
 package com.qingstor.sdk.request
 
-import akka.http.scaladsl.model.{HttpEntity, HttpMethods, Uri}
+import akka.http.scaladsl.model.{HttpEntity, HttpMethods}
 import com.qingstor.sdk.annotation.ParamAnnotation
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.model.QSModels.{Input, Operation}
 import org.scalatest.FunSuite
-import java.io.{File, FileInputStream, InputStream}
+import java.io.File
 
 class RequestBuilderTest extends FunSuite {
   case class TestInput(f: String = null, b: Int, d: String) extends Input {
@@ -37,6 +37,22 @@ class RequestBuilderTest extends FunSuite {
     assert(requestBuilder.parsedBody == HttpEntity.Empty)
     assert(request.method.equals(HttpMethods.GET))
     assert(request.uri.toString == "https://qingstor.com:443/abc/xyz?bar=100")
+  }
+
+  test("Test RequestBuilder with Chinese") {
+    val testInput = TestInput(b = 100, d = "Tue, 21 Feb 2017 09:32:34 GMT")
+    val config = QSConfig()
+    val operation = Operation(
+      config = config,
+      apiName = "Test API",
+      method = "GET",
+      requestUri = "/<bucket-name>/中文",
+      statusCodes = Array.emptyIntArray,
+      bucketName = "mybucket"
+    )
+    val requestBuilder = RequestBuilder(operation, testInput)
+    val request = requestBuilder.build
+    assert(request.uri.toString() == "https://qingstor.com:443/mybucket/%E4%B8%AD%E6%96%87?bar=100")
   }
 
   case class TestInputWithBody(date: String, body: File) extends Input {
