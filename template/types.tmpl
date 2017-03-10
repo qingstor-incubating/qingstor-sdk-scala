@@ -1,0 +1,133 @@
+{{- $service := .Data.Service -}}
+{{- $subServices := .Data.SubServices -}}
+{{- $customizedTypes := .Data.CustomizedTypes -}}
+package com.qingstor.sdk.service
+
+import java.time.ZonedDateTime
+
+import com.qingstor.sdk.constant.QSConstants
+
+object Types {
+    {{- range $_, $customizedType := $customizedTypes}}
+        case class {{$customizedType.ID | camelCase}}Model (
+            {{template "PropertyParameters" passThrough $customizedType 1}}
+        ) {
+            {{template "PropertyValidation" passThrough $customizedType}}
+        }
+    {{- end}}
+
+    object QSJsonProtocol extends DefaultJsonProtocol {
+        import com.qingstor.sdk.model.QSModels.ErrorMessage
+        import com.qingstor.sdk.service.Bucket._
+        import com.qingstor.sdk.service.Object._
+        import com.qingstor.sdk.service.QingStor._
+        import com.qingstor.sdk.service.Types._
+        import com.qingstor.sdk.util.JsonUtil
+        import spray.json._
+
+        object ZonedDateTimeJson extends JsonFormat[ZonedDateTime] {
+            override def write(obj: ZonedDateTime): JsValue = JsString(obj.ToString)
+
+            override def read(json: JsValue): ZonedDateTime =
+                ZonedDateTime.parse(json.asInstanceOf[JsString].value)
+        }
+        implicit val zonedDateTimeFormat = ZonedDateTimeJson
+        {{- range $_, $customizedType := $customizedTypes}}
+            implicit val {{$customizedType.ID | camelCase | lowerFirst}}ModelFormat: RootJsonFormat[{{$customizedType.ID | camelCase}}Model] =
+                jsonFormat{{- len $customizedType.Properties}}({{$customizedType.ID | camelCase}}Model)
+        {{- end}}
+
+        object ErrorMessageFormat extends RootJsonFormat[ErrorMessage] {
+            override def read(json: JsValue): ErrorMessage = {
+                val obj = json.asJsObject.fields
+                val statusCode = obj.get("status_code").flatMap {
+                    case num: JsNumber => Some(num.value.intValue())
+                    case _ => None
+                }
+                val requestID = obj.getOrElse("request_id", "").asInstanceOf[JsString].value
+                val code = obj.get("code").flatMap {
+                    case str: JsString => Some(str.value)
+                    case _ => None
+                }
+                val message = obj.get("message").flatMap {
+                    case str: JsString => Some(str.value)
+                    case _ => None
+                }
+                val url = obj.get("url").flatMap {
+                    case str: JsString => Some(str.value)
+                    case _ => None
+                }
+                ErrorMessage(
+                    requestID = requestID,
+                    statusCode = statusCode,
+                    code = code,
+                    message = message,
+                    url = url
+                )
+            }
+
+            override def write(obj: ErrorMessage): JsValue = {
+                val map = Map(
+                    "status_code" -> obj.statusCode.toJson,
+                    "request_id" -> obj.requestID.toJson,
+                    "code" -> obj.code.toJson,
+                    "message" -> obj.message.toJson,
+                    "url" -> obj.url.toJson
+                ).filter(t => !t._2.equals(JsNull))
+                JsObject(map)
+             }
+        }
+        implicit val errorMessageFormat = ErrorMessageFormat
+        {{- range $operation := $service.Operations}}
+            {{- $response := $operation.Response -}}
+            {{- $hasHeaders := gt (len $response.Headers.Properties) 0 -}}
+            {{- $hasElements := gt (len $response.Elements.Properties) 0 -}}
+            {{- $hasBodyString := eq $response.Body.Type "string" -}}
+            {{- $hasBodyBinary := eq $response.Body.Type "binary" -}}
+            {{- if and $hasElements (not (or $hasHeaders $hasBodyString $hasBodyBinary))}}
+                implicit val {{$operation.ID | camelCase | lowerFirst}}OutputFormat: RootJsonFormat[{{$operation.ID | camelCase -}}Output] =
+                    jsonFormat{{- len $response.Elements.Properties}}({{$operation.ID | camelCase -}}Output)
+            {{- end}}
+        {{- end}}
+        {{- range $subService := $subServices}}
+            {{- range $operation := $subService.Operations}}
+                {{- $response := $operation.Response -}}
+                {{- $hasHeaders := gt (len $response.Headers.Properties) 0 -}}
+                {{- $hasElements := gt (len $response.Elements.Properties) 0 -}}
+                {{- $hasBodyString := eq $response.Body.Type "string" -}}
+                {{- $hasBodyBinary := eq $response.Body.Type "binary" -}}
+                {{- if and $hasElements (not (or $hasHeaders $hasBodyString $hasBodyBinary))}}
+                    implicit val {{$operation.ID | camelCase | lowerFirst}}OutputFormat: RootJsonFormat[{{$operation.ID | camelCase -}}Output] =
+                        jsonFormat{{- len $response.Elements.Properties}}({{$operation.ID | camelCase -}}Output)
+                {{- end}}
+            {{- end}}
+        {{- end}}
+
+        object AnyJsonFormat extends JsonFormat[Any] {
+            override def write(obj: Any): JsValue = obj match {
+                case int: Int => JsNumber(int)
+                case long: Long => JsNumber(long)
+                case str: String => JsString(str)
+                case bool: Boolean => JsBoolean(bool)
+                case map: Map[_, _] if map.keySet.forall(_.isInstanceOf[String]) =>
+                    JsonUtil.encode(map.asInstanceOf[Map[String, Any]])
+                case list: List[Any] => JsonUtil.encode(list)
+                {{- range $_, $customizedType := $customizedTypes}}
+                    case m: {{$customizedType.ID | camelCase}}Model => m.toJson
+                {{- end}}
+                case _ => serializationError("Can't serialize such type")
+            }
+
+            override def read(json: JsValue): Any = json match {
+                case JsNumber(num) => num.longValue()
+                case JsString(str) => str
+                case JsBoolean(bool) => bool
+                case JsNull => null
+                case array: JsArray => JsonUtil.decode(array)
+                case obj: JsObject => JsonUtil.decode(obj)
+                case _ => deserializationError("Can't deserialize such type")
+            }
+        }
+        implicit val anyJsonFormat = AnyJsonFormat
+    }
+}

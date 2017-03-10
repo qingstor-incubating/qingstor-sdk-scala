@@ -78,4 +78,3 @@ fabric.properties
 /src/test/resources/application.conf
 /src/test/scala/com/qingstor/sdk/service/
 /dest/
-/template/test.tmpl
