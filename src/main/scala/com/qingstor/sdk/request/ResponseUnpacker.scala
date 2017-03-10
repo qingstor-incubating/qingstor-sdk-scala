@@ -9,7 +9,7 @@ import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.util.QSRequestUtil
 import spray.json.{JsValue, JsonFormat}
-import com.qingstor.sdk.service.QSJsonProtocol._
+import com.qingstor.sdk.service.Types.QSJsonProtocol._
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 

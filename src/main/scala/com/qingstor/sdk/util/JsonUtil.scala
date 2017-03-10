@@ -1,7 +1,7 @@
 package com.qingstor.sdk.util
 
 import spray.json._
-import com.qingstor.sdk.service.QSJsonProtocol._
+import com.qingstor.sdk.service.Types.QSJsonProtocol._
 
 object JsonUtil {
 
