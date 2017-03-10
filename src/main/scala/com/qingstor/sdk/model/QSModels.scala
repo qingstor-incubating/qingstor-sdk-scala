@@ -107,7 +107,7 @@ object QSModels {
   case class Operation(
       config: QSConfig, apiName: String, method: String,
       requestUri: String, statusCodes: Array[Int], zone: String = "",
-      bucketName: String = ""
+      bucketName: String = "", objectKey: String = ""
   ) {
     require(config != null && apiName != null && method != null && requestUri != null && statusCodes != null)
     require(requestUri.startsWith("/"),
