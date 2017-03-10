@@ -18,4 +18,7 @@ object QSConstants {
   val GranteeTypes = List("user", "group")
   val CORSHttpMethods = List("GET", "PUT", "POST", "DELETE", "HEAD")
   val StatementEffects = List("allow", "deny")
+
+  val BucketNamePlaceHolder: String = "<bucket-name>"
+  val ObjectKeyPlaceHolder: String = "<object-key>"
 }
