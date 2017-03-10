@@ -1,5 +1,5 @@
-{{$service := .Data.Service}}
-{{$subServices := .Data.SubServices}}
+{{- $service := .Data.Service -}}
+{{- $subServices := .Data.SubServices -}}
 
 package com.qingstor.sdk.service
 
@@ -12,8 +12,7 @@ import com.qingstor.sdk.service.Types.BucketModel
 import com.qingstor.sdk.annotation.ParamAnnotation
 import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.service.QingStor._
-import CustomJsonProtocol._
-
+import com.qingstor.sdk.service.Types.QSJsonProtocol._
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 {{if $service.Description}}// {{$service.Name | camelCase}}Service: {{$service.Description}}{{end}}
