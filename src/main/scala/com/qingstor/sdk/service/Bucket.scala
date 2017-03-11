@@ -39,7 +39,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -47,7 +46,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // DeleteCORS does Delete CORS information of the bucket.
@@ -66,7 +64,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -74,7 +71,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // DeleteExternalMirror does Delete external mirror of the bucket.
@@ -93,7 +89,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -101,7 +96,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // DeletePolicy does Delete policy information of the bucket.
@@ -120,7 +114,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -128,7 +121,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // DeleteMultipleObjects does Delete multiple objects from the bucket.
@@ -147,11 +139,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     ResponseUnpacker.unpackToOutputOrErrorMessage[DeleteMultipleObjectsOutput](
       futureResponse,
       operation.statusCodes)
-
   }
 
   // GetACL does Get ACL information of the bucket.
@@ -170,11 +160,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketACLOutput](
       futureResponse,
       operation.statusCodes)
-
   }
 
   // GetCORS does Get CORS information of the bucket.
@@ -193,11 +181,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketCORSOutput](
       futureResponse,
       operation.statusCodes)
-
   }
 
   // GetExternalMirror does Get external mirror of the bucket.
@@ -216,12 +202,10 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     ResponseUnpacker
       .unpackToOutputOrErrorMessage[GetBucketExternalMirrorOutput](
         futureResponse,
         operation.statusCodes)
-
   }
 
   // GetPolicy does Get policy information of the bucket.
@@ -240,11 +224,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketPolicyOutput](
       futureResponse,
       operation.statusCodes)
-
   }
 
   // GetStatistics does Get statistics information of the bucket.
@@ -263,11 +245,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketStatisticsOutput](
       futureResponse,
       operation.statusCodes)
-
   }
 
   // Head does Check whether the bucket exists and available.
@@ -285,7 +265,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -293,7 +272,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // ListObjects does Retrieve the object list in a bucket.
@@ -312,11 +290,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     ResponseUnpacker.unpackToOutputOrErrorMessage[ListObjectsOutput](
       futureResponse,
       operation.statusCodes)
-
   }
 
   // Put does Create a new bucket.
@@ -334,7 +310,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -342,7 +317,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // PutACL does Set ACL information of the bucket.
@@ -361,7 +335,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -369,7 +342,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // PutCORS does Set CORS information of the bucket.
@@ -388,7 +360,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -396,7 +367,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // PutExternalMirror does Set external mirror of the bucket.
@@ -415,7 +385,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -423,7 +392,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // PutPolicy does Set policy information of the bucket.
@@ -442,7 +410,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -450,7 +417,6 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
 }

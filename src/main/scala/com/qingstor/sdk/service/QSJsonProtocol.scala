@@ -139,6 +139,9 @@ object QSJsonProtocol extends DefaultJsonProtocol {
     jsonFormat9(ListObjectsOutput)
   implicit val listMultipartOutputFormat: RootJsonFormat[ListMultipartOutput] =
     jsonFormat2(ListMultipartOutput)
+  implicit val initiateMultipartUploadOutputFormat
+    : RootJsonFormat[InitiateMultipartUploadOutput] =
+    jsonFormat4(InitiateMultipartUploadOutput)
 
   object AnyJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = obj match {

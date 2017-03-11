@@ -8,7 +8,7 @@ import java.time.ZonedDateTime
 object Types {
     {{- range $_, $customizedType := $customizedTypes}}
         case class {{$customizedType.ID | camelCase}}Model (
-            {{template "PropertyParameters" passThrough $customizedType 1 "output"}}
+            {{template "PropertyParameters" passThrough $customizedType 1 "output" 0}}
         ) {
             {{template "PropertyValidation" passThrough $customizedType "output"}}
         }

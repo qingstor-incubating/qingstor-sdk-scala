@@ -42,7 +42,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -50,7 +49,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // CompleteMultipartUpload does Complete multipart upload.
@@ -71,7 +69,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -79,7 +76,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // DeleteObject does Delete the object.
@@ -100,7 +96,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -108,7 +103,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // GetObject does Retrieve the object.
@@ -132,7 +126,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
@@ -151,7 +144,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // HeadObject does Check whether the object exists and available.
@@ -171,7 +163,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
@@ -193,7 +184,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // InitiateMultipartUpload does Initial multipart upload on the object.
@@ -214,23 +204,20 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
-        val bytesFuture = Unmarshal(response.getEntity).to[Array[Byte]]
-        bytesFuture.map { bytes =>
-          Right(
-            InitiateMultipartUploadOutput(
-              `X-QS-Encryption-Customer-Algorithm` =
-                Option(response.getXQSEncryptionCustomerAlgorithm)
-            ))
-        }
+        ResponseUnpacker
+          .unpackToOutput[InitiateMultipartUploadOutput](response)
+          .map { out =>
+            out.`X-QS-Encryption-Customer-Algorithm` =
+              Option(response.getXQSEncryptionCustomerAlgorithm)
+            Right(out)
+          }
       } else {
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // ListMultipart does List object parts.
@@ -250,11 +237,9 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     ResponseUnpacker.unpackToOutputOrErrorMessage[ListMultipartOutput](
       futureResponse,
       operation.statusCodes)
-
   }
 
   // OptionsObject does Check whether the object accepts a origin with method and header.
@@ -274,7 +259,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
@@ -298,7 +282,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // PutObject does Upload the object.
@@ -318,7 +301,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -326,7 +308,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
   // UploadMultipart does Upload object multipart.
@@ -347,7 +328,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes))
@@ -355,7 +335,6 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
         ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
       }
     }
-
   }
 
 }
@@ -597,7 +576,7 @@ object Object {
   }
   case class InitiateMultipartUploadOutput(
       // Encryption algorithm of the object
-      `X-QS-Encryption-Customer-Algorithm`: Option[String] = None,
+      var `X-QS-Encryption-Customer-Algorithm`: Option[String] = None,
       // Bucket name
       `bucket`: Option[String] = None,
       // Object key

@@ -32,11 +32,9 @@ class QingStor(_config: QSConfig)(implicit val system: ActorSystem,
     )
 
     val futureResponse = QSRequest(operation, input).send()
-
     ResponseUnpacker.unpackToOutputOrErrorMessage[ListBucketsOutput](
       futureResponse,
       operation.statusCodes)
-
   }
 
 }
