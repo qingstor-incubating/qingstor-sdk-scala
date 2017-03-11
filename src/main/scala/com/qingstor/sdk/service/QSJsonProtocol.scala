@@ -143,15 +143,57 @@ object QSJsonProtocol extends DefaultJsonProtocol {
     : RootJsonFormat[InitiateMultipartUploadOutput] =
     jsonFormat4(InitiateMultipartUploadOutput)
 
-  object AnyJsonFormat extends JsonFormat[Any] {
+  object OptionJsonFormat extends RootJsonFormat[Option[Any]] {
+    override def write(obj: Option[Any]): JsValue = obj match {
+      case None => JsNull
+      case Some(value) => value match {
+        case int: Int => JsNumber(int)
+        case long: Long => JsNumber(long)
+        case bool: Boolean => JsBoolean(bool)
+        case s: String => JsString(s)
+        case l: List[Any] => JsonUtil.encode(l)
+        case m: Map[_, Any] if m.keySet.forall(_.isInstanceOf[String]) =>
+          JsonUtil.encode(m.asInstanceOf[Map[String, Any]])
+        case m: ACLModel => m.toJson
+        case m: BucketModel => m.toJson
+        case m: ConditionModel => m.toJson
+        case m: CORSRuleModel => m.toJson
+        case m: GranteeModel => m.toJson
+        case m: IPAddressModel => m.toJson
+        case m: IsNullModel => m.toJson
+        case m: KeyModel => m.toJson
+        case m: KeyDeleteErrorModel => m.toJson
+        case m: NotIPAddressModel => m.toJson
+        case m: ObjectPartModel => m.toJson
+        case m: OwnerModel => m.toJson
+        case m: StatementModel => m.toJson
+        case m: StringLikeModel => m.toJson
+        case m: StringNotLikeModel => m.toJson
+        case _ =>
+          println(value)
+          serializationError("Can't serialize such type: %s".format(value.getClass))
+      }
+    }
+
+    override def read(json: JsValue): Option[Any] = json match {
+      case JsNumber(num) => Some(num.intValue())
+      case JsString(str) => Some(str)
+      case JsBoolean(bool) => Some(bool)
+      case JsNull => None
+    }
+  }
+  implicit val optionJsonFormat = OptionJsonFormat
+
+  object AnyJsonFormat extends JsonFormat[Any]{
     override def write(obj: Any): JsValue = obj match {
       case int: Int => JsNumber(int)
       case long: Long => JsNumber(long)
-      case str: String => JsString(str)
       case bool: Boolean => JsBoolean(bool)
-      case map: Map[_, _] if map.keySet.forall(_.isInstanceOf[String]) =>
-        JsonUtil.encode(map.asInstanceOf[Map[String, Any]])
-      case list: List[Any] => JsonUtil.encode(list)
+      case s: String => JsString(s)
+      case l: List[Any] => JsonUtil.encode(l)
+      case m: Map[_, Any] if m.keySet.forall(_.isInstanceOf[String]) =>
+        JsonUtil.encode(m.asInstanceOf[Map[String, Any]])
+      case opt: Option[Any] => opt.toJson
       case m: ACLModel => m.toJson
       case m: BucketModel => m.toJson
       case m: ConditionModel => m.toJson
@@ -167,18 +209,17 @@ object QSJsonProtocol extends DefaultJsonProtocol {
       case m: StatementModel => m.toJson
       case m: StringLikeModel => m.toJson
       case m: StringNotLikeModel => m.toJson
-      case _ => serializationError("Can't serialize such type")
+      case _ => serializationError("Can't serialize such type: %s".format(obj.getClass))
     }
 
     override def read(json: JsValue): Any = json match {
+      case JsString(s) => s
       case JsNumber(num) => num.longValue()
-      case JsString(str) => str
       case JsBoolean(bool) => bool
-      case JsNull => null
       case array: JsArray => JsonUtil.decode(array)
       case obj: JsObject => JsonUtil.decode(obj)
-      case _ => deserializationError("Can't deserialize such type")
+      case _ => deserializationError("Can't deserialize such type: %s".format(json.getClass))
     }
   }
-  implicit val anyJsonFormat = AnyJsonFormat
+  implicit val anyRefJsonFormat = AnyJsonFormat
 }
