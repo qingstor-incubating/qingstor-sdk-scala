@@ -245,13 +245,17 @@
                                     {{if ne $property.ID $firstID}},{{end}}
                                     {{if $property.IsRequired}}
                                         {{if eq $property.Name "Content-Length"}}
-                                            `{{$property.Name}}` = response.get{{- $property.ID | camelCase -}}.toInt
+                                            `{{$property.Name}}` = response.getEntity.contentLengthOption.getOrElse(0)
+                                        {{else if eq $property.Name "Content-Type"}}
+                                            `{{$property.Name}}` = response.getEntity.contentType.toString()
                                         {{else}}
                                             `{{$property.Name}}` = response.get{{- $property.ID | camelCase -}}
                                         {{end}}
                                     {{else}}
                                         {{if eq $property.Name "Content-Length"}}
-                                            `{{$property.Name}}` = Option(response.get{{- $property.ID | camelCase -}}.toInt)
+                                            `{{$property.Name}}` = response.getEntity.contentLengthOption.map(_.toInt)
+                                        {{else if eq $property.Name "Content-Type"}}
+                                            `{{$property.Name}}` = Option(response.getEntity.contentType.toString())
                                         {{else}}
                                             `{{$property.Name}}` = Option(response.get{{- $property.ID | camelCase -}})
                                         {{end}}

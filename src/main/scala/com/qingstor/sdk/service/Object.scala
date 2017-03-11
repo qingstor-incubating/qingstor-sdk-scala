@@ -179,8 +179,10 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
         bytesFuture.map { bytes =>
           Right(
             HeadObjectOutput(
-              `Content-Length` = Option(response.getContentLength.toInt),
-              `Content-Type` = Option(response.getContentType),
+              `Content-Length` =
+                response.getEntity.contentLengthOption.map(_.toInt),
+              `Content-Type` =
+                Option(response.getEntity.contentType.toString()),
               `ETag` = Option(response.getETag),
               `Last-Modified` = Option(response.getLastModified),
               `X-QS-Encryption-Customer-Algorithm` =
