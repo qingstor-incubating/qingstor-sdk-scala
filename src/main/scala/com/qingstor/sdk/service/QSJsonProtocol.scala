@@ -2,7 +2,7 @@ package com.qingstor.sdk.service
 
 import java.time.ZonedDateTime
 
-import com.qingstor.sdk.model.QSModels.ErrorMessage
+import com.qingstor.sdk.model.QSModels.{ErrorMessage, Output}
 import com.qingstor.sdk.service.Bucket._
 import com.qingstor.sdk.service.Object._
 import com.qingstor.sdk.service.QingStor._
@@ -117,6 +117,22 @@ object QSJsonProtocol extends DefaultJsonProtocol {
     }
   }
   implicit val errorMessageFormat = ErrorMessageFormat
+  object OutputFormat extends RootJsonFormat[Output] {
+    override def read(json: JsValue): Output = {
+      val obj = json.asJsObject.fields
+      val statusCode = obj("statusCode").asInstanceOf[JsNumber].value.intValue()
+      val requestID = obj("requestID").asInstanceOf[JsString].value
+      new Output(Option(statusCode), Option(requestID))
+    }
+
+    override def write(obj: Output): JsValue = {
+      JsObject(
+        ("statusCode", obj.statusCode.toJson),
+        ("requestID", obj.requestID.toJson)
+      )
+    }
+  }
+  implicit val outputFormat = OutputFormat
   implicit val listBucketsOutputFormat: RootJsonFormat[ListBucketsOutput] =
     jsonFormat2(ListBucketsOutput)
   implicit val deleteMultipleObjectsOutputFormat

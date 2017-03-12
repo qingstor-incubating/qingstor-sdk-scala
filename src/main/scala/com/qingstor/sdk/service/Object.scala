@@ -1,6 +1,5 @@
 package com.qingstor.sdk.service
 
-import java.time.ZonedDateTime
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.request.{QSRequest, ResponseUnpacker}
@@ -14,6 +13,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import com.qingstor.sdk.service.Object._
 import java.io.File
+import com.qingstor.sdk.exception.QingStorException
 
 class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     implicit val system: ActorSystem,
@@ -28,7 +28,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/abort_multipart_upload.html
   def abortMultipartUpload(
       objectKey: String,
-      input: AbortMultipartUploadInput): Future[Either[ErrorMessage, Int]] = {
+      input: AbortMultipartUploadInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "Abort Multipart Upload",
@@ -42,20 +42,14 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // CompleteMultipartUpload does Complete multipart upload.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/complete_multipart_upload.html
-  def completeMultipartUpload(objectKey: String,
-                              input: CompleteMultipartUploadInput)
-    : Future[Either[ErrorMessage, Int]] = {
+  def completeMultipartUpload(
+      objectKey: String,
+      input: CompleteMultipartUploadInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "Complete multipart upload",
@@ -69,20 +63,13 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // DeleteObject does Delete the object.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/delete.html
-  def deleteObject(
-      objectKey: String,
-      input: DeleteObjectInput): Future[Either[ErrorMessage, Int]] = {
+  def deleteObject(objectKey: String,
+                   input: DeleteObjectInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Object",
@@ -96,20 +83,13 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // GetObject does Retrieve the object.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/get.html
-  def getObject(
-      objectKey: String,
-      input: GetObjectInput): Future[Either[ErrorMessage, GetObjectOutput]] = {
+  def getObject(objectKey: String,
+                input: GetObjectInput): Future[GetObjectOutput] = {
     val operation = Operation(
       config = config,
       apiName = "GET Object",
@@ -129,27 +109,31 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
-        val bytesFuture = Unmarshal(response.getEntity).to[Array[Byte]]
-        bytesFuture.map { bytes =>
-          Right(
-            GetObjectOutput(
-              `Content-Range` = Option(response.getContentRange),
-              `ETag` = Option(response.getETag),
-              `X-QS-Encryption-Customer-Algorithm` =
-                Option(response.getXQSEncryptionCustomerAlgorithm),
-              body = bytes
-            ))
+        Unmarshal(response.getEntity).to[Array[Byte]].map { bytes =>
+          val out = GetObjectOutput(
+            body = bytes,
+            `Content-Range` = Option(response.getContentRange),
+            `ETag` = Option(response.getETag),
+            `X-QS-Encryption-Customer-Algorithm` =
+              Option(response.getXQSEncryptionCustomerAlgorithm)
+          )
+          out.statusCode = Option(response.getStatusCode)
+          out.requestID = Option(response.getRequestID)
+          out
         }
       } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
+        ResponseUnpacker.unpackToErrorMessage(response).map { error =>
+          error.statusCode = Option(response.getStatusCode)
+          throw QingStorException(error)
+        }
       }
     }
   }
 
   // HeadObject does Check whether the object exists and available.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/head.html
-  def headObject(objectKey: String, input: HeadObjectInput)
-    : Future[Either[ErrorMessage, HeadObjectOutput]] = {
+  def headObject(objectKey: String,
+                 input: HeadObjectInput): Future[HeadObjectOutput] = {
     val operation = Operation(
       config = config,
       apiName = "HEAD Object",
@@ -166,22 +150,23 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
-        val bytesFuture = Unmarshal(response.getEntity).to[Array[Byte]]
-        bytesFuture.map { bytes =>
-          Right(
-            HeadObjectOutput(
-              `Content-Length` =
-                response.getEntity.contentLengthOption.map(_.toInt),
-              `Content-Type` =
-                Option(response.getEntity.contentType.toString()),
-              `ETag` = Option(response.getETag),
-              `Last-Modified` = Option(response.getLastModified),
-              `X-QS-Encryption-Customer-Algorithm` =
-                Option(response.getXQSEncryptionCustomerAlgorithm)
-            ))
-        }
+        val out = HeadObjectOutput(
+          `Content-Length` =
+            response.getEntity.contentLengthOption.map(_.toInt),
+          `Content-Type` = Option(response.getEntity.contentType.toString()),
+          `ETag` = Option(response.getETag),
+          `Last-Modified` = Option(response.getLastModified),
+          `X-QS-Encryption-Customer-Algorithm` =
+            Option(response.getXQSEncryptionCustomerAlgorithm)
+        )
+        out.statusCode = Option(response.getStatusCode)
+        out.requestID = Option(response.getRequestID)
+        Future(out)
       } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
+        ResponseUnpacker.unpackToErrorMessage(response).map { error =>
+          error.statusCode = Option(response.getStatusCode)
+          throw QingStorException(error)
+        }
       }
     }
   }
@@ -190,7 +175,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/initiate_multipart_upload.html
   def initiateMultipartUpload(objectKey: String,
                               input: InitiateMultipartUploadInput)
-    : Future[Either[ErrorMessage, InitiateMultipartUploadOutput]] = {
+    : Future[InitiateMultipartUploadOutput] = {
     val operation = Operation(
       config = config,
       apiName = "Initiate Multipart Upload",
@@ -207,23 +192,29 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
+
         ResponseUnpacker
           .unpackToOutput[InitiateMultipartUploadOutput](response)
           .map { out =>
             out.`X-QS-Encryption-Customer-Algorithm` =
               Option(response.getXQSEncryptionCustomerAlgorithm)
-            Right(out)
+            out.statusCode = Option(response.getStatusCode)
+            out.requestID = Option(response.getRequestID)
+            out
           }
       } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
+        ResponseUnpacker.unpackToErrorMessage(response).map { error =>
+          error.statusCode = Option(response.getStatusCode)
+          throw QingStorException(error)
+        }
       }
     }
   }
 
   // ListMultipart does List object parts.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/list_multipart.html
-  def listMultipart(objectKey: String, input: ListMultipartInput)
-    : Future[Either[ErrorMessage, ListMultipartOutput]] = {
+  def listMultipart(objectKey: String,
+                    input: ListMultipartInput): Future[ListMultipartOutput] = {
     val operation = Operation(
       config = config,
       apiName = "List Multipart",
@@ -237,15 +228,14 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[ListMultipartOutput](
-      futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker
+      .unpack[ListMultipartOutput](futureResponse, operation.statusCodes)
   }
 
   // OptionsObject does Check whether the object accepts a origin with method and header.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/options.html
-  def optionsObject(objectKey: String, input: OptionsObjectInput)
-    : Future[Either[ErrorMessage, OptionsObjectOutput]] = {
+  def optionsObject(objectKey: String,
+                    input: OptionsObjectInput): Future[OptionsObjectOutput] = {
     val operation = Operation(
       config = config,
       apiName = "OPTIONS Object",
@@ -262,32 +252,32 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
-        val bytesFuture = Unmarshal(response.getEntity).to[Array[Byte]]
-        bytesFuture.map { bytes =>
-          Right(
-            OptionsObjectOutput(
-              `Access-Control-Allow-Headers` =
-                Option(response.getAccessControlAllowHeaders),
-              `Access-Control-Allow-Methods` =
-                Option(response.getAccessControlAllowMethods),
-              `Access-Control-Allow-Origin` =
-                Option(response.getAccessControlAllowOrigin),
-              `Access-Control-Expose-Headers` =
-                Option(response.getAccessControlExposeHeaders),
-              `Access-Control-Max-Age` =
-                Option(response.getAccessControlMaxAge)
-            ))
-        }
+        val out = OptionsObjectOutput(
+          `Access-Control-Allow-Headers` =
+            Option(response.getAccessControlAllowHeaders),
+          `Access-Control-Allow-Methods` =
+            Option(response.getAccessControlAllowMethods),
+          `Access-Control-Allow-Origin` =
+            Option(response.getAccessControlAllowOrigin),
+          `Access-Control-Expose-Headers` =
+            Option(response.getAccessControlExposeHeaders),
+          `Access-Control-Max-Age` = Option(response.getAccessControlMaxAge)
+        )
+        out.statusCode = Option(response.getStatusCode)
+        out.requestID = Option(response.getRequestID)
+        Future(out)
       } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
+        ResponseUnpacker.unpackToErrorMessage(response).map { error =>
+          error.statusCode = Option(response.getStatusCode)
+          throw QingStorException(error)
+        }
       }
     }
   }
 
   // PutObject does Upload the object.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/put.html
-  def putObject(objectKey: String,
-                input: PutObjectInput): Future[Either[ErrorMessage, Int]] = {
+  def putObject(objectKey: String, input: PutObjectInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Object",
@@ -301,20 +291,13 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // UploadMultipart does Upload object multipart.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/multipart/upload_multipart.html
-  def uploadMultipart(
-      objectKey: String,
-      input: UploadMultipartInput): Future[Either[ErrorMessage, Int]] = {
+  def uploadMultipart(objectKey: String,
+                      input: UploadMultipartInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "Upload Multipart",
@@ -328,13 +311,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
 }

@@ -2,7 +2,6 @@
 {{- $subService := index .Data.SubServices .CurrentSubServiceID -}}
 package com.qingstor.sdk.service
 
-import java.time.ZonedDateTime
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.request.{QSRequest, ResponseUnpacker}
@@ -15,7 +14,6 @@ import akka.stream.ActorMaterializer
 import scala.concurrent.{ExecutionContextExecutor, Future}
 {{- if eq $subService.Name "Bucket"}}
 import com.qingstor.sdk.service.Bucket._
-import com.qingstor.sdk.util.{JsonUtil, QSRequestUtil, SecurityUtil}
 
 class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     implicit
@@ -47,6 +45,7 @@ object Bucket {
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import com.qingstor.sdk.service.Object._
 import java.io.File
+import com.qingstor.sdk.exception.QingStorException
 
 class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     implicit val system: ActorSystem,

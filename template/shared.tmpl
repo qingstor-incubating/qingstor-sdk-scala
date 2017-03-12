@@ -196,22 +196,12 @@
     {{if $operation.DocumentationURL -}}
         // Documentation URL: {{$operation.DocumentationURL}}
     {{- end}}
-    {{- if $hasOutput}}
-        {{- if eq $service.Name "Object"}}
-            def {{$opID | lowerFirst}}(objectKey: String, input: {{$opID -}}Input)
-                : Future[Either[ErrorMessage, {{$opID -}}Output]] = {
-        {{- else}}
-            def {{$opID | lowerFirst}}(input: {{$opID -}}Input)
-                : Future[Either[ErrorMessage, {{$opID -}}Output]] = {
-        {{- end}}
+    {{- if eq $service.Name "Object"}}
+        def {{$opID | lowerFirst}}(objectKey: String, input: {{$opID -}}Input)
+            : Future[{{- if $hasOutput -}}{{- $opID -}}{{- end -}}Output] = {
     {{- else}}
-        {{- if eq $service.Name "Object"}}
-            def {{$opID | lowerFirst}}(objectKey: String, input: {{$opID -}}Input)
-                : Future[Either[ErrorMessage, Int]] = {
-        {{- else}}
-            def {{$opID | lowerFirst}}(input: {{$opID -}}Input)
-                : Future[Either[ErrorMessage, Int]] = {
-        {{- end}}
+        def {{$opID | lowerFirst}}(input: {{$opID -}}Input)
+            : Future[{{- if $hasOutput -}}{{- $opID -}}{{- end -}}Output] = {
     {{- end}}
         val operation = Operation (
         config = config,
@@ -239,39 +229,51 @@
         )
 
         val futureResponse = QSRequest(operation, input).send()
-        {{- if $hasOutput}}
-            {{- if and $hasResponseElements (not (or $hasResponseBodyString $hasResponseBodyBinary))}}
-                {{- if not $hasResponseHeaders}}
-                    ResponseUnpacker.unpackToOutputOrErrorMessage[{{$opID -}}Output](
-                        futureResponse, operation.statusCodes)
-                {{- else}}
-                    futureResponse.flatMap { response =>
-                        if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                            operation.statusCodes)) {
-                            ResponseUnpacker.unpackToOutput[InitiateMultipartUploadOutput](response).map { out =>
-                                {{- range $property := $response.Headers.Properties}}
-                                    {{- if $property.IsRequired}}
-                                        out.`{{$property.Name}}` = response.get{{$property.ID | camelCase}}
+        {{- if not (or $hasResponseBodyString $hasResponseBodyBinary)}}
+            {{- if and $hasResponseHeaders $hasResponseElements}}
+                futureResponse.flatMap { response =>
+                    if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
+                        operation.statusCodes)) {
+
+                        ResponseUnpacker.unpackToOutput[{{- $opID -}}Output](response).map { out =>
+                            {{- range $property := $response.Headers.Properties}}
+                                {{- if $property.IsRequired}}
+                                    {{- if eq $property.Name "Content-Length"}}
+                                        out.`{{$property.Name}}` = response.getEntity.contentLengthOption.getOrElse(0)
+                                    {{- else if eq $property.Name "Content-Type"}}
+                                        out.`{{$property.Name}}` = response.getEntity.contentType.toString()
                                     {{- else}}
-                                        out.`{{$property.Name}}` = Option(response.get{{$property.ID | camelCase}})
+                                        out.`{{$property.Name}}` = response.get{{- $property.ID | camelCase -}}
+                                    {{- end}}
+                                {{- else}}
+                                    {{- if eq $property.Name "Content-Length"}}
+                                        out.`{{$property.Name}}` = response.getEntity.contentLengthOption.map(_.toInt)
+                                    {{- else if eq $property.Name "Content-Type"}}
+                                        out.`{{$property.Name}}` = Option(response.getEntity.contentType.toString())
+                                    {{- else}}
+                                        out.`{{$property.Name}}` = Option(response.get{{- $property.ID | camelCase -}})
                                     {{- end}}
                                 {{- end}}
-                                Right(out)
-                            }
-                        } else {
-                            ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
+                            {{- end}}
+                            out.statusCode = Option(response.getStatusCode)
+                            out.requestID = Option(response.getRequestID)
+                            out
+                        }
+                    } else {
+                        ResponseUnpacker.unpackToErrorMessage(response).map { error =>
+                            error.statusCode = Option(response.getStatusCode)
+                            throw QingStorException(error)
                         }
                     }
-                {{- end}}
-            {{- else}}
+                }
+            {{- else if and $hasResponseHeaders (not $hasResponseElements)}}
                 futureResponse.flatMap { response =>
-                    if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, operation.statusCodes)) {
-                        val bytesFuture = Unmarshal(response.getEntity).to[Array[Byte]]
-                        bytesFuture.map { bytes =>
-                            Right({{$opID}}Output(
+                    if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
+                        operation.statusCodes)) {
+                            val out = {{$opID}}Output(
                                 {{- $firstID := $response.Headers | firstPropertyIDInCustomizedType -}}
                                 {{- range $property := $response.Headers.Properties}}
-                                    {{if ne $property.ID $firstID}},{{end}}
+                                    {{- if ne $firstID $property.ID}},{{- end}}
                                     {{- if $property.IsRequired}}
                                         {{- if eq $property.Name "Content-Length"}}
                                             `{{$property.Name}}` = response.getEntity.contentLengthOption.getOrElse(0)
@@ -290,26 +292,57 @@
                                         {{- end}}
                                     {{- end}}
                                 {{- end}}
-                                {{- if or $hasResponseBodyString $hasResponseBodyBinary}}
-                                    {{- if $hasResponseHeaders}}
-                                        ,body = bytes
-                                    {{- else}}
-                                        body = bytes
-                                    {{- end}}
-                                {{- end}}
-                            ))
+
+                            )
+                            out.statusCode = Option(response.getStatusCode)
+                            out.requestID = Option(response.getRequestID)
+                            Future(out)
+                        } else {
+                            ResponseUnpacker.unpackToErrorMessage(response).map { error =>
+                                error.statusCode = Option(response.getStatusCode)
+                                throw QingStorException(error)
                         }
-                    } else {
-                        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
                     }
                 }
+            {{- else}}
+                ResponseUnpacker.unpack[{{- if $hasOutput -}}{{- $opID -}}{{- end -}}Output](
+                    futureResponse, operation.statusCodes)
             {{- end}}
         {{- else}}
             futureResponse.flatMap { response =>
-                if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, operation.statusCodes))
-                    Future { Right(response.getStatusCode) }
-                else {
-                    ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
+                if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, operation.statusCodes)) {
+                    Unmarshal(response.getEntity).to[Array[Byte]].map { bytes =>
+                        val out = {{$opID}}Output(
+                            body = bytes
+                            {{- range $property := $response.Headers.Properties}},
+                                {{- if $property.IsRequired}}
+                                    {{- if eq $property.Name "Content-Length"}}
+                                        `{{$property.Name}}` = response.getEntity.contentLengthOption.getOrElse(0)
+                                    {{- else if eq $property.Name "Content-Type"}}
+                                        `{{$property.Name}}` = response.getEntity.contentType.toString()
+                                    {{- else}}
+                                        `{{$property.Name}}` = response.get{{- $property.ID | camelCase -}}
+                                    {{- end}}
+                                {{- else}}
+                                    {{- if eq $property.Name "Content-Length"}}
+                                        `{{$property.Name}}` = response.getEntity.contentLengthOption.map(_.toInt)
+                                    {{- else if eq $property.Name "Content-Type"}}
+                                        `{{$property.Name}}` = Option(response.getEntity.contentType.toString())
+                                    {{- else}}
+                                        `{{$property.Name}}` = Option(response.get{{- $property.ID | camelCase -}})
+                                    {{- end}}
+                                {{- end}}
+                            {{- end}}
+                        )
+                        out.statusCode = Option(response.getStatusCode)
+                        out.requestID = Option(response.getRequestID)
+                        out
+                    }
+                } else {
+                    ResponseUnpacker.unpackToErrorMessage(response).map { error =>
+                        error.statusCode = Option(response.getStatusCode)
+                        throw QingStorException(error)
+                    }
                 }
             }
         {{- end}}
@@ -335,89 +368,89 @@
     {{- $hasOutput := or $hasResponseHeaders $hasResponseElements $hasResponseBodyString $hasResponseBodyBinary -}}
 
     {{- if $hasInput}}
-    case class {{$operation.ID}}Input (
-        {{if $hasRequestParams -}}
-            {{template "PropertyParameters" passThrough $request.Params 1 "input" 0}}
-        {{end -}}
-        {{if $hasRequestHeaders -}}
-            {{template "PropertyParameters" passThrough $request.Headers (not $hasRequestParams) "input" 0}}
-        {{end -}}
-        {{if $hasRequestElements -}}
-            {{template "PropertyParameters" passThrough $request.Elements (not (or $hasRequestHeaders $hasRequestParams)) "input" 0}}
-        {{end -}}
-        {{if (or $hasRequestBodyString $hasRequestBodyBinary) -}}
-            {{if (or $hasRequestElements $hasRequestHeaders $hasRequestParams) -}}
-                {{if eq $request.Body.Type "string"}}
-                    ,body: String
-                {{else if eq $request.Body.Type "binary"}}
-                    ,body: File
-                {{end -}}
-                {{- if not $request.Body.IsRequired}}= null{{end}}
-                {{if $request.Body.Description -}}
-                    // {{$request.Body.Description}}
-                {{- end}}
-            {{else -}}
-                {{if eq $request.Body.Type "string"}}
-                    body: string
-                {{else if eq $request.Body.Type "binary"}}
-                    body: File
-                {{end}}
-                {{- if not $request.Body.IsRequired}}= null{{end}}
-                {{if $request.Body.Description -}}
-                    // {{$request.Body.Description}}
-                {{- end}}
+        case class {{$operation.ID}}Input (
+            {{if $hasRequestParams -}}
+                {{template "PropertyParameters" passThrough $request.Params 1 "input" 0}}
             {{end -}}
-        {{end -}}
-        ) extends Input {
-        {{template "PropertyValidation" passThrough $request.Params "input"}}
-        {{template "PropertyValidation" passThrough $request.Headers "input"}}
-        {{template "PropertyValidation" passThrough $request.Elements "input"}}
-        {{if $hasRequestParams -}}
-            {{template "PropertyMethods" passThrough $request.Params.Properties "QSConstants.ParamsLocationParam"}}
-        {{end}}
-        {{if $hasRequestHeaders -}}
-            {{template "PropertyMethods" passThrough $request.Headers.Properties "QSConstants.ParamsLocationHeader"}}
-        {{end}}
-        {{if $hasRequestElements -}}
-            {{template "PropertyMethods" passThrough $request.Elements.Properties "QSConstants.ParamsLocationElement"}}
-        {{end}}
-        {{if (or $hasRequestBodyString $hasRequestBodyBinary) -}}
-            @ParamAnnotation(location = QSConstants.ParamsLocationBody, name = "Body")
-            def getBody = this.body
-        {{end}}
-    }
+            {{if $hasRequestHeaders -}}
+                {{template "PropertyParameters" passThrough $request.Headers (not $hasRequestParams) "input" 0}}
+            {{end -}}
+            {{if $hasRequestElements -}}
+                {{template "PropertyParameters" passThrough $request.Elements (not (or $hasRequestHeaders $hasRequestParams)) "input" 0}}
+            {{end -}}
+            {{if (or $hasRequestBodyString $hasRequestBodyBinary) -}}
+                {{if (or $hasRequestElements $hasRequestHeaders $hasRequestParams) -}}
+                    {{if eq $request.Body.Type "string"}}
+                        ,body: String
+                    {{else if eq $request.Body.Type "binary"}}
+                        ,body: File
+                    {{end -}}
+                    {{- if not $request.Body.IsRequired}}= null{{end}}
+                    {{if $request.Body.Description -}}
+                        // {{$request.Body.Description}}
+                    {{- end}}
+                {{else -}}
+                    {{if eq $request.Body.Type "string"}}
+                        body: string
+                    {{else if eq $request.Body.Type "binary"}}
+                        body: File
+                    {{end}}
+                    {{- if not $request.Body.IsRequired}}= null{{end}}
+                    {{if $request.Body.Description -}}
+                        // {{$request.Body.Description}}
+                    {{- end}}
+                {{end -}}
+            {{end -}}
+            ) extends Input {
+            {{template "PropertyValidation" passThrough $request.Params "input"}}
+            {{template "PropertyValidation" passThrough $request.Headers "input"}}
+            {{template "PropertyValidation" passThrough $request.Elements "input"}}
+            {{if $hasRequestParams -}}
+                {{template "PropertyMethods" passThrough $request.Params.Properties "QSConstants.ParamsLocationParam"}}
+            {{end}}
+            {{if $hasRequestHeaders -}}
+                {{template "PropertyMethods" passThrough $request.Headers.Properties "QSConstants.ParamsLocationHeader"}}
+            {{end}}
+            {{if $hasRequestElements -}}
+                {{template "PropertyMethods" passThrough $request.Elements.Properties "QSConstants.ParamsLocationElement"}}
+            {{end}}
+            {{if (or $hasRequestBodyString $hasRequestBodyBinary) -}}
+                @ParamAnnotation(location = QSConstants.ParamsLocationBody, name = "Body")
+                def getBody = this.body
+            {{end}}
+        }
     {{- else}}
-    case class {{$operation.ID}}Input () extends Input
+        case class {{$operation.ID}}Input () extends Input
     {{- end}}
 
     {{- if $hasOutput}}
-    case class {{$operation.ID -}}Output (
-        {{if $hasResponseHeaders -}}
-            {{template "PropertyParameters" passThrough $response.Headers 1 "output" (and $hasResponseHeaders $hasResponseElements)}}
-        {{end -}}
-        {{if $hasResponseElements -}}
-            {{template "PropertyParameters" passThrough $response.Elements (not $hasResponseHeaders) "output" 0}}
-        {{end -}}
-        {{if (or $hasResponseBodyString $hasResponseBodyBinary)}}
-            {{if (or $hasResponseElements $hasResponseHeaders)}}
-                {{if $response.Body.Description -}}
-                    // {{$response.Body.Description}}
-                {{- end}}
-                {{if or $hasResponseBodyString $hasResponseBodyBinary}}
-                    ,body: Array[Byte]
+        case class {{$operation.ID -}}Output (
+            {{if $hasResponseHeaders -}}
+                {{template "PropertyParameters" passThrough $response.Headers 1 "output" (and $hasResponseHeaders $hasResponseElements)}}
+            {{end -}}
+            {{if $hasResponseElements -}}
+                {{template "PropertyParameters" passThrough $response.Elements (not $hasResponseHeaders) "output" 0}}
+            {{end -}}
+            {{if (or $hasResponseBodyString $hasResponseBodyBinary)}}
+                {{if (or $hasResponseElements $hasResponseHeaders)}}
+                    {{if $response.Body.Description -}}
+                        // {{$response.Body.Description}}
+                    {{- end}}
+                    {{if or $hasResponseBodyString $hasResponseBodyBinary}}
+                        ,body: Array[Byte]
+                    {{end}}
+                    {{- if not $response.Body.IsRequired}}= null{{end}}
+                {{else -}}
+                    {{if $response.Body.Description -}}
+                        // {{$response.Body.Description}}
+                    {{- end}}
+                    {{if or $hasResponseBodyString $hasResponseBodyBinary}}
+                        body: Array[Byte]
+                    {{end}}
+                    {{- if not $response.Body.IsRequired}}= null{{end}}
                 {{end}}
-                {{- if not $response.Body.IsRequired}}= null{{end}}
-            {{else -}}
-                {{if $response.Body.Description -}}
-                    // {{$response.Body.Description}}
-                {{- end}}
-                {{if or $hasResponseBodyString $hasResponseBodyBinary}}
-                    body: Array[Byte]
-                {{end}}
-                {{- if not $response.Body.IsRequired}}= null{{end}}
             {{end}}
-        {{end}}
-        ) extends Output
+            ) extends Output
     {{- end}}
 
 {{end}}

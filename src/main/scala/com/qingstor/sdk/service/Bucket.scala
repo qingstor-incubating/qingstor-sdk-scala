@@ -1,6 +1,5 @@
 package com.qingstor.sdk.service
 
-import java.time.ZonedDateTime
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.request.{QSRequest, ResponseUnpacker}
@@ -12,7 +11,6 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import com.qingstor.sdk.service.Bucket._
-import com.qingstor.sdk.util.{JsonUtil, QSRequestUtil, SecurityUtil}
 
 class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     implicit val system: ActorSystem,
@@ -25,8 +23,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
 
   // Delete does Delete a bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/delete.html
-  def deleteBucket(
-      input: DeleteBucketInput): Future[Either[ErrorMessage, Int]] = {
+  def deleteBucket(input: DeleteBucketInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Bucket",
@@ -39,19 +36,12 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // DeleteCORS does Delete CORS information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/cors/delete_cors.html
-  def deleteBucketCORS(
-      input: DeleteBucketCORSInput): Future[Either[ErrorMessage, Int]] = {
+  def deleteBucketCORS(input: DeleteBucketCORSInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Bucket CORS",
@@ -64,19 +54,13 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // DeleteExternalMirror does Delete external mirror of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/external_mirror/delete_external_mirror.html
-  def deleteBucketExternalMirror(input: DeleteBucketExternalMirrorInput)
-    : Future[Either[ErrorMessage, Int]] = {
+  def deleteBucketExternalMirror(
+      input: DeleteBucketExternalMirrorInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Bucket External Mirror",
@@ -89,19 +73,12 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // DeletePolicy does Delete policy information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/policy/delete_policy.html
-  def deleteBucketPolicy(
-      input: DeleteBucketPolicyInput): Future[Either[ErrorMessage, Int]] = {
+  def deleteBucketPolicy(input: DeleteBucketPolicyInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Bucket Policy",
@@ -114,19 +91,13 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // DeleteMultipleObjects does Delete multiple objects from the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/delete_multiple.html
   def deleteMultipleObjects(input: DeleteMultipleObjectsInput)
-    : Future[Either[ErrorMessage, DeleteMultipleObjectsOutput]] = {
+    : Future[DeleteMultipleObjectsOutput] = {
     val operation = Operation(
       config = config,
       apiName = "Delete Multiple Objects",
@@ -139,15 +110,13 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[DeleteMultipleObjectsOutput](
-      futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker.unpack[DeleteMultipleObjectsOutput](futureResponse,
+                                                         operation.statusCodes)
   }
 
   // GetACL does Get ACL information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/get_acl.html
-  def getBucketACL(input: GetBucketACLInput)
-    : Future[Either[ErrorMessage, GetBucketACLOutput]] = {
+  def getBucketACL(input: GetBucketACLInput): Future[GetBucketACLOutput] = {
     val operation = Operation(
       config = config,
       apiName = "GET Bucket ACL",
@@ -160,15 +129,13 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketACLOutput](
-      futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker
+      .unpack[GetBucketACLOutput](futureResponse, operation.statusCodes)
   }
 
   // GetCORS does Get CORS information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/cors/get_cors.html
-  def getBucketCORS(input: GetBucketCORSInput)
-    : Future[Either[ErrorMessage, GetBucketCORSOutput]] = {
+  def getBucketCORS(input: GetBucketCORSInput): Future[GetBucketCORSOutput] = {
     val operation = Operation(
       config = config,
       apiName = "GET Bucket CORS",
@@ -181,15 +148,14 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketCORSOutput](
-      futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker
+      .unpack[GetBucketCORSOutput](futureResponse, operation.statusCodes)
   }
 
   // GetExternalMirror does Get external mirror of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/external_mirror/get_external_mirror.html
   def getBucketExternalMirror(input: GetBucketExternalMirrorInput)
-    : Future[Either[ErrorMessage, GetBucketExternalMirrorOutput]] = {
+    : Future[GetBucketExternalMirrorOutput] = {
     val operation = Operation(
       config = config,
       apiName = "GET Bucket External Mirror",
@@ -202,16 +168,15 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker
-      .unpackToOutputOrErrorMessage[GetBucketExternalMirrorOutput](
-        futureResponse,
-        operation.statusCodes)
+    ResponseUnpacker.unpack[GetBucketExternalMirrorOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // GetPolicy does Get policy information of the bucket.
   // Documentation URL: https://https://docs.qingcloud.com/qingstor/api/bucket/policy/get_policy.html
-  def getBucketPolicy(input: GetBucketPolicyInput)
-    : Future[Either[ErrorMessage, GetBucketPolicyOutput]] = {
+  def getBucketPolicy(
+      input: GetBucketPolicyInput): Future[GetBucketPolicyOutput] = {
     val operation = Operation(
       config = config,
       apiName = "GET Bucket Policy",
@@ -224,15 +189,14 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketPolicyOutput](
-      futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker
+      .unpack[GetBucketPolicyOutput](futureResponse, operation.statusCodes)
   }
 
   // GetStatistics does Get statistics information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/get_stats.html
-  def getBucketStatistics(input: GetBucketStatisticsInput)
-    : Future[Either[ErrorMessage, GetBucketStatisticsOutput]] = {
+  def getBucketStatistics(
+      input: GetBucketStatisticsInput): Future[GetBucketStatisticsOutput] = {
     val operation = Operation(
       config = config,
       apiName = "GET Bucket Statistics",
@@ -245,14 +209,13 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[GetBucketStatisticsOutput](
-      futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker
+      .unpack[GetBucketStatisticsOutput](futureResponse, operation.statusCodes)
   }
 
   // Head does Check whether the bucket exists and available.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/head.html
-  def headBucket(input: HeadBucketInput): Future[Either[ErrorMessage, Int]] = {
+  def headBucket(input: HeadBucketInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "HEAD Bucket",
@@ -265,19 +228,12 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // ListObjects does Retrieve the object list in a bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/get.html
-  def listObjects(input: ListObjectsInput)
-    : Future[Either[ErrorMessage, ListObjectsOutput]] = {
+  def listObjects(input: ListObjectsInput): Future[ListObjectsOutput] = {
     val operation = Operation(
       config = config,
       apiName = "GET Bucket (List Objects)",
@@ -290,14 +246,13 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutputOrErrorMessage[ListObjectsOutput](
-      futureResponse,
-      operation.statusCodes)
+    ResponseUnpacker
+      .unpack[ListObjectsOutput](futureResponse, operation.statusCodes)
   }
 
   // Put does Create a new bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/put.html
-  def putBucket(input: PutBucketInput): Future[Either[ErrorMessage, Int]] = {
+  def putBucket(input: PutBucketInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket",
@@ -310,19 +265,12 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // PutACL does Set ACL information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/put_acl.html
-  def putBucketACL(
-      input: PutBucketACLInput): Future[Either[ErrorMessage, Int]] = {
+  def putBucketACL(input: PutBucketACLInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket ACL",
@@ -335,19 +283,12 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // PutCORS does Set CORS information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/cors/put_cors.html
-  def putBucketCORS(
-      input: PutBucketCORSInput): Future[Either[ErrorMessage, Int]] = {
+  def putBucketCORS(input: PutBucketCORSInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket CORS",
@@ -360,19 +301,13 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // PutExternalMirror does Set external mirror of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/external_mirror/put_external_mirror.html
-  def putBucketExternalMirror(input: PutBucketExternalMirrorInput)
-    : Future[Either[ErrorMessage, Int]] = {
+  def putBucketExternalMirror(
+      input: PutBucketExternalMirrorInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket External Mirror",
@@ -385,19 +320,12 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
   // PutPolicy does Set policy information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/policy/put_policy.html
-  def putBucketPolicy(
-      input: PutBucketPolicyInput): Future[Either[ErrorMessage, Int]] = {
+  def putBucketPolicy(input: PutBucketPolicyInput): Future[Output] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket Policy",
@@ -410,13 +338,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             operation.statusCodes))
-        Future { Right(response.getStatusCode) } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map(Left(_))
-      }
-    }
+    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
   }
 
 }
