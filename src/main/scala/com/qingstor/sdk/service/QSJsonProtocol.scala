@@ -169,9 +169,7 @@ object QSJsonProtocol extends DefaultJsonProtocol {
         case m: StatementModel => m.toJson
         case m: StringLikeModel => m.toJson
         case m: StringNotLikeModel => m.toJson
-        case _ =>
-          println(value)
-          serializationError("Can't serialize such type: %s".format(value.getClass))
+        case _ => serializationError("""Can't serialize object:"%s", type: "%s" """.format(value, value.getClass))
       }
     }
 
@@ -180,6 +178,7 @@ object QSJsonProtocol extends DefaultJsonProtocol {
       case JsString(str) => Some(str)
       case JsBoolean(bool) => Some(bool)
       case JsNull => None
+      case _ => deserializationError("""Can't deserialize Json: "%s", type: "%s"""".format(json, json.getClass))
     }
   }
   implicit val optionJsonFormat = OptionJsonFormat
@@ -209,7 +208,7 @@ object QSJsonProtocol extends DefaultJsonProtocol {
       case m: StatementModel => m.toJson
       case m: StringLikeModel => m.toJson
       case m: StringNotLikeModel => m.toJson
-      case _ => serializationError("Can't serialize such type: %s".format(obj.getClass))
+      case _ => serializationError("""Can't serialize object: "%s", type: "%s"""".format(obj, obj.getClass))
     }
 
     override def read(json: JsValue): Any = json match {
@@ -218,7 +217,7 @@ object QSJsonProtocol extends DefaultJsonProtocol {
       case JsBoolean(bool) => bool
       case array: JsArray => JsonUtil.decode(array)
       case obj: JsObject => JsonUtil.decode(obj)
-      case _ => deserializationError("Can't deserialize such type: %s".format(json.getClass))
+      case _ => deserializationError("""Can't deserialize Json: "%s", type: "%s"""".format(json, json.getClass))
     }
   }
   implicit val anyRefJsonFormat = AnyJsonFormat
