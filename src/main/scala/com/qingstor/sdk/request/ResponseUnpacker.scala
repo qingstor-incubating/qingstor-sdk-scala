@@ -6,11 +6,12 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.stream.ActorMaterializer
 import com.qingstor.sdk.constant.QSConstants
+import com.qingstor.sdk.exception.QingStorException
 import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.util.QSRequestUtil
 import spray.json.{JsValue, JsonFormat}
 import com.qingstor.sdk.service.QSJsonProtocol._
-
+import scala.reflect._
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class ResponseUnpacker(_response: HttpResponse, _operation: Operation) {
@@ -61,15 +62,30 @@ object ResponseUnpacker {
     rightCodes.contains(code)
   }
 
-  def unpackToOutputOrErrorMessage[T <: Output :JsonFormat]
-    (futureResponse: Future[QSHttpResponse], rightStatusCodes: Array[Int])
+  def unpack[T <: Output :JsonFormat :ClassTag](futureResponse: Future[QSHttpResponse],
+                                      rightStatusCodes: Array[Int])
     (implicit system: ActorSystem, mat: ActorMaterializer,
-      ec: ExecutionContextExecutor): Future[Either[ErrorMessage, T]]= {
+      ec: ExecutionContextExecutor): Future[T]= {
     futureResponse.flatMap { response =>
-      if (isRightStatusCode(response.getStatusCode, rightStatusCodes)) {
-        unpackToOutput[T](response).map(Right(_))
+      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, rightStatusCodes)) {
+        val clazz = classTag[T].runtimeClass
+        if (clazz.getName.equals(classOf[Output].getName)){
+          val output = new Output()
+          output.statusCode = Option(response.getStatusCode)
+          output.requestID = Option(response.getRequestID)
+          Future(output.asInstanceOf[T])
+        } else {
+          ResponseUnpacker.unpackToOutput[T](response).map { out =>
+            out.statusCode = Option(response.getStatusCode)
+            out.requestID = Option(response.getRequestID)
+            out
+          }
+        }
       } else {
-        unpackToErrorMessage(response).map(Left(_))
+        ResponseUnpacker.unpackToErrorMessage(response).map{ error =>
+          error.statusCode = Option(response.getStatusCode)
+          throw QingStorException(error)
+        }
       }
     }
   }
