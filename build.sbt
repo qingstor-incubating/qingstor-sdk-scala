@@ -12,7 +12,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
     "org.yaml" % "snakeyaml" % "1.17",
     "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-    "info.cukes" %% "cucumber-scala" % cucumberVersion,
+    "info.cukes" % "cucumber-java8" % cucumberVersion,
     "info.cukes" % "cucumber-junit" % cucumberVersion
   )
 }
