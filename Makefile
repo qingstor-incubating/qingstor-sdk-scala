@@ -1,5 +1,6 @@
 SHELL := /bin/bash
 
+.PHONY: generate
 generate:
 	@if [[ ! -f "$$(which snips)" ]]; then \
         echo "ERROR: Command \"snips\" not found."; \
@@ -11,17 +12,18 @@ generate:
 	./scalafmt
 	@echo "OK"
 
-test: 
+.PHONY: test
+test:
 	@echo "run service test"
 	@if [[ ! -f "$$(which scalac)" ]]; then \
 		echo "ERROR: Command \"scalac\" not found."; \
 	fi
 	sbt assembly
-	pushd "test"
-	scalac -cp steps/qingstor-fat.jar steps/*.scala
-	scala -cp "./steps/*:." org.junit.runner.JUnitCore steps.TestRunner
+	pushd "test"; \
+		scalac -cp steps/qingstor-fat.jar steps/*.scala; \
+		scala -cp "./steps/*:." org.junit.runner.JUnitCore steps.TestRunner; \
 	popd
-	rm -f steps/*.class
-	rm -f steps/*.jar
+	rm -f test/steps/*.class
+	rm -f test/steps/*.jar
 	@echo "ok"
 
