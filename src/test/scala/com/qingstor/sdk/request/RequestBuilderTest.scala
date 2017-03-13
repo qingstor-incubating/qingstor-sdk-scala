@@ -64,7 +64,7 @@ class RequestBuilderTest extends FunSuite {
   }
 
   test("Test RequestBuilder with Body") {
-    val file = new File("/Users/Chris/test.jpg")
+    val file = new File("LICENSE")
     val testInputWithBody = TestInputWithBody(date = "Tue, 21 Feb 2017 09:32:34 GMT", body = file)
     val config = QSConfig()
     val operation = Operation(
