@@ -74,7 +74,4 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
-/src/test/resources/config.yml
-/src/test/resources/application.conf
-/src/test/scala/com/qingstor/sdk/service/
-/dest/
+/src/test/resources/*.yaml
