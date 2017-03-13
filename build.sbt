@@ -18,3 +18,7 @@ libraryDependencies ++= {
 }
 
 assemblyOutputPath in assembly := file("test/steps/qingstor-fat.jar")
+
+test in assembly := {}
+
+logLevel in assembly := Level.Error
