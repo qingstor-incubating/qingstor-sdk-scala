@@ -1,4 +1,4 @@
-package com.qingstor.sdk.steps
+package steps
 
 import cucumber.api.PendingException
 import cucumber.api.java8.En
