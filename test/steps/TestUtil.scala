@@ -1,4 +1,4 @@
-package com.qingstor.sdk.steps
+package steps
 
 import java.io.FileInputStream
 
@@ -10,11 +10,11 @@ object TestUtil {
   case class TestConfig(zone: String, bucket_name: String)
 
   def getQSConfig: QSConfig = {
-    QSConfig.loadConfigFromFile("src/test/resources/config.yaml")
+    QSConfig.loadConfigFromFile("test/config.yaml")
   }
 
   def getTestConfig: TestConfig = {
-    val ins = new FileInputStream("src/test/resources/test_config.yaml")
+    val ins = new FileInputStream("test/test_config.yaml")
     new Yaml(new Constructor(classOf[TestConfig])).loadAs(ins, classOf[TestConfig])
   }
 }

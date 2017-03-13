@@ -38,7 +38,7 @@ class ResponseUnpackerTest extends FunSuite{
   }
 
   test("Test Response Unpacker With Bytes") {
-    val file = new File("/Users/Chris/test.jpg")
+    val file = new File("LICENSE")
     val bis = new BufferedInputStream(new FileInputStream(file))
     val bytes = new Array[Byte](file.length().toInt)
     bis.read(bytes)
