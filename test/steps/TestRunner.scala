@@ -6,7 +6,7 @@ import org.junit.runner.RunWith
 
 @RunWith(classOf[Cucumber])
 @CucumberOptions(
-  features = Array("test/features/service.feature"),
+  features = Array("features/service.feature"),
   plugin = Array("pretty")
 )
 class TestRunner
