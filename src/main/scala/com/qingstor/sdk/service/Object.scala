@@ -28,7 +28,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/abort_multipart_upload.html
   def abortMultipartUpload(
       objectKey: String,
-      input: AbortMultipartUploadInput): Future[Output] = {
+      input: AbortMultipartUploadInput): Future[AbortMultipartUploadOutput] = {
     val operation = Operation(
       config = config,
       apiName = "Abort Multipart Upload",
@@ -42,14 +42,16 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[AbortMultipartUploadOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // CompleteMultipartUpload does Complete multipart upload.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/complete_multipart_upload.html
-  def completeMultipartUpload(
-      objectKey: String,
-      input: CompleteMultipartUploadInput): Future[Output] = {
+  def completeMultipartUpload(objectKey: String,
+                              input: CompleteMultipartUploadInput)
+    : Future[CompleteMultipartUploadOutput] = {
     val operation = Operation(
       config = config,
       apiName = "Complete multipart upload",
@@ -63,13 +65,15 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[CompleteMultipartUploadOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // DeleteObject does Delete the object.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/delete.html
   def deleteObject(objectKey: String,
-                   input: DeleteObjectInput): Future[Output] = {
+                   input: DeleteObjectInput): Future[DeleteObjectOutput] = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Object",
@@ -83,7 +87,9 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[DeleteObjectOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // GetObject does Retrieve the object.
@@ -228,8 +234,8 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker
-      .unpack[ListMultipartOutput](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToOutput[ListMultipartOutput](futureResponse,
+                                                         operation.statusCodes)
   }
 
   // OptionsObject does Check whether the object accepts a origin with method and header.
@@ -277,7 +283,8 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
 
   // PutObject does Upload the object.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/put.html
-  def putObject(objectKey: String, input: PutObjectInput): Future[Output] = {
+  def putObject(objectKey: String,
+                input: PutObjectInput): Future[PutObjectOutput] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Object",
@@ -291,13 +298,16 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[PutObjectOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // UploadMultipart does Upload object multipart.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/multipart/upload_multipart.html
-  def uploadMultipart(objectKey: String,
-                      input: UploadMultipartInput): Future[Output] = {
+  def uploadMultipart(
+      objectKey: String,
+      input: UploadMultipartInput): Future[UploadMultipartOutput] = {
     val operation = Operation(
       config = config,
       apiName = "Upload Multipart",
@@ -311,7 +321,9 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[UploadMultipartOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
 }
@@ -342,6 +354,7 @@ object Object {
     def getUploadID = this.uploadID
 
   }
+  case class AbortMultipartUploadOutput() extends Output
 
   case class CompleteMultipartUploadInput(
       // Object multipart upload ID
@@ -383,8 +396,10 @@ object Object {
     def getObjectParts = this.objectParts
 
   }
+  case class CompleteMultipartUploadOutput() extends Output
 
   case class DeleteObjectInput() extends Input
+  case class DeleteObjectOutput() extends Output
 
   case class GetObjectInput(
       // Specified the Cache-Control response header
@@ -736,6 +751,7 @@ object Object {
     def getBody = this.body
 
   }
+  case class PutObjectOutput() extends Output
 
   case class UploadMultipartInput(
       // Object multipart upload part number
@@ -786,5 +802,6 @@ object Object {
     def getBody = this.body
 
   }
+  case class UploadMultipartOutput() extends Output
 
 }
