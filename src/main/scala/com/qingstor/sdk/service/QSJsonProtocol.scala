@@ -117,22 +117,6 @@ object QSJsonProtocol extends DefaultJsonProtocol {
     }
   }
   implicit val errorMessageFormat = ErrorMessageFormat
-//  object OutputFormat extends RootJsonFormat[Output] {
-//    override def read(json: JsValue): Output = {
-//      val obj = json.asJsObject.fields
-//      val statusCode = obj("statusCode").asInstanceOf[JsNumber].value.intValue()
-//      val requestID = obj("requestID").asInstanceOf[JsString].value
-//      new Output(Option(statusCode), Option(requestID))
-//    }
-//
-//    override def write(obj: Output): JsValue = {
-//      JsObject(
-//        ("statusCode", obj.statusCode.toJson),
-//        ("requestID", obj.requestID.toJson)
-//      )
-//    }
-//  }
-//  implicit val outputFormat = OutputFormat
   implicit val listBucketsOutputFormat: RootJsonFormat[ListBucketsOutput] =
     jsonFormat2(ListBucketsOutput)
   implicit val deleteMultipleObjectsOutputFormat
@@ -158,24 +142,6 @@ object QSJsonProtocol extends DefaultJsonProtocol {
   implicit val initiateMultipartUploadOutputFormat
     : RootJsonFormat[InitiateMultipartUploadOutput] =
     jsonFormat4(InitiateMultipartUploadOutput)
-//  implicit val deleteBucketOutputPutFormat: RootJsonFormat[DeleteBucketOutput] =
-//    jsonFormat0(DeleteBucketOutput)
-//  implicit val deleteBucketCORSOutputPutFormat: RootJsonFormat[DeleteBucketCORSOutput] =
-//    jsonFormat0(DeleteBucketCORSOutput)
-//  implicit val deleteBucketExternalMirrorOutputPutFormat: RootJsonFormat[DeleteBucketExternalMirrorOutput] =
-//    jsonFormat0(DeleteBucketExternalMirrorOutput)
-//  implicit val deleteBucketPolicyOutputFormat: RootJsonFormat[DeleteBucketPolicyOutput] =
-//    jsonFormat0(DeleteBucketPolicyOutput)
-//  implicit val headBucketOutputFormat: RootJsonFormat[HeadBucketOutput] =
-//    jsonFormat0(HeadBucketOutput)
-//  implicit val putBucketOutPutFormat: RootJsonFormat[PutBucketOutput] =
-//    jsonFormat0(PutBucketOutput)
-//  implicit val putBucketACLOutputFormat: RootJsonFormat[PutBucketACLOutput] =
-//    jsonFormat0(PutBucketACLOutput)
-//  implicit val putBucketCORSOutputFormat: RootJsonFormat[PutBucketCORSOutput] =
-//    jsonFormat0(PutBucketCORSOutput)
-//  implicit val putBucketExternalMirrorOutputFormat: RootJsonFormat[PutBucketExternalMirrorOutput] =
-//    jsonFormat0(PutBucketExternalMirrorOutput)
 
   object OptionJsonFormat extends RootJsonFormat[Option[Any]] {
     override def write(obj: Option[Any]): JsValue = obj match {
