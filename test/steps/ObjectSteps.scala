@@ -2,26 +2,16 @@ package steps
 
 import java.io.File
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{ContentType, ContentTypes}
-import akka.stream.ActorMaterializer
 import com.qingstor.sdk.config.QSConfig
-import com.qingstor.sdk.exception.QingStorException
-import com.qingstor.sdk.request.QSRequest
-import com.qingstor.sdk.service.Bucket
 import com.qingstor.sdk.service.Object
-import com.qingstor.sdk.util.QSRequestUtil
 import cucumber.api.java8.En
 import steps.TestUtil.TestConfig
-import spray.json._
 
-import scala.concurrent.{Await, ExecutionContextExecutor}
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 class ObjectSteps extends En {
-  implicit val system = ActorSystem()
-  implicit val mat = ActorMaterializer()
-  implicit val ec: ExecutionContextExecutor = system.dispatcher
 
   private def initBucket(): Unit = {
     ObjectSteps.config = TestUtil.getQSConfig

@@ -2,8 +2,6 @@ package steps
 
 import java.util.NoSuchElementException
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.service.Bucket
 import com.qingstor.sdk.service.Types.CORSRuleModel
@@ -16,9 +14,6 @@ import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.concurrent.duration.Duration
 
 class BucketCORSSteps extends En{
-  implicit val system = ActorSystem()
-  implicit val mat = ActorMaterializer()
-  implicit val ec: ExecutionContextExecutor = system.dispatcher
 
   private def initBucket(): Unit = {
     BucketCORSSteps.config = TestUtil.getQSConfig

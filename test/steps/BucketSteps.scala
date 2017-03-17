@@ -1,7 +1,5 @@
 package steps
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.exception.QingStorException
 import com.qingstor.sdk.service.Bucket
@@ -17,9 +15,6 @@ import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.concurrent.duration.Duration
 
 class BucketSteps extends En {
-  implicit val system = ActorSystem()
-  implicit val mat = ActorMaterializer()
-  implicit val ec: ExecutionContextExecutor = system.dispatcher
 
   // Scenario: need to use bucket
   When("^initialize the bucket$", { () =>

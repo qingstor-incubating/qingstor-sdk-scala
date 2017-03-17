@@ -1,7 +1,5 @@
 package steps
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.service.Bucket
 import com.qingstor.sdk.service.Types.StatementModel
@@ -14,9 +12,6 @@ import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.concurrent.duration.Duration
 
 class BucketPolicySteps extends En {
-  implicit val system = ActorSystem()
-  implicit val mat = ActorMaterializer()
-  implicit val ec: ExecutionContextExecutor = system.dispatcher
 
   private def initBucket(): Unit = {
     BucketPolicySteps.config = TestUtil.getQSConfig

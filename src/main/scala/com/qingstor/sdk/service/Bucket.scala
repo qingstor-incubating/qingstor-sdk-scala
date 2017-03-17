@@ -7,16 +7,14 @@ import com.qingstor.sdk.service.Types._
 import com.qingstor.sdk.annotation.ParamAnnotation
 import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.service.QSJsonProtocol._
-import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import com.qingstor.sdk.service.Bucket._
 
-class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
-    implicit val system: ActorSystem,
-    val mat: ActorMaterializer,
-    val ec: ExecutionContextExecutor
-) {
+class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
+  implicit val system = QSConstants.QingStorSystem
+  implicit val materializer = ActorMaterializer()
+  implicit val ece: ExecutionContextExecutor = system.dispatcher
   val config: QSConfig = _config
   val bucketName: String = _bucketName
   val zone: String = _zone
@@ -370,11 +368,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
 }
 
 object Bucket {
-  def apply(config: QSConfig, bucketName: String, zone: String)(
-      implicit system: ActorSystem,
-      mat: ActorMaterializer,
-      ec: ExecutionContextExecutor
-  ): Bucket = new Bucket(config, bucketName, zone)
+  def apply(config: QSConfig, bucketName: String, zone: String): Bucket =
+    new Bucket(config, bucketName, zone)
 
   case class DeleteBucketInput() extends Input
   case class DeleteBucketOutput() extends Output
