@@ -65,7 +65,7 @@ object QSJsonProtocol extends DefaultJsonProtocol {
   implicit val cORSRuleModelFormat: RootJsonFormat[CORSRuleModel] =
     jsonFormat5(CORSRuleModel)
   implicit val keyModelFormat: RootJsonFormat[KeyModel] =
-    jsonFormat6(KeyModel)
+    jsonFormat7(KeyModel)
   implicit val keyDeleteErrorModelFormat: RootJsonFormat[KeyDeleteErrorModel] =
     jsonFormat3(KeyDeleteErrorModel)
   implicit val objectPartModelFormat: RootJsonFormat[ObjectPartModel] =
@@ -74,6 +74,8 @@ object QSJsonProtocol extends DefaultJsonProtocol {
     jsonFormat2(OwnerModel)
   implicit val statementModelFormat: RootJsonFormat[StatementModel] =
     jsonFormat6(StatementModel)
+  implicit val uploadsModelFormat: RootJsonFormat[UploadsModel] =
+    jsonFormat3(UploadsModel)
 
   object ErrorMessageFormat extends RootJsonFormat[ErrorMessage] {
     override def read(json: JsValue): ErrorMessage = {
@@ -142,6 +144,9 @@ object QSJsonProtocol extends DefaultJsonProtocol {
   implicit val initiateMultipartUploadOutputFormat
     : RootJsonFormat[InitiateMultipartUploadOutput] =
     jsonFormat4(InitiateMultipartUploadOutput)
+  implicit val listMultipartUploadsOutputFormat:
+    RootJsonFormat[ListMultipartUploadsOutput] =
+    jsonFormat8(ListMultipartUploadsOutput)
 
   object OptionJsonFormat extends RootJsonFormat[Option[Any]] {
     override def write(obj: Option[Any]): JsValue = obj match {
