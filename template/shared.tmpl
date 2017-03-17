@@ -201,32 +201,9 @@
     {{- else}}
         def {{$opID | lowerFirst}}(input: {{$opID -}}Input): Future[{{- $opID -}}Output] = {
     {{- end}}
-        val operation = Operation (
-        config = config,
-        apiName = "{{$operation.Name}}",
-        method = "{{$request.Method}}",
-        requestUri = "{{$request.URI}}",
-        {{if $operation.Response.StatusCodes -}}
-            statusCodes = {{range $statusCodeNum, $statusCode := $response.StatusCodes -}}
-                                {{$statusCodeNum}} +: {{if $statusCode.Description -}}// {{$statusCode.Description}}{{end}}
-                            {{end -}} Array[Int]()
-        {{else}}
-            statusCodes = Array[Int](
-                                200 //OK
-                            )
-        {{end -}}
-        {{- if ne $service.Name "QingStor"}}
-            , zone = this.zone,
-            {{- if eq $service.Name "Object"}}
-                bucketName = this.bucketName,
-                objectKey = objectKey
-            {{- else if eq $service.Name "Bucket"}}
-                bucketName = this.bucketName
-            {{- end}}
-        {{- end}}
-        )
-
-        val futureResponse = QSRequest(operation, input).send()
+        val request = {{$opID | lowerFirst}}Request({{- if eq $service.Name "Object" -}}objectKey,{{end}}input)
+        val operation = request.operation
+        val futureResponse = request.send()
         {{- if not (or $hasResponseBodyString $hasResponseBodyBinary)}}
             {{- if and $hasResponseHeaders $hasResponseElements}}
                 futureResponse.flatMap { response =>
@@ -346,6 +323,45 @@
             }
         {{- end}}
     }
+
+    {{if $operation.Description -}}
+        {{- if eq $belongs "Bucket" -}}
+            // {{replace $opID "Bucket" "" -1}}Request creates request and output object of {{$opID}}.
+        {{- else -}}
+            // {{$opID}}Request creates request and output object of {{$opID}}.
+        {{- end -}}
+    {{- end -}}
+    {{- if eq $service.Name "Object"}}
+        def {{$opID | lowerFirst}}Request(objectKey: String, input: {{$opID -}}Input): QSRequest = {
+    {{- else}}
+        def {{$opID | lowerFirst}}Request(input: {{$opID -}}Input): QSRequest = {
+    {{- end}}
+            val operation = Operation (
+                config = config,
+                apiName = "{{$operation.Name}}",
+                method = "{{$request.Method}}",
+                requestUri = "{{$request.URI}}",
+                {{if $operation.Response.StatusCodes -}}
+                    statusCodes = {{range $statusCodeNum, $statusCode := $response.StatusCodes -}}
+                                    {{$statusCodeNum}} +: {{if $statusCode.Description -}}// {{$statusCode.Description}}{{end}}
+                                {{end -}} Array[Int]()
+                {{else}}
+                    statusCodes = Array[Int](
+                        200 //OK
+                    )
+                {{end -}}
+                {{- if ne $service.Name "QingStor"}}
+                    , zone = this.zone,
+                {{- if eq $service.Name "Object"}}
+                    bucketName = this.bucketName,
+                    objectKey = objectKey
+                {{- else if eq $service.Name "Bucket"}}
+                    bucketName = this.bucketName
+                {{- end}}
+                {{- end}}
+            )
+            QSRequest(operation, input)
+        }
 {{end}}
 
 {{define "RenderProperty"}}
