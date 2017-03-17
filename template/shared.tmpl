@@ -197,11 +197,9 @@
         // Documentation URL: {{$operation.DocumentationURL}}
     {{- end}}
     {{- if eq $service.Name "Object"}}
-        def {{$opID | lowerFirst}}(objectKey: String, input: {{$opID -}}Input)
-            : Future[{{- if $hasOutput -}}{{- $opID -}}{{- end -}}Output] = {
+        def {{$opID | lowerFirst}}(objectKey: String, input: {{$opID -}}Input): Future[{{- $opID -}}Output] = {
     {{- else}}
-        def {{$opID | lowerFirst}}(input: {{$opID -}}Input)
-            : Future[{{- if $hasOutput -}}{{- $opID -}}{{- end -}}Output] = {
+        def {{$opID | lowerFirst}}(input: {{$opID -}}Input): Future[{{- $opID -}}Output] = {
     {{- end}}
         val operation = Operation (
         config = config,
@@ -304,9 +302,10 @@
                         }
                     }
                 }
+            {{- else if $hasResponseElements}}
+                ResponseUnpacker.unpackToOutput[{{- $opID -}}Output](futureResponse, operation.statusCodes)
             {{- else}}
-                ResponseUnpacker.unpack[{{- if $hasOutput -}}{{- $opID -}}{{- end -}}Output](
-                    futureResponse, operation.statusCodes)
+                ResponseUnpacker.unpackToGenericOutput[{{- $opID -}}Output](futureResponse, operation.statusCodes)
             {{- end}}
         {{- else}}
             futureResponse.flatMap { response =>
@@ -451,6 +450,8 @@
                 {{end}}
             {{end}}
             ) extends Output
+    {{- else }}
+        case class {{$operation.ID -}}Output() extends Output
     {{- end}}
 
 {{end}}

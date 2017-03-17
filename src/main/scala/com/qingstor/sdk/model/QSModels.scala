@@ -7,7 +7,7 @@ import com.qingstor.sdk.constant.QSConstants
 
 object QSModels {
 
-  class Output(
+  abstract class Output(
       var statusCode: Option[Int] = None,
       var requestID: Option[String] = None
   )

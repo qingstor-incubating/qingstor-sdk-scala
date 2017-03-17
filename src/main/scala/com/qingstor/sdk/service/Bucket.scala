@@ -7,23 +7,21 @@ import com.qingstor.sdk.service.Types._
 import com.qingstor.sdk.annotation.ParamAnnotation
 import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.service.QSJsonProtocol._
-import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import com.qingstor.sdk.service.Bucket._
 
-class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
-    implicit val system: ActorSystem,
-    val mat: ActorMaterializer,
-    val ec: ExecutionContextExecutor
-) {
+class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
+  implicit val system = QSConstants.QingStorSystem
+  implicit val materializer = ActorMaterializer()
+  implicit val ece: ExecutionContextExecutor = system.dispatcher
   val config: QSConfig = _config
   val bucketName: String = _bucketName
   val zone: String = _zone
 
   // Delete does Delete a bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/delete.html
-  def deleteBucket(input: DeleteBucketInput): Future[Output] = {
+  def deleteBucket(input: DeleteBucketInput): Future[DeleteBucketOutput] = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Bucket",
@@ -36,31 +34,36 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[DeleteBucketOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // DeleteCORS does Delete CORS information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/cors/delete_cors.html
-  def deleteBucketCORS(input: DeleteBucketCORSInput): Future[Output] = {
+  def deleteBucketCORS(
+      input: DeleteBucketCORSInput): Future[DeleteBucketCORSOutput] = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Bucket CORS",
       method = "DELETE",
       requestUri = "/<bucket-name>?cors",
-      statusCodes = 200 +: // OK
+      statusCodes = 204 +: // OK
         Array[Int](),
       zone = this.zone,
       bucketName = this.bucketName
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[DeleteBucketCORSOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // DeleteExternalMirror does Delete external mirror of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/external_mirror/delete_external_mirror.html
-  def deleteBucketExternalMirror(
-      input: DeleteBucketExternalMirrorInput): Future[Output] = {
+  def deleteBucketExternalMirror(input: DeleteBucketExternalMirrorInput)
+    : Future[DeleteBucketExternalMirrorOutput] = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Bucket External Mirror",
@@ -73,12 +76,15 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[DeleteBucketExternalMirrorOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // DeletePolicy does Delete policy information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/policy/delete_policy.html
-  def deleteBucketPolicy(input: DeleteBucketPolicyInput): Future[Output] = {
+  def deleteBucketPolicy(
+      input: DeleteBucketPolicyInput): Future[DeleteBucketPolicyOutput] = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Bucket Policy",
@@ -91,7 +97,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[DeleteBucketPolicyOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // DeleteMultipleObjects does Delete multiple objects from the bucket.
@@ -110,8 +118,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[DeleteMultipleObjectsOutput](futureResponse,
-                                                         operation.statusCodes)
+    ResponseUnpacker.unpackToOutput[DeleteMultipleObjectsOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // GetACL does Get ACL information of the bucket.
@@ -129,8 +138,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker
-      .unpack[GetBucketACLOutput](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToOutput[GetBucketACLOutput](futureResponse,
+                                                        operation.statusCodes)
   }
 
   // GetCORS does Get CORS information of the bucket.
@@ -148,8 +157,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker
-      .unpack[GetBucketCORSOutput](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToOutput[GetBucketCORSOutput](futureResponse,
+                                                         operation.statusCodes)
   }
 
   // GetExternalMirror does Get external mirror of the bucket.
@@ -168,7 +177,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[GetBucketExternalMirrorOutput](
+    ResponseUnpacker.unpackToOutput[GetBucketExternalMirrorOutput](
       futureResponse,
       operation.statusCodes)
   }
@@ -189,8 +198,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker
-      .unpack[GetBucketPolicyOutput](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToOutput[GetBucketPolicyOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // GetStatistics does Get statistics information of the bucket.
@@ -209,13 +219,14 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker
-      .unpack[GetBucketStatisticsOutput](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToOutput[GetBucketStatisticsOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // Head does Check whether the bucket exists and available.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/head.html
-  def headBucket(input: HeadBucketInput): Future[Output] = {
+  def headBucket(input: HeadBucketInput): Future[HeadBucketOutput] = {
     val operation = Operation(
       config = config,
       apiName = "HEAD Bucket",
@@ -228,7 +239,30 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[HeadBucketOutput](
+      futureResponse,
+      operation.statusCodes)
+  }
+
+  // ListMultipartUploads does List multipart uploads in the bucket.
+  // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/list_multipart_uploads.html
+  def listMultipartUploads(
+      input: ListMultipartUploadsInput): Future[ListMultipartUploadsOutput] = {
+    val operation = Operation(
+      config = config,
+      apiName = "List Multipart Uploads",
+      method = "GET",
+      requestUri = "/<bucket-name>?uploads",
+      statusCodes = 200 +: // OK
+        Array[Int](),
+      zone = this.zone,
+      bucketName = this.bucketName
+    )
+
+    val futureResponse = QSRequest(operation, input).send()
+    ResponseUnpacker.unpackToOutput[ListMultipartUploadsOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // ListObjects does Retrieve the object list in a bucket.
@@ -247,12 +281,12 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
 
     val futureResponse = QSRequest(operation, input).send()
     ResponseUnpacker
-      .unpack[ListObjectsOutput](futureResponse, operation.statusCodes)
+      .unpackToOutput[ListObjectsOutput](futureResponse, operation.statusCodes)
   }
 
   // Put does Create a new bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/put.html
-  def putBucket(input: PutBucketInput): Future[Output] = {
+  def putBucket(input: PutBucketInput): Future[PutBucketOutput] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket",
@@ -265,12 +299,14 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[PutBucketOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // PutACL does Set ACL information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/put_acl.html
-  def putBucketACL(input: PutBucketACLInput): Future[Output] = {
+  def putBucketACL(input: PutBucketACLInput): Future[PutBucketACLOutput] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket ACL",
@@ -283,12 +319,14 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[PutBucketACLOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // PutCORS does Set CORS information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/cors/put_cors.html
-  def putBucketCORS(input: PutBucketCORSInput): Future[Output] = {
+  def putBucketCORS(input: PutBucketCORSInput): Future[PutBucketCORSOutput] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket CORS",
@@ -301,13 +339,15 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[PutBucketCORSOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // PutExternalMirror does Set external mirror of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/external_mirror/put_external_mirror.html
-  def putBucketExternalMirror(
-      input: PutBucketExternalMirrorInput): Future[Output] = {
+  def putBucketExternalMirror(input: PutBucketExternalMirrorInput)
+    : Future[PutBucketExternalMirrorOutput] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket External Mirror",
@@ -320,12 +360,15 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[PutBucketExternalMirrorOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
   // PutPolicy does Set policy information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/policy/put_policy.html
-  def putBucketPolicy(input: PutBucketPolicyInput): Future[Output] = {
+  def putBucketPolicy(
+      input: PutBucketPolicyInput): Future[PutBucketPolicyOutput] = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket Policy",
@@ -338,25 +381,28 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String)(
     )
 
     val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpack[Output](futureResponse, operation.statusCodes)
+    ResponseUnpacker.unpackToGenericOutput[PutBucketPolicyOutput](
+      futureResponse,
+      operation.statusCodes)
   }
 
 }
 
 object Bucket {
-  def apply(config: QSConfig, bucketName: String, zone: String)(
-      implicit system: ActorSystem,
-      mat: ActorMaterializer,
-      ec: ExecutionContextExecutor
-  ): Bucket = new Bucket(config, bucketName, zone)
+  def apply(config: QSConfig, bucketName: String, zone: String): Bucket =
+    new Bucket(config, bucketName, zone)
 
   case class DeleteBucketInput() extends Input
+  case class DeleteBucketOutput() extends Output
 
   case class DeleteBucketCORSInput() extends Input
+  case class DeleteBucketCORSOutput() extends Output
 
   case class DeleteBucketExternalMirrorInput() extends Input
+  case class DeleteBucketExternalMirrorOutput() extends Output
 
   case class DeleteBucketPolicyInput() extends Input
+  case class DeleteBucketPolicyOutput() extends Output
 
   case class DeleteMultipleObjectsInput(
       // Object MD5sum
@@ -438,6 +484,51 @@ object Bucket {
   ) extends Output
 
   case class HeadBucketInput() extends Input
+  case class HeadBucketOutput() extends Output
+
+  case class ListMultipartUploadsInput(
+      // Put all keys that share a common prefix into a list
+      delimiter: Option[String] = None,
+      // Results count limit
+      limit: Option[Int] = None,
+      // Limit results to keys that start at this marker
+      marker: Option[String] = None,
+      // Limits results to keys that begin with the prefix
+      prefix: Option[String] = None
+  ) extends Input {
+
+    @ParamAnnotation(location = QSConstants.ParamsLocationParam,
+                     name = "delimiter")
+    def getDelimiter = this.delimiter
+    @ParamAnnotation(location = QSConstants.ParamsLocationParam,
+                     name = "limit")
+    def getLimit = this.limit
+    @ParamAnnotation(location = QSConstants.ParamsLocationParam,
+                     name = "marker")
+    def getMarker = this.marker
+    @ParamAnnotation(location = QSConstants.ParamsLocationParam,
+                     name = "prefix")
+    def getPrefix = this.prefix
+
+  }
+  case class ListMultipartUploadsOutput(
+      // Other object keys that share common prefixes
+      `common_prefixes`: Option[List[String]] = None,
+      // Delimiter that specified in request parameters
+      `delimiter`: Option[String] = None,
+      // Limit that specified in request parameters
+      `limit`: Option[Int] = None,
+      // Marker that specified in request parameters
+      `marker`: Option[String] = None,
+      // Bucket name
+      `name`: Option[String] = None,
+      // The last key in keys list
+      `next_marker`: Option[String] = None,
+      // Prefix that specified in request parameters
+      `prefix`: Option[String] = None,
+      // Multipart uploads
+      `uploads`: Option[List[UploadsModel]] = None
+  ) extends Output
 
   case class ListObjectsInput(
       // Put all keys that share a common prefix into a list
@@ -486,6 +577,7 @@ object Bucket {
   ) extends Output
 
   case class PutBucketInput() extends Input
+  case class PutBucketOutput() extends Output
 
   case class PutBucketACLInput(
       // Bucket ACL rules
@@ -500,6 +592,7 @@ object Bucket {
     def getACL = this.aCL
 
   }
+  case class PutBucketACLOutput() extends Output
 
   case class PutBucketCORSInput(
       // Bucket CORS rules
@@ -514,6 +607,7 @@ object Bucket {
     def getCORSRules = this.cORSRules
 
   }
+  case class PutBucketCORSOutput() extends Output
 
   case class PutBucketExternalMirrorInput(
       // Source site url
@@ -528,6 +622,7 @@ object Bucket {
     def getSourceSite = this.sourceSite
 
   }
+  case class PutBucketExternalMirrorOutput() extends Output
 
   case class PutBucketPolicyInput(
       // Bucket policy statement
@@ -542,5 +637,6 @@ object Bucket {
     def getStatement = this.statement
 
   }
+  case class PutBucketPolicyOutput() extends Output
 
 }

@@ -1,6 +1,10 @@
 package com.qingstor.sdk.constant
 
+import akka.actor.ActorSystem
+
 object QSConstants {
+  final val QingStorSystem: ActorSystem = ActorSystem("QingStor")
+
   val LogFatal: String = "fatal"
   val LogError: String = "error"
   val LogWarn: String = "warn"

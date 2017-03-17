@@ -29,12 +29,13 @@ class ResponseUnpacker(_response: HttpResponse, _operation: Operation) {
   private def setupStatusCode(obj: Any) = {
     val statusCode = response.status.intValue()
     QSRequestUtil.invokeMethod(obj,
-      "setStatusCode",
-      Array(int2Integer(statusCode)))
+                               "setStatusCode",
+                               Array(int2Integer(statusCode)))
   }
 
   private def setupHeaders(obj: Any) = {
-    if (ResponseUnpacker.isRightStatusCode(response.status.intValue(), operation.statusCodes)) {
+    if (ResponseUnpacker.isRightStatusCode(response.status.intValue(),
+                                           operation.statusCodes)) {
       val headersNameAndGetMethodname =
         QSRequestUtil.getResponseParams(obj, QSConstants.ParamsLocationHeader)
       for ((headerName, methodName) <- headersNameAndGetMethodname) {
@@ -42,8 +43,8 @@ class ResponseUnpacker(_response: HttpResponse, _operation: Operation) {
         if (header.isDefined) {
           val setMethodName = methodName.replaceFirst("get", "set")
           QSRequestUtil.invokeMethod(obj,
-            setMethodName,
-            Array(header.get.value()))
+                                     setMethodName,
+                                     Array(header.get.value()))
         }
       }
     }
@@ -58,31 +59,26 @@ object ResponseUnpacker {
   def apply(response: HttpResponse, operation: Operation) =
     new ResponseUnpacker(response, operation)
 
-  def isRightStatusCode(code: Int, rightCodes: Array[Int] = Array[Int](200)): Boolean = {
+  def isRightStatusCode(code: Int,
+                        rightCodes: Array[Int] = Array[Int](200)): Boolean = {
     rightCodes.contains(code)
   }
 
-  def unpack[T <: Output :JsonFormat :ClassTag](futureResponse: Future[QSHttpResponse],
-                                      rightStatusCodes: Array[Int])
-    (implicit system: ActorSystem, mat: ActorMaterializer,
-      ec: ExecutionContextExecutor): Future[T]= {
+  def unpackToGenericOutput[T <: Output: ClassTag](
+      futureResponse: Future[QSHttpResponse],
+      rightStatusCodes: Array[Int])(
+      implicit system: ActorSystem,
+      mat: ActorMaterializer,
+      ec: ExecutionContextExecutor): Future[T] = {
     futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, rightStatusCodes)) {
-        val clazz = classTag[T].runtimeClass
-        if (clazz.getName.equals(classOf[Output].getName)){
-          val output = new Output()
-          output.statusCode = Option(response.getStatusCode)
-          output.requestID = Option(response.getRequestID)
-          Future(output.asInstanceOf[T])
-        } else {
-          ResponseUnpacker.unpackToOutput[T](response).map { out =>
-            out.statusCode = Option(response.getStatusCode)
-            out.requestID = Option(response.getRequestID)
-            out
-          }
-        }
+      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
+                                             rightStatusCodes)) {
+        val output = classTag[T].runtimeClass.newInstance().asInstanceOf[T]
+        output.statusCode = Option(response.getStatusCode)
+        output.requestID = Option(response.getRequestID)
+        Future(output)
       } else {
-        ResponseUnpacker.unpackToErrorMessage(response).map{ error =>
+        ResponseUnpacker.unpackToErrorMessage(response).map { error =>
           error.statusCode = Option(response.getStatusCode)
           throw QingStorException(error)
         }
@@ -90,26 +86,52 @@ object ResponseUnpacker {
     }
   }
 
-  def unpackToOutput[T <: Output :JsonFormat](response: QSHttpResponse)
-                                             (implicit system: ActorSystem,
-                                              mat: ActorMaterializer,
-                                              ec: ExecutionContextExecutor): Future[T] = {
-    Unmarshal(response.getEntity).to[JsValue].map(_.convertTo[T])
+  def unpackToOutput[T <: Output: JsonFormat: ClassTag](
+      futureResponse: Future[QSHttpResponse],
+      rightStatusCodes: Array[Int])(
+      implicit system: ActorSystem,
+      mat: ActorMaterializer,
+      ec: ExecutionContextExecutor): Future[T] = {
+    futureResponse.flatMap { response =>
+      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
+                                             rightStatusCodes)) {
+        ResponseUnpacker.unpackToOutput[T](response)
+      } else {
+        ResponseUnpacker.unpackToErrorMessage(response).map { error =>
+          error.statusCode = Option(response.getStatusCode)
+          throw QingStorException(error)
+        }
+      }
+    }
   }
 
-  def unpackToErrorMessage(response: QSHttpResponse)
-                          (implicit system: ActorSystem,
-                           mat: ActorMaterializer,
-                           ec: ExecutionContextExecutor): Future[ErrorMessage] = {
+  def unpackToOutput[T <: Output: JsonFormat](response: QSHttpResponse)(
+      implicit system: ActorSystem,
+      mat: ActorMaterializer,
+      ec: ExecutionContextExecutor): Future[T] = {
+    Unmarshal(response.getEntity).to[JsValue].map { json =>
+      val output = json.convertTo[T]
+      output.statusCode = Option(response.getStatusCode)
+      output.requestID = Option(response.getRequestID)
+      output
+    }
+  }
+
+  def unpackToErrorMessage(response: QSHttpResponse)(
+      implicit system: ActorSystem,
+      mat: ActorMaterializer,
+      ec: ExecutionContextExecutor): Future[ErrorMessage] = {
     response.getEntity.contentType match {
       case ContentTypes.`application/json` =>
         val errorFuture = Unmarshal(response.getEntity).to[JsValue]
         errorFuture.map(_.convertTo[ErrorMessage])
       case _ =>
-        Future {ErrorMessage(
-          requestID = response.getRequestID,
-          statusCode = Some(response.getStatusCode)
-        )}
+        Future {
+          ErrorMessage(
+            requestID = response.getRequestID,
+            statusCode = Some(response.getStatusCode)
+          )
+        }
     }
   }
 }

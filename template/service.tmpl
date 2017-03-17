@@ -3,7 +3,6 @@
 
 package com.qingstor.sdk.service
 
-import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.model.QSModels._
@@ -16,10 +15,10 @@ import com.qingstor.sdk.service.QSJsonProtocol._
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 {{if $service.Description}}// {{$service.Name | camelCase}}Service: {{$service.Description}}{{end}}
-class QingStor(_config: QSConfig)(
-	implicit val system: ActorSystem,
-	val mat: ActorMaterializer,
-	val ec: ExecutionContextExecutor) {
+class QingStor(_config: QSConfig) {
+	implicit val system = QSConstants.QingStorSystem
+	implicit val materializer = ActorMaterializer()
+	implicit val ece: ExecutionContextExecutor = system.dispatcher
 	val config: QSConfig = _config
 
 	{{range $operation := $service.Operations}}
@@ -29,11 +28,7 @@ class QingStor(_config: QSConfig)(
 
 
 object QingStor {
-	def apply(config: QSConfig)(implicit
-		system: ActorSystem,
-		mat: ActorMaterializer,
-		ec: ExecutionContextExecutor): QingStor =
-			new QingStor(config)
+	def apply(config: QSConfig): QingStor = new QingStor(config)
 
 	{{range $operation := $service.Operations}}
 		{{template "RenderProperty" passThrough $operation}}
