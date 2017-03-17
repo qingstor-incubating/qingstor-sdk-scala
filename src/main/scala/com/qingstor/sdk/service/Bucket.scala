@@ -48,7 +48,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       apiName = "DELETE Bucket CORS",
       method = "DELETE",
       requestUri = "/<bucket-name>?cors",
-      statusCodes = 200 +: // OK
+      statusCodes = 204 +: // OK
         Array[Int](),
       zone = this.zone,
       bucketName = this.bucketName
@@ -240,6 +240,27 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
     val futureResponse = QSRequest(operation, input).send()
     ResponseUnpacker.unpackToGenericOutput[HeadBucketOutput](
+      futureResponse,
+      operation.statusCodes)
+  }
+
+  // ListMultipartUploads does List multipart uploads in the bucket.
+  // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/list_multipart_uploads.html
+  def listMultipartUploads(
+      input: ListMultipartUploadsInput): Future[ListMultipartUploadsOutput] = {
+    val operation = Operation(
+      config = config,
+      apiName = "List Multipart Uploads",
+      method = "GET",
+      requestUri = "/<bucket-name>?uploads",
+      statusCodes = 200 +: // OK
+        Array[Int](),
+      zone = this.zone,
+      bucketName = this.bucketName
+    )
+
+    val futureResponse = QSRequest(operation, input).send()
+    ResponseUnpacker.unpackToOutput[ListMultipartUploadsOutput](
       futureResponse,
       operation.statusCodes)
   }
@@ -464,6 +485,50 @@ object Bucket {
 
   case class HeadBucketInput() extends Input
   case class HeadBucketOutput() extends Output
+
+  case class ListMultipartUploadsInput(
+      // Put all keys that share a common prefix into a list
+      delimiter: Option[String] = None,
+      // Results count limit
+      limit: Option[Int] = None,
+      // Limit results to keys that start at this marker
+      marker: Option[String] = None,
+      // Limits results to keys that begin with the prefix
+      prefix: Option[String] = None
+  ) extends Input {
+
+    @ParamAnnotation(location = QSConstants.ParamsLocationParam,
+                     name = "delimiter")
+    def getDelimiter = this.delimiter
+    @ParamAnnotation(location = QSConstants.ParamsLocationParam,
+                     name = "limit")
+    def getLimit = this.limit
+    @ParamAnnotation(location = QSConstants.ParamsLocationParam,
+                     name = "marker")
+    def getMarker = this.marker
+    @ParamAnnotation(location = QSConstants.ParamsLocationParam,
+                     name = "prefix")
+    def getPrefix = this.prefix
+
+  }
+  case class ListMultipartUploadsOutput(
+      // Other object keys that share common prefixes
+      `common_prefixes`: Option[List[String]] = None,
+      // Delimiter that specified in request parameters
+      `delimiter`: Option[String] = None,
+      // Limit that specified in request parameters
+      `limit`: Option[Int] = None,
+      // Marker that specified in request parameters
+      `marker`: Option[String] = None,
+      // Bucket name
+      `name`: Option[String] = None,
+      // The last key in keys list
+      `next_marker`: Option[String] = None,
+      // Prefix that specified in request parameters
+      `prefix`: Option[String] = None,
+      // Multipart uploads
+      `uploads`: Option[List[UploadsModel]] = None
+  ) extends Output
 
   case class ListObjectsInput(
       // Put all keys that share a common prefix into a list

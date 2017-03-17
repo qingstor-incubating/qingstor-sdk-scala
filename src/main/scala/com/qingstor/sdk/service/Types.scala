@@ -84,6 +84,8 @@ object Types {
   case class KeyModel(
       // Object created time
       `created`: Option[String] = None,
+      // Whether this key is encrypted
+      `encrypted`: Option[Boolean] = None,
       // MD5sum of the object
       `etag`: Option[String] = None,
       // Object key
@@ -133,7 +135,7 @@ object Types {
       // Bucket policy id, must be unique
       `id`: String,
       // The resources to apply bucket policy
-      `resource`: List[String],
+      `resource`: Option[List[String]] = None,
       // The user to apply bucket policy
       `user`: List[String]
   ) {
@@ -149,9 +151,6 @@ object Types {
     require(`id` != null, "`id` can't be empty")
     require(`id`.nonEmpty, """`id` can't be empty""")
 
-    require(`resource` != null, "`resource` can't be empty")
-    require(`resource`.nonEmpty, """`resource` can't be empty""")
-
     require(`user` != null, "`user` can't be empty")
     require(`user`.nonEmpty, """`user` can't be empty""")
 
@@ -163,5 +162,13 @@ object Types {
   case class StringNotLikeModel(
       // Refer url
       `Referer`: Option[List[String]] = None
+  ) {}
+  case class UploadsModel(
+      // Object part created time
+      `created`: Option[String] = None,
+      // Object key
+      `key`: Option[String] = None,
+      // Object upload id
+      `upload_id`: Option[String] = None
   ) {}
 }
