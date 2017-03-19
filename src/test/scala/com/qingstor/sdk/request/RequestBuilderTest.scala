@@ -46,9 +46,10 @@ class RequestBuilderTest extends FunSuite {
       config = config,
       apiName = "Test API",
       method = "GET",
-      requestUri = "/<bucket-name>/中文",
+      requestUri = "/<bucket-name>/<object-key>",
       statusCodes = Array.emptyIntArray,
-      bucketName = "mybucket"
+      bucketName = "mybucket",
+      objectKey = "中文"
     )
     val requestBuilder = RequestBuilder(operation, testInput)
     val request = requestBuilder.build

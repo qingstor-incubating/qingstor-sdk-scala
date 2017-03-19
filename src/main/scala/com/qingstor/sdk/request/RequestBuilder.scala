@@ -1,7 +1,6 @@
 package com.qingstor.sdk.request
 
 import java.io.File
-import java.net.URI
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
@@ -58,17 +57,18 @@ class RequestBuilder(op: Operation, in: Input) {
   }
 
   private def parseUri: Uri = {
-    val config = operation.config
+    val scheme = operation.config.protocol
+    val host = parseHost(operation.config, operation.zone)
     val zone = operation.zone
-    val requestURI = operation.requestUri.replace(QSConstants.BucketNamePlaceHolder, operation.bucketName)
-                                          .replace(QSConstants.ObjectKeyPlaceHolder, operation.objectKey)
-    val path = new URI(requestURI).toASCIIString
-    val queries = new URI(
-      if (parsedParams.isEmpty) ""
-      else if (path.contains("?")) "&" + Uri.Query(parsedParams)
+    val port =operation.config.port
+    val objectKey = operation.objectKey.replace("%", "%25")
+    val requestURI = operation.requestUri
+      .replace(QSConstants.BucketNamePlaceHolder, operation.bucketName)
+      .replace(QSConstants.ObjectKeyPlaceHolder, Uri.Path(objectKey).toString())
+    val queries = if (parsedParams.isEmpty) ""
+      else if (requestURI.contains("?")) "&" + Uri.Query(parsedParams)
       else "?" + Uri.Query(parsedParams)
-    ).toASCIIString
-    Uri("%s://%s:%d%s%s".format(config.protocol, parseHost(config, zone), config.port, path, queries))
+    Uri(s"$scheme://$host:$port$requestURI$queries")
   }
 
   private def parseHeaders(): Map[String, String] = {
@@ -77,6 +77,12 @@ class RequestBuilder(op: Operation, in: Input) {
       headers = QSRequestUtil
         .getRequestParams(input, QSConstants.ParamsLocationHeader)
         .asInstanceOf[Map[String, String]]
+    }
+    headers.foreach { entry =>
+      val key = entry._1
+      val value = if (key.equals("Date")) entry._2
+        else Uri.Path(entry._2.replace("%", "%25")).toString()
+      headers += (key -> value)
     }
     if (headers.getOrElse("Date", "").isEmpty) {
       val now = TimeUtil.zonedDateTimeToString()
