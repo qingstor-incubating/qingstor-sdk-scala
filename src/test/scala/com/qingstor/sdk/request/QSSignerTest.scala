@@ -47,7 +47,7 @@ class QSSignerTest extends FunSuite {
     val signature = Map(
       "access_key_id" -> "ENV_ACCESS_KEY_ID",
       "expires" -> "-62135596800",
-      "signature" -> "gTdB%2FcmD6rjv8CbFRDfFbHc64q442rYNAp99Hm7fBl4%3D"
+      "signature" -> "gTdB/cmD6rjv8CbFRDfFbHc64q442rYNAp99Hm7fBl4="
     )
     assert(auth == signature)
   }
