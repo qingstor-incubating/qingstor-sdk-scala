@@ -62,7 +62,7 @@ object QSSigner {
     Map[String, String](
       "access_key_id" -> accessKeyID,
       "expires" -> expireString,
-      "signature" -> URLEncoder.encode(authorization, "UTF-8")
+      "signature" -> Uri.Path(authorization).toString()
     )
   }
 
