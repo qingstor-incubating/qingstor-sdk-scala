@@ -43,7 +43,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "Abort Multipart Upload",
       method = "DELETE",
-      requestUri = "/<bucket-name>/<object-key>",
+      requestUri = "/{bucketName}/{objectKey}",
       statusCodes = 204 +: // Object multipart deleted
         Array[Int](),
       zone = this.zone,
@@ -74,7 +74,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "Complete multipart upload",
       method = "POST",
-      requestUri = "/<bucket-name>/<object-key>",
+      requestUri = "/{bucketName}/{objectKey}",
       statusCodes = 201 +: // Object created
         Array[Int](),
       zone = this.zone,
@@ -103,7 +103,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "DELETE Object",
       method = "DELETE",
-      requestUri = "/<bucket-name>/<object-key>",
+      requestUri = "/{bucketName}/{objectKey}",
       statusCodes = 204 +: // Object deleted
         Array[Int](),
       zone = this.zone,
@@ -150,7 +150,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "GET Object",
       method = "GET",
-      requestUri = "/<bucket-name>/<object-key>",
+      requestUri = "/{bucketName}/{objectKey}",
       statusCodes = 200 +: // OK
         206 +: // Partial content
         304 +: // Not modified
@@ -200,7 +200,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "HEAD Object",
       method = "HEAD",
-      requestUri = "/<bucket-name>/<object-key>",
+      requestUri = "/{bucketName}/{objectKey}",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -248,7 +248,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "Initiate Multipart Upload",
       method = "POST",
-      requestUri = "/<bucket-name>/<object-key>?uploads",
+      requestUri = "/{bucketName}/{objectKey}?uploads",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -276,7 +276,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "List Multipart",
       method = "GET",
-      requestUri = "/<bucket-name>/<object-key>",
+      requestUri = "/{bucketName}/{objectKey}",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -326,7 +326,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "OPTIONS Object",
       method = "OPTIONS",
-      requestUri = "/<bucket-name>/<object-key>",
+      requestUri = "/{bucketName}/{objectKey}",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -354,7 +354,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "PUT Object",
       method = "PUT",
-      requestUri = "/<bucket-name>/<object-key>",
+      requestUri = "/{bucketName}/{objectKey}",
       statusCodes = 201 +: // Object created
         Array[Int](),
       zone = this.zone,
@@ -384,7 +384,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "Upload Multipart",
       method = "PUT",
-      requestUri = "/<bucket-name>/<object-key>",
+      requestUri = "/{bucketName}/{objectKey}",
       statusCodes = 201 +: // Object multipart created
         Array[Int](),
       zone = this.zone,

@@ -36,7 +36,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "DELETE Bucket",
       method = "DELETE",
-      requestUri = "/<bucket-name>",
+      requestUri = "/{bucketName}",
       statusCodes = 204 +: // Bucket deleted
         Array[Int](),
       zone = this.zone,
@@ -63,7 +63,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "DELETE Bucket CORS",
       method = "DELETE",
-      requestUri = "/<bucket-name>?cors",
+      requestUri = "/{bucketName}?cors",
       statusCodes = 204 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -91,7 +91,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "DELETE Bucket External Mirror",
       method = "DELETE",
-      requestUri = "/<bucket-name>?mirror",
+      requestUri = "/{bucketName}?mirror",
       statusCodes = 204 +: // No content
         Array[Int](),
       zone = this.zone,
@@ -118,7 +118,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "DELETE Bucket Policy",
       method = "DELETE",
-      requestUri = "/<bucket-name>?policy",
+      requestUri = "/{bucketName}?policy",
       statusCodes = 204 +: // No content
         Array[Int](),
       zone = this.zone,
@@ -146,7 +146,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "Delete Multiple Objects",
       method = "POST",
-      requestUri = "/<bucket-name>?delete",
+      requestUri = "/{bucketName}?delete",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -171,7 +171,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "GET Bucket ACL",
       method = "GET",
-      requestUri = "/<bucket-name>?acl",
+      requestUri = "/{bucketName}?acl",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -196,7 +196,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "GET Bucket CORS",
       method = "GET",
-      requestUri = "/<bucket-name>?cors",
+      requestUri = "/{bucketName}?cors",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -224,7 +224,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "GET Bucket External Mirror",
       method = "GET",
-      requestUri = "/<bucket-name>?mirror",
+      requestUri = "/{bucketName}?mirror",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -251,7 +251,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "GET Bucket Policy",
       method = "GET",
-      requestUri = "/<bucket-name>?policy",
+      requestUri = "/{bucketName}?policy",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -278,7 +278,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "GET Bucket Statistics",
       method = "GET",
-      requestUri = "/<bucket-name>?stats",
+      requestUri = "/{bucketName}?stats",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -304,7 +304,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "HEAD Bucket",
       method = "HEAD",
-      requestUri = "/<bucket-name>",
+      requestUri = "/{bucketName}",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -332,7 +332,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "List Multipart Uploads",
       method = "GET",
-      requestUri = "/<bucket-name>?uploads",
+      requestUri = "/{bucketName}?uploads",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -357,7 +357,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "GET Bucket (List Objects)",
       method = "GET",
-      requestUri = "/<bucket-name>",
+      requestUri = "/{bucketName}",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -383,7 +383,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "PUT Bucket",
       method = "PUT",
-      requestUri = "/<bucket-name>",
+      requestUri = "/{bucketName}",
       statusCodes = 201 +: // Bucket created
         Array[Int](),
       zone = this.zone,
@@ -409,7 +409,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "PUT Bucket ACL",
       method = "PUT",
-      requestUri = "/<bucket-name>?acl",
+      requestUri = "/{bucketName}?acl",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -435,7 +435,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "PUT Bucket CORS",
       method = "PUT",
-      requestUri = "/<bucket-name>?cors",
+      requestUri = "/{bucketName}?cors",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -463,7 +463,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "PUT Bucket External Mirror",
       method = "PUT",
-      requestUri = "/<bucket-name>?mirror",
+      requestUri = "/{bucketName}?mirror",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
@@ -490,7 +490,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       config = config,
       apiName = "PUT Bucket Policy",
       method = "PUT",
-      requestUri = "/<bucket-name>?policy",
+      requestUri = "/{bucketName}?policy",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
