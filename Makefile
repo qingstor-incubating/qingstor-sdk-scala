@@ -17,6 +17,8 @@ help:
 all: update generate unit test release
 
 .PHONY: update
+update:
+	git submodule init
 	git submodule update --remote
 	@echo "ok"
 
