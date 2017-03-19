@@ -1,5 +1,7 @@
 package com.qingstor.sdk.request
 
+import java.net.URI
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
@@ -11,10 +13,20 @@ import com.qingstor.sdk.util.QSLogger
 import scala.concurrent.Future
 
 class QSRequest(_operation: Operation, _input: Input) {
-  private val operation = _operation
   private val input = _input
+  val operation: Operation = _operation
+  val HTTPRequest: HttpRequest = build()
 
-  def build(): HttpRequest = {
+  def send()(
+    implicit system: ActorSystem,
+    mat: ActorMaterializer): Future[QSHttpResponse] = {
+    import system.dispatcher
+    Http(system).singleRequest(sign(HTTPRequest)).map { response =>
+      ResponseUnpacker(response, operation).unpackResponse()
+    }
+  }
+
+  private def build(): HttpRequest = {
     if (!check())
       QSLogger.fatal(
         "Fatal: Access Key ID or Secret Access Key can't be empty")
@@ -22,29 +34,12 @@ class QSRequest(_operation: Operation, _input: Input) {
     builder.build
   }
 
-  def sign(request: HttpRequest): HttpRequest = {
+  private def sign(request: HttpRequest = HTTPRequest): HttpRequest = {
     val accessKeyID = operation.config.access_key_id
     val secretAccessKey = operation.config.secret_access_key
     val authString =
       QSSigner.getHeadAuthorization(request, accessKeyID, secretAccessKey)
     request.addHeader(RawHeader("Authorization", authString))
-  }
-
-  def signQueries(request: HttpRequest, liveTime: Long): HttpRequest = {
-    val expires = System.currentTimeMillis() + liveTime
-    signQuery(request, expires)
-  }
-
-  def send(_request: HttpRequest = null)(
-      implicit system: ActorSystem,
-      mat: ActorMaterializer): Future[QSHttpResponse] = {
-    import system.dispatcher
-    var request = _request
-    if (request == null)
-      request = sign(build())
-    Http(system).singleRequest(request).map { response =>
-      ResponseUnpacker(response, operation).unpackResponse()
-    }
   }
 
   private def check(): Boolean = {
@@ -56,24 +51,23 @@ class QSRequest(_operation: Operation, _input: Input) {
       false
     }
   }
-
-  private def signQuery(request: HttpRequest, expires: Long): HttpRequest = {
-    val accessKeyID = operation.config.access_key_id
-    val secretAccessKey = operation.config.secret_access_key
-    val authQueries =
-      QSSigner.getQueryAuthorization(request,
-                                     accessKeyID,
-                                     secretAccessKey,
-                                     expires)
-    val oriQueries = request.uri.query().toMap
-
-    val uri = request.uri.withQuery(Uri.Query(oriQueries ++ authQueries))
-    request.withUri(uri)
-  }
 }
 
 object QSRequest {
   def apply(operation: Operation, input: Input): QSRequest =
     new QSRequest(operation, input)
   def apply(operation: Operation): QSRequest = new QSRequest(operation, null)
+
+  def signQueries(request: QSRequest, liveTime: Long): Uri = {
+    val expires = System.currentTimeMillis() + liveTime
+    val accessKeyID = request.operation.config.access_key_id
+    val secretAccessKey = request.operation.config.secret_access_key
+    val authQueries =
+      QSSigner.getQueryAuthorization(request.HTTPRequest,
+        accessKeyID,
+        secretAccessKey,
+        expires)
+    val oriQueries = request.HTTPRequest.uri.query().toMap
+    request.HTTPRequest.uri.withQuery(Uri.Query(oriQueries ++ authQueries))
+  }
 }

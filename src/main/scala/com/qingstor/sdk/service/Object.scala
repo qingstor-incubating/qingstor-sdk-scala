@@ -27,6 +27,18 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
   def abortMultipartUpload(
       objectKey: String,
       input: AbortMultipartUploadInput): Future[AbortMultipartUploadOutput] = {
+    val request = abortMultipartUploadRequest(objectKey, input)
+    val operation = request.operation
+    val futureResponse = request.send()
+    ResponseUnpacker.unpackToGenericOutput[AbortMultipartUploadOutput](
+      futureResponse,
+      operation.statusCodes)
+  }
+
+  // AbortMultipartUploadRequest creates request and output object of AbortMultipartUpload.
+  def abortMultipartUploadRequest(
+      objectKey: String,
+      input: AbortMultipartUploadInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "Abort Multipart Upload",
@@ -38,11 +50,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       bucketName = this.bucketName,
       objectKey = objectKey
     )
-
-    val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToGenericOutput[AbortMultipartUploadOutput](
-      futureResponse,
-      operation.statusCodes)
+    QSRequest(operation, input)
   }
 
   // CompleteMultipartUpload does Complete multipart upload.
@@ -50,6 +58,18 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
   def completeMultipartUpload(objectKey: String,
                               input: CompleteMultipartUploadInput)
     : Future[CompleteMultipartUploadOutput] = {
+    val request = completeMultipartUploadRequest(objectKey, input)
+    val operation = request.operation
+    val futureResponse = request.send()
+    ResponseUnpacker.unpackToGenericOutput[CompleteMultipartUploadOutput](
+      futureResponse,
+      operation.statusCodes)
+  }
+
+  // CompleteMultipartUploadRequest creates request and output object of CompleteMultipartUpload.
+  def completeMultipartUploadRequest(
+      objectKey: String,
+      input: CompleteMultipartUploadInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "Complete multipart upload",
@@ -61,17 +81,24 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       bucketName = this.bucketName,
       objectKey = objectKey
     )
-
-    val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToGenericOutput[CompleteMultipartUploadOutput](
-      futureResponse,
-      operation.statusCodes)
+    QSRequest(operation, input)
   }
 
   // DeleteObject does Delete the object.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/delete.html
   def deleteObject(objectKey: String,
                    input: DeleteObjectInput): Future[DeleteObjectOutput] = {
+    val request = deleteObjectRequest(objectKey, input)
+    val operation = request.operation
+    val futureResponse = request.send()
+    ResponseUnpacker.unpackToGenericOutput[DeleteObjectOutput](
+      futureResponse,
+      operation.statusCodes)
+  }
+
+  // DeleteObjectRequest creates request and output object of DeleteObject.
+  def deleteObjectRequest(objectKey: String,
+                          input: DeleteObjectInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Object",
@@ -83,33 +110,16 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       bucketName = this.bucketName,
       objectKey = objectKey
     )
-
-    val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToGenericOutput[DeleteObjectOutput](
-      futureResponse,
-      operation.statusCodes)
+    QSRequest(operation, input)
   }
 
   // GetObject does Retrieve the object.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/get.html
   def getObject(objectKey: String,
                 input: GetObjectInput): Future[GetObjectOutput] = {
-    val operation = Operation(
-      config = config,
-      apiName = "GET Object",
-      method = "GET",
-      requestUri = "/<bucket-name>/<object-key>",
-      statusCodes = 200 +: // OK
-        206 +: // Partial content
-        304 +: // Not modified
-        412 +: // Precondition failed
-        Array[Int](),
-      zone = this.zone,
-      bucketName = this.bucketName,
-      objectKey = objectKey
-    )
-
-    val futureResponse = QSRequest(operation, input).send()
+    val request = getObjectRequest(objectKey, input)
+    val operation = request.operation
+    val futureResponse = request.send()
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
@@ -134,23 +144,32 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
     }
   }
 
-  // HeadObject does Check whether the object exists and available.
-  // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/head.html
-  def headObject(objectKey: String,
-                 input: HeadObjectInput): Future[HeadObjectOutput] = {
+  // GetObjectRequest creates request and output object of GetObject.
+  def getObjectRequest(objectKey: String, input: GetObjectInput): QSRequest = {
     val operation = Operation(
       config = config,
-      apiName = "HEAD Object",
-      method = "HEAD",
+      apiName = "GET Object",
+      method = "GET",
       requestUri = "/<bucket-name>/<object-key>",
       statusCodes = 200 +: // OK
+        206 +: // Partial content
+        304 +: // Not modified
+        412 +: // Precondition failed
         Array[Int](),
       zone = this.zone,
       bucketName = this.bucketName,
       objectKey = objectKey
     )
+    QSRequest(operation, input)
+  }
 
-    val futureResponse = QSRequest(operation, input).send()
+  // HeadObject does Check whether the object exists and available.
+  // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/head.html
+  def headObject(objectKey: String,
+                 input: HeadObjectInput): Future[HeadObjectOutput] = {
+    val request = headObjectRequest(objectKey, input)
+    val operation = request.operation
+    val futureResponse = request.send()
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
@@ -175,24 +194,30 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
     }
   }
 
-  // InitiateMultipartUpload does Initial multipart upload on the object.
-  // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/initiate_multipart_upload.html
-  def initiateMultipartUpload(objectKey: String,
-                              input: InitiateMultipartUploadInput)
-    : Future[InitiateMultipartUploadOutput] = {
+  // HeadObjectRequest creates request and output object of HeadObject.
+  def headObjectRequest(objectKey: String, input: HeadObjectInput): QSRequest = {
     val operation = Operation(
       config = config,
-      apiName = "Initiate Multipart Upload",
-      method = "POST",
-      requestUri = "/<bucket-name>/<object-key>?uploads",
+      apiName = "HEAD Object",
+      method = "HEAD",
+      requestUri = "/<bucket-name>/<object-key>",
       statusCodes = 200 +: // OK
         Array[Int](),
       zone = this.zone,
       bucketName = this.bucketName,
       objectKey = objectKey
     )
+    QSRequest(operation, input)
+  }
 
-    val futureResponse = QSRequest(operation, input).send()
+  // InitiateMultipartUpload does Initial multipart upload on the object.
+  // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/initiate_multipart_upload.html
+  def initiateMultipartUpload(objectKey: String,
+                              input: InitiateMultipartUploadInput)
+    : Future[InitiateMultipartUploadOutput] = {
+    val request = initiateMultipartUploadRequest(objectKey, input)
+    val operation = request.operation
+    val futureResponse = request.send()
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
@@ -215,10 +240,38 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
     }
   }
 
+  // InitiateMultipartUploadRequest creates request and output object of InitiateMultipartUpload.
+  def initiateMultipartUploadRequest(
+      objectKey: String,
+      input: InitiateMultipartUploadInput): QSRequest = {
+    val operation = Operation(
+      config = config,
+      apiName = "Initiate Multipart Upload",
+      method = "POST",
+      requestUri = "/<bucket-name>/<object-key>?uploads",
+      statusCodes = 200 +: // OK
+        Array[Int](),
+      zone = this.zone,
+      bucketName = this.bucketName,
+      objectKey = objectKey
+    )
+    QSRequest(operation, input)
+  }
+
   // ListMultipart does List object parts.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/list_multipart.html
   def listMultipart(objectKey: String,
                     input: ListMultipartInput): Future[ListMultipartOutput] = {
+    val request = listMultipartRequest(objectKey, input)
+    val operation = request.operation
+    val futureResponse = request.send()
+    ResponseUnpacker.unpackToOutput[ListMultipartOutput](futureResponse,
+                                                         operation.statusCodes)
+  }
+
+  // ListMultipartRequest creates request and output object of ListMultipart.
+  def listMultipartRequest(objectKey: String,
+                           input: ListMultipartInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "List Multipart",
@@ -230,29 +283,16 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       bucketName = this.bucketName,
       objectKey = objectKey
     )
-
-    val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToOutput[ListMultipartOutput](futureResponse,
-                                                         operation.statusCodes)
+    QSRequest(operation, input)
   }
 
   // OptionsObject does Check whether the object accepts a origin with method and header.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/options.html
   def optionsObject(objectKey: String,
                     input: OptionsObjectInput): Future[OptionsObjectOutput] = {
-    val operation = Operation(
-      config = config,
-      apiName = "OPTIONS Object",
-      method = "OPTIONS",
-      requestUri = "/<bucket-name>/<object-key>",
-      statusCodes = 200 +: // OK
-        Array[Int](),
-      zone = this.zone,
-      bucketName = this.bucketName,
-      objectKey = objectKey
-    )
-
-    val futureResponse = QSRequest(operation, input).send()
+    val request = optionsObjectRequest(objectKey, input)
+    val operation = request.operation
+    val futureResponse = request.send()
     futureResponse.flatMap { response =>
       if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
                                              operation.statusCodes)) {
@@ -279,10 +319,37 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
     }
   }
 
+  // OptionsObjectRequest creates request and output object of OptionsObject.
+  def optionsObjectRequest(objectKey: String,
+                           input: OptionsObjectInput): QSRequest = {
+    val operation = Operation(
+      config = config,
+      apiName = "OPTIONS Object",
+      method = "OPTIONS",
+      requestUri = "/<bucket-name>/<object-key>",
+      statusCodes = 200 +: // OK
+        Array[Int](),
+      zone = this.zone,
+      bucketName = this.bucketName,
+      objectKey = objectKey
+    )
+    QSRequest(operation, input)
+  }
+
   // PutObject does Upload the object.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/object/put.html
   def putObject(objectKey: String,
                 input: PutObjectInput): Future[PutObjectOutput] = {
+    val request = putObjectRequest(objectKey, input)
+    val operation = request.operation
+    val futureResponse = request.send()
+    ResponseUnpacker.unpackToGenericOutput[PutObjectOutput](
+      futureResponse,
+      operation.statusCodes)
+  }
+
+  // PutObjectRequest creates request and output object of PutObject.
+  def putObjectRequest(objectKey: String, input: PutObjectInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "PUT Object",
@@ -294,11 +361,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       bucketName = this.bucketName,
       objectKey = objectKey
     )
-
-    val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToGenericOutput[PutObjectOutput](
-      futureResponse,
-      operation.statusCodes)
+    QSRequest(operation, input)
   }
 
   // UploadMultipart does Upload object multipart.
@@ -306,6 +369,17 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
   def uploadMultipart(
       objectKey: String,
       input: UploadMultipartInput): Future[UploadMultipartOutput] = {
+    val request = uploadMultipartRequest(objectKey, input)
+    val operation = request.operation
+    val futureResponse = request.send()
+    ResponseUnpacker.unpackToGenericOutput[UploadMultipartOutput](
+      futureResponse,
+      operation.statusCodes)
+  }
+
+  // UploadMultipartRequest creates request and output object of UploadMultipart.
+  def uploadMultipartRequest(objectKey: String,
+                             input: UploadMultipartInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "Upload Multipart",
@@ -317,11 +391,7 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
       bucketName = this.bucketName,
       objectKey = objectKey
     )
-
-    val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker.unpackToGenericOutput[UploadMultipartOutput](
-      futureResponse,
-      operation.statusCodes)
+    QSRequest(operation, input)
   }
 
 }

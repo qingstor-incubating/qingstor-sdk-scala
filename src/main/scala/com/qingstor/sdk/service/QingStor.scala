@@ -21,6 +21,15 @@ class QingStor(_config: QSConfig) {
   // ListBuckets does Retrieve the bucket list.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/service/get.html
   def listBuckets(input: ListBucketsInput): Future[ListBucketsOutput] = {
+    val request = listBucketsRequest(input)
+    val operation = request.operation
+    val futureResponse = request.send()
+    ResponseUnpacker
+      .unpackToOutput[ListBucketsOutput](futureResponse, operation.statusCodes)
+  }
+
+  // ListBucketsRequest creates request and output object of ListBuckets.
+  def listBucketsRequest(input: ListBucketsInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "Get Service",
@@ -29,10 +38,7 @@ class QingStor(_config: QSConfig) {
       statusCodes = 200 +: // OK
         Array[Int]()
     )
-
-    val futureResponse = QSRequest(operation, input).send()
-    ResponseUnpacker
-      .unpackToOutput[ListBucketsOutput](futureResponse, operation.statusCodes)
+    QSRequest(operation, input)
   }
 
 }
