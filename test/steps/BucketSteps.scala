@@ -10,8 +10,9 @@ import com.qingstor.sdk.service.QSJsonProtocol.keyModelFormat
 import cucumber.api.java8.En
 import steps.TestUtil.TestConfig
 import spray.json._
+import com.qingstor.sdk.service.Object
 
-import scala.concurrent.{Await, ExecutionContextExecutor}
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 class BucketSteps extends En {
@@ -139,6 +140,28 @@ class BucketSteps extends En {
     val status = int2Integer(BucketSteps.deleteBucketOutput.statusCode.getOrElse(-1))
     assert(status == arg)
   })
+
+  // Scenario: list multipart uploads
+  Given("""^an object created by initiate multipart upload$""", { () =>
+    val input = Object.InitiateMultipartUploadInput()
+    BucketSteps.obj = Object(BucketSteps.bucket)
+    val of = BucketSteps.obj.initiateMultipartUpload(BucketSteps.objectKey, input)
+    BucketSteps.initiateMultipartUploadOutput = Await.result(of, Duration.Inf)
+  })
+
+  When("""^list multipart uploads$""", { () =>
+    val input = Bucket.ListMultipartUploadsInput()
+    val of = BucketSteps.bucket.listMultipartUploads(input)
+    BucketSteps.listMultipartUploadsOutput = Await.result(of, Duration.Inf)
+  })
+
+  Then("""^list multipart uploads count is (\d+)""", { arg: Integer =>
+    val input = Object.AbortMultipartUploadInput(
+      BucketSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse(""))
+    val of = BucketSteps.obj.abortMultipartUpload(BucketSteps.objectKey, input)
+    Await.result(of, Duration.Inf)
+    assert(BucketSteps.listMultipartUploadsOutput.`uploads`.getOrElse(List.empty).length == arg)
+  })
 }
 
 object BucketSteps {
@@ -154,4 +177,9 @@ object BucketSteps {
   private var deleteBucketOutput: Bucket.DeleteBucketOutput = _
   private var getBucketStatisticsOutput: Bucket.GetBucketStatisticsOutput = _
   private var deleteMultipleObjectsOutput: Bucket.DeleteMultipleObjectsOutput = _
+
+  private var obj: Object = _
+  private var objectKey = "list_multipart_uploads_object_key"
+  private var initiateMultipartUploadOutput: Object.InitiateMultipartUploadOutput = _
+  private var listMultipartUploadsOutput: Bucket.ListMultipartUploadsOutput = _
 }
