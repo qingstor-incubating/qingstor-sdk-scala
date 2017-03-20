@@ -1,4 +1,4 @@
-package steps
+package com.qingstor.sdk.steps
 
 import java.io.FileInputStream
 
@@ -8,20 +8,21 @@ import org.yaml.snakeyaml.constructor.Constructor
 
 import scala.beans.BeanProperty
 import scala.language.postfixOps
-import sys.process._
+import scala.sys.process._
 
 object TestUtil {
+  val testResourceRoot: String = "src/test/resources"
   class TestConfig {
     @BeanProperty var zone: String = _
     @BeanProperty var bucket_name: String = _
   }
 
   def getQSConfig: QSConfig = {
-    QSConfig.loadConfigFromFile("./config.yaml")
+    QSConfig.loadConfigFromFile(s"$testResourceRoot/config.yaml")
   }
 
   def getTestConfig: TestConfig = {
-    val ins = new FileInputStream("./test_config.yaml")
+    val ins = new FileInputStream(s"$testResourceRoot/test_config.yaml")
     new Yaml(new Constructor(classOf[TestConfig])).loadAs(ins, classOf[TestConfig])
   }
 

@@ -1,4 +1,4 @@
-package steps
+package com.qingstor.sdk.steps
 
 import java.io.{BufferedInputStream, File}
 import java.net.URL
@@ -10,7 +10,7 @@ import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.request.QSRequest
 import com.qingstor.sdk.service.Object
 import cucumber.api.java8.En
-import steps.TestUtil.TestConfig
+import com.qingstor.sdk.steps.TestUtil.TestConfig
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration

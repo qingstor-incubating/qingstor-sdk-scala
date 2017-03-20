@@ -1,4 +1,4 @@
-package steps
+package com.qingstor.sdk.steps
 
 import java.io.File
 
@@ -6,7 +6,7 @@ import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.exception.QingStorException
 import com.qingstor.sdk.service.Object
 import cucumber.api.java8.En
-import steps.TestUtil.TestConfig
+import com.qingstor.sdk.steps.TestUtil.TestConfig
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration

@@ -1,12 +1,12 @@
-package steps
+package com.qingstor.sdk.steps
 
 import com.qingstor.sdk.config.QSConfig
-import cucumber.api.java8.En
 import com.qingstor.sdk.service.QingStor
 import com.qingstor.sdk.service.QingStor._
-import TestUtil.TestConfig
+import com.qingstor.sdk.steps.TestUtil.TestConfig
+import cucumber.api.java8.En
 
-import scala.concurrent.{Await, ExecutionContextExecutor}
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 class QingStorSteps extends En {

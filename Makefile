@@ -47,12 +47,9 @@ test:
 		echo "ERROR: Command \"scalac\" not found."; \
 	fi
 	sbt assembly
-	pushd "test"; \
-		scalac -cp steps/qingstor-fat.jar steps/*.scala; \
-		scala -cp "./steps/*:." org.junit.runner.JUnitCore steps.TestRunner; \
-	popd
-	rm -f test/steps/*.class
-	rm -f test/steps/*.jar
+	scalac -cp release/${PREFIX}-${VERSION}-full.jar src/test/scala/com/qingstor/sdk/steps/*.scala
+	scala -cp "release/${PREFIX}-${VERSION}-full.jar:com/qingstor/sdk/steps/*:." org.junit.runner.JUnitCore com.qingstor.sdk.steps.TestRunner
+	rm -rf com release
 	@echo "ok"
 
 .PHONY: release

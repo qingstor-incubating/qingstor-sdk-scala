@@ -1,4 +1,4 @@
-package steps
+package com.qingstor.sdk.steps
 
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.exception.QingStorException
@@ -8,7 +8,7 @@ import com.qingstor.sdk.service.Types.KeyModel
 import com.qingstor.sdk.util.SecurityUtil
 import com.qingstor.sdk.service.QSJsonProtocol.keyModelFormat
 import cucumber.api.java8.En
-import steps.TestUtil.TestConfig
+import com.qingstor.sdk.steps.TestUtil.TestConfig
 import spray.json._
 import com.qingstor.sdk.service.Object
 

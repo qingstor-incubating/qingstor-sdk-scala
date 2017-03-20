@@ -1,4 +1,4 @@
-package steps
+package com.qingstor.sdk.steps
 
 import java.util.NoSuchElementException
 
@@ -6,7 +6,7 @@ import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.service.Bucket
 import com.qingstor.sdk.service.Types.CORSRuleModel
 import cucumber.api.java8.En
-import steps.TestUtil.TestConfig
+import com.qingstor.sdk.steps.TestUtil.TestConfig
 import spray.json._
 import com.qingstor.sdk.service.QSJsonProtocol.cORSRuleModelFormat
 

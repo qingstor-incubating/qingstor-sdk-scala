@@ -17,7 +17,7 @@ libraryDependencies ++= {
   )
 }
 
-assemblyOutputPath in assembly := file("test/steps/qingstor-fat.jar")
+assemblyOutputPath in assembly := file(s"release/${name.value}-${version.value}-full.jar")
 
 test in assembly := {}
 

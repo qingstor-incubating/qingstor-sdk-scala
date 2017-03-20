@@ -1,9 +1,9 @@
-package steps
+package com.qingstor.sdk.steps
 
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.service.Bucket
 import cucumber.api.java8.En
-import steps.TestUtil.TestConfig
+import com.qingstor.sdk.steps.TestUtil.TestConfig
 import spray.json._
 
 import scala.concurrent.{Await, ExecutionContextExecutor}
