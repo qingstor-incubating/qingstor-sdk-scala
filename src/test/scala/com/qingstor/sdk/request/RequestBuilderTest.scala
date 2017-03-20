@@ -46,7 +46,7 @@ class RequestBuilderTest extends FunSuite {
       config = config,
       apiName = "Test API",
       method = "GET",
-      requestUri = "/<bucket-name>/<object-key>",
+      requestUri = s"/${QSConstants.BucketNamePlaceHolder}/${QSConstants.ObjectKeyPlaceHolder}",
       statusCodes = Array.emptyIntArray,
       bucketName = "mybucket",
       objectKey = "中文"
