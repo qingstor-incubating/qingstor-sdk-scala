@@ -55,8 +55,5 @@ test:
 .PHONY: release
 release:
 	@echo "pack the source code"
-	sbt \
-		"set assemblyOutputPath in assembly := file(\"release/${PREFIX}-${VERSION}-full.jar\")" \
-		"set test in assembly := {}" \
-		"set logLevel in assembly := Level.Error" assembly
+	sbt assembly
 	@echo "ok"
