@@ -58,3 +58,8 @@ release:
 	@echo "pack the source code"
 	sbt assembly
 	@echo "ok"
+
+.PHONY: clean
+clean:
+	rm -rf com/ release/
+	@echo "ok"
