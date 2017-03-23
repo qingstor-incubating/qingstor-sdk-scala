@@ -1,9 +1,10 @@
 package com.qingstor.sdk.util
 
-import scala.collection.JavaConverters._
 import java.io.File
 
 import akka.http.scaladsl.model._
+
+import scala.collection.JavaConversions._
 
 object QSRequestUtil {
   // get all the non-null and non-None params of the specified location from Input

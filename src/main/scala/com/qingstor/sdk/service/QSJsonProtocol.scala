@@ -157,7 +157,7 @@ object QSJsonProtocol extends DefaultJsonProtocol {
         case bool: Boolean => JsBoolean(bool)
         case s: String => JsString(s)
         case l: List[Any] => JsonUtil.encode(l)
-        case m: Map[_, Any] if m.keySet.forall(_.isInstanceOf[String]) =>
+        case m: Map[_, _] if m.keySet.forall(_.isInstanceOf[String]) =>
           JsonUtil.encode(m.asInstanceOf[Map[String, Any]])
         case m: ACLModel => m.toJson
         case m: BucketModel => m.toJson
@@ -195,7 +195,7 @@ object QSJsonProtocol extends DefaultJsonProtocol {
       case bool: Boolean => JsBoolean(bool)
       case s: String => JsString(s)
       case l: List[Any] => JsonUtil.encode(l)
-      case m: Map[_, Any] if m.keySet.forall(_.isInstanceOf[String]) =>
+      case m: Map[_, _] if m.keySet.forall(_.isInstanceOf[String]) =>
         JsonUtil.encode(m.asInstanceOf[Map[String, Any]])
       case opt: Option[Any] => opt.toJson
       case m: ACLModel => m.toJson

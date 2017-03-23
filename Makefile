@@ -1,7 +1,6 @@
 SHELL := /bin/bash
 
-PREFIX="qingstor-sdk-scala"
-VERSION=$(shell cat build.sbt |grep "version\ :=" |sed -e s/version\ :=\ //g |sed s/\"//g)
+CROSS_SCALA_VERSIONS=2.12.1 2.11.0
 
 .PHONY: help
 help:
@@ -11,15 +10,15 @@ help:
 	@echo "  generate          to generate service code"
 	@echo "  unit              to run all sort of unit tests except runtime"
 	@echo "  test              to run service test"
-	@echo "  release           to build and release current version"
+	@echo "  build_jar         to build and release current version"
 
 .PHONY: all
 all: update generate unit test release
 
 .PHONY: update
 update:
-	git submodule init
-	git submodule update --remote
+	@git submodule init
+	@git submodule update --remote
 	@echo "ok"
 
 .PHONY: generate
@@ -38,28 +37,28 @@ generate:
 .PHONY: unit
 unit:
 	@echo "run unit test"
-	sbt test
+	@sbt clean
+	@sbt +test
 	@echo "ok"
 
 .PHONY: test
 test:
 	@echo "run service test"
-	@if [[ ! -f "$$(which scalac)" ]]; then \
-		echo "ERROR: Command \"scalac\" not found."; \
-	fi
-	sbt assembly
-	scalac -cp release/${PREFIX}-${VERSION}-full.jar src/test/scala/com/qingstor/sdk/steps/*.scala
-	scala -cp "release/${PREFIX}-${VERSION}-full.jar:com/qingstor/sdk/steps/*:." org.junit.runner.JUnitCore com.qingstor.sdk.steps.TestRunner
-	rm -rf com release
+	@sbt clean
+	@for version in ${CROSS_SCALA_VERSIONS}; \
+	do \
+		sbt """; set scalaVersion := \"$$version\"; test:runMain org.junit.runner.JUnitCore com.qingstor.sdk.steps.TestRunner"""; \
+	done
 	@echo "ok"
 
-.PHONY: release
-release:
+.PHONY: build_jar
+build_jar:
 	@echo "pack the source code"
-	sbt assembly
+	@sbt clean
+	@sbt +assembly
 	@echo "ok"
 
 .PHONY: clean
 clean:
-	rm -rf com/ release/
+	@sbt +clean
 	@echo "ok"

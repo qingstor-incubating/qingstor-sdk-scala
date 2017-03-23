@@ -98,29 +98,35 @@ class RequestBuilder(op: Operation, in: Input) {
         QSRequestUtil.getRequestParams(input, QSConstants.ParamsLocationElement)
       if (elements.nonEmpty) {
         val bytes = JsonUtil.encode(elements).compactPrint.getBytes
-        HttpEntity(givenContentType.getOrElse(ContentTypes.`application/json`), bytes)
+        HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType,
+          ContentTypes.`application/json`), bytes)
       } else {
         val body: Map[String, AnyRef] = QSRequestUtil
           .getRequestParams(input, QSConstants.ParamsLocationBody)
         if (body.isEmpty)
-          HttpEntity(givenContentType.getOrElse(ContentTypes.NoContentType), ByteString.empty)
+          HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType,
+            ContentTypes.NoContentType), ByteString.empty)
         else if (body.contains("Body")) {
           val Body = body.getOrElse("Body", "")
           Body match {
             case bodyString: String =>
-              HttpEntity(givenContentType.getOrElse(ContentTypes.`text/plain(UTF-8)`), bodyString.getBytes)
+              HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType,
+                ContentTypes.`text/plain(UTF-8)`), bodyString.getBytes)
             case file: File =>
-              HttpEntity.fromPath(givenContentType.getOrElse(QSRequestUtil.parseContentType(file)), file.toPath)
+              HttpEntity.fromPath(RequestBuilder.eitherGetOrElse(givenContentType,
+                QSRequestUtil.parseContentType(file)), file.toPath)
             case bytes: Array[Byte] =>
               HttpEntity(bytes)
           }
         } else {
           val bytes = JsonUtil.encode(body).compactPrint.getBytes
-          HttpEntity(givenContentType.getOrElse(ContentTypes.`application/json`), bytes)
+          HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType,
+            ContentTypes.`application/json`), bytes)
         }
       }
     } else {
-      HttpEntity(givenContentType.getOrElse(ContentTypes.NoContentType), ByteString.empty)
+      HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType,
+        ContentTypes.NoContentType), ByteString.empty)
     }
   }
 
@@ -139,4 +145,9 @@ class RequestBuilder(op: Operation, in: Input) {
 object RequestBuilder {
   def apply(operation: Operation, input: Input): RequestBuilder =
     new RequestBuilder(operation, input)
+
+  def eitherGetOrElse[B](either: Either[_, B], or: B): B = either match {
+    case Right(r) => r
+    case Left(_) => or
+  }
 }
