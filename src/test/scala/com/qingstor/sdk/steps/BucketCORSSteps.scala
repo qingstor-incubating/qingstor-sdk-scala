@@ -55,9 +55,10 @@ class BucketCORSSteps extends En{
   })
 
   Then("^get bucket CORS status code is (\\d+)$", new A1[Integer]{
-    override def accept(arg: Integer): Unit = {}
-    val status = BucketCORSSteps.getBucketCORSOutput.statusCode.getOrElse(-1)
-    assert(status == arg)
+    override def accept(arg: Integer): Unit = {
+      val status = BucketCORSSteps.getBucketCORSOutput.statusCode.getOrElse(-1)
+      assert(status == arg)
+    }
   })
 
   And("get bucket CORS should have allowed origin \"(.*)\"$", new A1[String] {
