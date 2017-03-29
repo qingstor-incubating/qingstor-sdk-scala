@@ -7,6 +7,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.ActorMaterializer
 import com.qingstor.sdk.constant.QSConstants
+import com.qingstor.sdk.model.QSHttpResponse
 import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.util.QSLogger
 import com.typesafe.config.ConfigFactory

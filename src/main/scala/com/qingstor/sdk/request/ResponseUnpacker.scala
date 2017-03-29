@@ -7,10 +7,12 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.stream.ActorMaterializer
 import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.exception.QingStorException
+import com.qingstor.sdk.model.QSHttpResponse
 import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.util.QSRequestUtil
 import spray.json.{JsValue, JsonFormat}
 import com.qingstor.sdk.service.QSJsonProtocol._
+
 import scala.reflect._
 import scala.concurrent.{ExecutionContextExecutor, Future}
 

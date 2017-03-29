@@ -5,7 +5,7 @@ import java.io.{BufferedInputStream, File, FileInputStream}
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import com.qingstor.sdk.config.QSConfig
-import com.qingstor.sdk.model.QSModels.{Operation, QSHttpResponse}
+import com.qingstor.sdk.model.QSModels.Operation
 import org.scalatest.FunSuite
 
 class ResponseUnpackerTest extends FunSuite{

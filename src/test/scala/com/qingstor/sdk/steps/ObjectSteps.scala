@@ -5,7 +5,7 @@ import java.net.URL
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.qingstor.sdk.model.QSModels
+import com.qingstor.sdk.model.QSHttpResponse
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.request.QSRequest
 import com.qingstor.sdk.service.Object
@@ -217,7 +217,7 @@ object ObjectSteps {
 
   private var putObjectOutput: Object.PutObjectOutput = _
   private var getObjectRequest: QSRequest = _
-  private var getObjectResponse: QSModels.QSHttpResponse = _
+  private var getObjectResponse: QSHttpResponse = _
   private var getObjectOutput: Object.GetObjectOutput = _
   private var getObjectWithQueryOutput: BufferedInputStream = _
   private var headObjectOutput: Object.HeadObjectOutput = _
