@@ -17,6 +17,7 @@ install:
   - go get -u github.com/yunify/snips
 
 script:
+  - make help
   - make update
   - make generate
   - make unit
