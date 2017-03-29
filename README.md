@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/cheerx/qingstor-sdk-scala.svg?branch=master)](https://travis-ci.org/cheerx/qingstor-sdk-scala)
 [![API Reference](http://img.shields.io/badge/api-reference-green.svg)](http://docs.qingcloud.com/qingstor/)
-[![License](http://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/yunify/qingstor-sdk-go/blob/master/LICENSE)
+[![License](http://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/cheerx/qingstor-sdk-scala/blob/master/LICENSE)
 
 the third-party QingStor SDK for the Scala programing language
 
