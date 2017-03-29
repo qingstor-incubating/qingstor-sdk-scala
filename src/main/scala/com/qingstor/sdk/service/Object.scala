@@ -126,6 +126,8 @@ class Object(_config: QSConfig, _bucketName: String, _zone: String) {
         Unmarshal(response.getEntity).to[Array[Byte]].map { bytes =>
           val out = GetObjectOutput(
             body = bytes,
+            `Content-Length` =
+              response.getEntity.contentLengthOption.map(_.toInt),
             `Content-Range` = Option(response.getContentRange),
             `ETag` = Option(response.getETag),
             `X-QS-Encryption-Customer-Algorithm` =
@@ -540,6 +542,8 @@ object Object {
 
   }
   case class GetObjectOutput(
+      // Object content length
+      `Content-Length`: Option[Int] = None,
       // Range of response data content
       `Content-Range`: Option[String] = None,
       // MD5sum of the object
