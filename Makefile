@@ -18,7 +18,7 @@ all: update generate unit test release
 .PHONY: update
 update:
 	@git submodule init
-	@git submodule update --remote
+	git submodule update --remote
 	@echo "ok"
 
 .PHONY: generate
@@ -61,4 +61,5 @@ build_jar:
 .PHONY: clean
 clean:
 	@sbt +clean
+	rm -rf release/
 	@echo "ok"
