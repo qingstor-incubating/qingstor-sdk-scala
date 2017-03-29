@@ -17,7 +17,7 @@ all: update generate unit test release
 
 .PHONY: update
 update:
-	@git submodule init
+	git submodule init
 	git submodule update --remote
 	@echo "ok"
 
@@ -30,8 +30,7 @@ generate:
         --service=qingstor --service-api-version=latest \
         --spec="./specs" --template="./template" \
         --output="./src/main/scala/com/qingstor/sdk/service"
-	./get-scalafmt.sh
-	./scalafmt
+	sbt scalafmt
 	@echo "OK"
 
 .PHONY: unit
