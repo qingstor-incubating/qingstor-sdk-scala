@@ -1,14 +1,15 @@
 package com.qingstor.sdk.request
 
-import java.net.URI
-
 import akka.actor.ActorSystem
+import akka.http.scaladsl.settings.ConnectionPoolSettings
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.ActorMaterializer
+import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.util.QSLogger
+import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.Future
 
@@ -17,13 +18,25 @@ class QSRequest(_operation: Operation, _input: Input) {
   val operation: Operation = _operation
   val HTTPRequest: HttpRequest = build()
 
-  def send()(
-    implicit system: ActorSystem,
-    mat: ActorMaterializer): Future[QSHttpResponse] = {
+  def send()(implicit system: ActorSystem,
+             mat: ActorMaterializer): Future[QSHttpResponse] = {
     import system.dispatcher
-    Http(system).singleRequest(sign(HTTPRequest)).map { response =>
-      ResponseUnpacker(response, operation).unpackResponse()
-    }
+    val config = ConfigFactory.parseString(s"""
+         |akka.http {
+         |  host-connection-pool {
+         |    client {
+         |      connecting-timeout = "5s"
+         |      connection-timeout = "5s"
+         |      user-agent-header = "${QSConstants.UserAgent}"
+         |    }
+         |    max-retries = ${operation.config.connection_retries}
+         |  }
+         |}
+      """.stripMargin).withFallback(ConfigFactory.defaultReference())
+    Http(system).singleRequest(
+      request = sign(HTTPRequest),
+      settings = ConnectionPoolSettings(config)
+    ).map(ResponseUnpacker(_, operation).unpackResponse())
   }
 
   private def build(): HttpRequest = {
@@ -64,9 +77,9 @@ object QSRequest {
     val secretAccessKey = request.operation.config.secret_access_key
     val authQueries =
       QSSigner.getQueryAuthorization(request.HTTPRequest,
-        accessKeyID,
-        secretAccessKey,
-        expires)
+                                     accessKeyID,
+                                     secretAccessKey,
+                                     expires)
     val oriQueries = request.HTTPRequest.uri.query().toMap
     request.HTTPRequest.uri.withQuery(Uri.Query(oriQueries ++ authQueries))
   }

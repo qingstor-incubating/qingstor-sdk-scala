@@ -2,7 +2,19 @@ package com.qingstor.sdk.constant
 
 import akka.actor.ActorSystem
 
+import scala.io.Source
+
 object QSConstants {
+  private def getSDKVersion: String = {
+    val pattern = """(?<!\\)(\"|\')(.*?)(?<!\\)\1""".r
+    val versionLine = Source.fromFile("build.sbt").getLines().find(_.startsWith("version := ")).getOrElse("")
+    pattern.findFirstIn(versionLine).getOrElse("").replace("\"", "")
+  }
+
+  private val scalaVersion: String = util.Properties.versionNumberString
+  private val osName: String = util.Properties.osName
+  private val arch: String = System.getProperty("os.arch")
+
   final val QingStorSystem: ActorSystem = ActorSystem("QingStor")
 
   val LogFatal: String = "fatal"
@@ -25,4 +37,6 @@ object QSConstants {
 
   val BucketNamePlaceHolder: String = "{bucketName}"
   val ObjectKeyPlaceHolder: String = "{objectKey}"
+
+  val UserAgent: String = s"qingstor-sdk-scala/$getSDKVersion (Scala $scalaVersion; $osName $arch)"
 }
