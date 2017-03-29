@@ -24,6 +24,6 @@ script:
   - make update
   - make generate
   - make unit
-  - make release
+  - make build_jar
   - make clean
 
