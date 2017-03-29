@@ -1,0 +1,25 @@
+language: scala
+sudo: required
+
+scala:
+  - 2.11.0
+  - 2.12.1
+
+jdk:
+  - oraclejdk8
+  - openjdk8
+
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq cmake git golang
+
+install:
+  - go get -u github.com/yunify/snips
+
+script:
+  - make update
+  - make generate
+  - make unit
+  - make release
+  - make clean
+
