@@ -118,10 +118,15 @@ class BucketSteps extends En {
     override def accept(args: String): Unit = {
       val rawJson: String = args
       val json = rawJson.parseJson.asJsObject
-      val contentMD5 = SecurityUtil.encodeToBase64String(SecurityUtil.getMD5(json.compactPrint))
       val quiet = json.fields("quiet").asInstanceOf[JsBoolean].value
       val keys = json.fields("objects").asInstanceOf[JsArray].elements
         .toList.map(_.convertTo[KeyModel])
+      val contentMD5 = SecurityUtil.encodeToBase64String(SecurityUtil.getMD5(
+        JsObject(
+          ("objects", json.fields("objects")),
+          ("quiet", json.fields("quiet"))
+        ).compactPrint
+      ))
       val input = DeleteMultipleObjectsInput(
         contentMD5 = contentMD5,
         quiet = Option(quiet),
