@@ -2,7 +2,6 @@ package com.qingstor.sdk.util;
 
 import com.qingstor.sdk.annotation.ParamAnnotation;
 import com.qingstor.sdk.constant.QSConstants;
-import scala.Option;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
