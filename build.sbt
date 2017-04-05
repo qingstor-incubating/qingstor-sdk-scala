@@ -1,5 +1,5 @@
 name := "qingstor-sdk-scala"
-version := "1.0.0-alpha"
+version := "1.0.0-SNAPSHOT"
 scalaVersion := "2.12.1"
 organization := "com.qingstor"
 crossScalaVersions := Seq("2.12.1", "2.11.0")
