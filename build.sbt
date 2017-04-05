@@ -6,7 +6,7 @@ crossScalaVersions := Seq("2.12.1", "2.11.0")
 crossVersion := CrossVersion.binary
 
 libraryDependencies ++= {
-  val akkaHttpVersion = "10.0.3"
+  val akkaHttpVersion = "10.0.5"
   val cucumberVersion = "1.2.5"
   Seq(
     "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion,
