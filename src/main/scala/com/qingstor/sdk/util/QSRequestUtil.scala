@@ -4,20 +4,18 @@ import java.io.File
 
 import akka.http.scaladsl.model._
 
-import scala.collection.JavaConversions._
-
 object QSRequestUtil {
   // get all the non-null and non-None params of the specified location from Input
   def getRequestParams(any: Any, location: String): Map[String, AnyRef] = {
     val jMap = QSParamUtil.getRequestParams(any, location)
-    mapAsScalaMap(jMap).toSeq.sortBy(_._1).toMap
+    ConversionUtil.jMapAsScalaMap(jMap).toSeq.sortBy(_._1).toMap
   }
 
   // get all the needed params of the specified location from Output
   // return map contains the name of this param and its get method name
   def getResponseParams(any: Any, location: String): Map[String, String] = {
     val jMap = QSParamUtil.getResponseParams(any, location)
-    mapAsScalaMap[String, String](jMap).toMap
+    ConversionUtil.jMapAsScalaMap[String, String](jMap).toMap
   }
 
   // invoke a method specified by @methodName of class any
