@@ -30,7 +30,7 @@ class QSRequest(_operation: Operation, _input: Input) {
          |      connection-timeout = "5s"
          |      user-agent-header = "${QSConstants.UserAgent}"
          |    }
-         |    max-retries = ${operation.config.connection_retries}
+         |    max-retries = ${operation.config.connectionRetries}
          |  }
          |}
       """.stripMargin).withFallback(ConfigFactory.defaultReference())
@@ -49,8 +49,8 @@ class QSRequest(_operation: Operation, _input: Input) {
   }
 
   private def sign(request: HttpRequest = HTTPRequest): HttpRequest = {
-    val accessKeyID = operation.config.access_key_id
-    val secretAccessKey = operation.config.secret_access_key
+    val accessKeyID = operation.config.accessKeyId
+    val secretAccessKey = operation.config.secretAccessKey
     val authString =
       QSSigner.getHeadAuthorization(request, accessKeyID, secretAccessKey)
     request.addHeader(RawHeader("Authorization", authString))
@@ -58,8 +58,8 @@ class QSRequest(_operation: Operation, _input: Input) {
 
   private def check(): Boolean = {
     if (operation.config != null) {
-      val id = operation.config.access_key_id
-      val secret = operation.config.secret_access_key
+      val id = operation.config.accessKeyId
+      val secret = operation.config.secretAccessKey
       id != null && secret != null && id != "" && secret != ""
     } else {
       false
@@ -74,8 +74,8 @@ object QSRequest {
 
   def signQueries(request: QSRequest, liveTime: Long): Uri = {
     val expires = System.currentTimeMillis() + liveTime
-    val accessKeyID = request.operation.config.access_key_id
-    val secretAccessKey = request.operation.config.secret_access_key
+    val accessKeyID = request.operation.config.accessKeyId
+    val secretAccessKey = request.operation.config.secretAccessKey
     val authQueries =
       QSSigner.getQueryAuthorization(request.HTTPRequest,
                                      accessKeyID,
