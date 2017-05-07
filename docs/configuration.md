@@ -63,7 +63,7 @@ Change API endpoint
 ```scala
 val moreConfiguration = QSConfig()
 
-moreConfiguration.protocol("https")
+moreConfiguration.protocol("http")
 moreConfiguration.host("api.private.com")
-moreConfiguration.port(4433)
+moreConfiguration.port(80)
 ```
