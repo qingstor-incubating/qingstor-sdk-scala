@@ -61,19 +61,29 @@ public class QSParamUtil {
 
     public static Object invokeMethod(Object model, String methodName, Object[] params)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
-        String fieldName;
-        if (methodName.startsWith("set"))
-            fieldName = methodName.replaceFirst("set", "");
-        else
-            fieldName = methodName.replaceFirst("get", "");
-        fieldName = String.valueOf(fieldName.charAt(0)).toLowerCase() + fieldName.substring(1);
-        Class<?> fieldType = null;
-        try {
-            fieldType = model.getClass().getDeclaredField(fieldName).getType();
-        } catch (NoSuchFieldException e) {
-            fieldType = model.getClass().getSuperclass().getDeclaredField(fieldName).getType();
+        Method method;
+        if (methodName.startsWith("get"))
+            method = model.getClass().getMethod(methodName);
+        else {
+            String fieldName;
+            Class<?> fieldType = null;
+            if (methodName.startsWith("set")) {
+                fieldName = methodName.replaceFirst("set", "");
+                fieldName = String.valueOf(fieldName.charAt(0)).toLowerCase() + fieldName.substring(1);
+            }
+            else {
+                fieldName = methodName;
+            }
+            try {
+                fieldType = model.getClass().getDeclaredField(fieldName).getType();
+            } catch (NoSuchFieldException e) {
+                fieldType = model.getClass().getSuperclass().getDeclaredField(fieldName).getType();
+            }
+            method = model.getClass().getMethod(methodName, fieldType);
         }
-        Method method = model.getClass().getMethod(methodName, fieldType);
+
+        if (params == null)
+            return method.invoke(model, (Object []) null);
         return method.invoke(model, params);
     }
 }
