@@ -13,52 +13,48 @@ public class QSParamUtil {
     public static Map<String, Object> getRequestParams(Object model, String location)
             throws InvocationTargetException, IllegalAccessException {
         Map<String, Object> retParametersMap = new HashMap<>();
-        if (model != null) {
-            Method[] methods = model.getClass().getDeclaredMethods();
-            for (Method method:methods) {
-                ParamAnnotation annotation = method.getAnnotation(ParamAnnotation.class);
-                if (annotation != null) {
-                    if (annotation.location().equals(location)) {
-                        Object value = method.invoke(model, (Object[]) null);
-                        if (value != null && value.getClass() != scala.None$.class) {
-                            if (location.equals(QSConstants.ParamsLocationParam())
-                                    || location.equals(QSConstants.ParamsLocationHeader())) {
-                                if (value.getClass().equals(scala.Some.class)){
-                                    value = ((scala.Some)value).get();
-                                }
-                                Class cls = value.getClass();
-                                if (cls.equals(Integer.class)
-                                        || cls.equals(Long.class)
-                                        || cls.equals(Float.class)
-                                        || cls.equals(Double.class)
-                                        || cls.equals(Boolean.class)
-                                        || cls.equals(Character.class)) {
-                                    value = String.valueOf(value);
-                                }
-                                if (cls.equals(ZonedDateTime.class))
-                                    value = value.toString();
-                            }
-                            retParametersMap.put(annotation.name(), value);
-                        }
-                    }
-                }
+        if (model == null)
+            return retParametersMap;
+        Method[] methods = model.getClass().getDeclaredMethods();
+        for (Method method : methods) {
+            ParamAnnotation annotation = method.getAnnotation(ParamAnnotation.class);
+            if (annotation == null || !annotation.location().equals(location))
+                continue;
+            Object value = method.invoke(model, (Object[]) null);
+            if (value == null || value.getClass().equals(scala.None$.class))
+                continue;
+
+            if (!location.equals(QSConstants.ParamsLocationParam())
+                    && !location.equals(QSConstants.ParamsLocationHeader())) {
+                retParametersMap.put(annotation.name(), value);
+                continue;
             }
+
+            // Parameters in header or params can only be String
+            if (value.getClass().equals(scala.Some.class))
+                value = ((scala.Some)value).get();
+            Class cls = value.getClass();
+            if (cls.equals(Integer.class) || cls.equals(Long.class) || cls.equals(Double.class)
+                    || cls.equals(Float.class) || cls.equals(Boolean.class) || cls.equals(Character.class))
+                value = String.valueOf(value);
+            if (cls.equals(ZonedDateTime.class))
+                value = value.toString();
+            retParametersMap.put(annotation.name(), value);
         }
         return retParametersMap;
     }
 
     public static Map<String, String> getResponseParams(Object model, String location) {
         Map<String, String> retParametersMap = new HashMap<>();
-        if (model != null) {
-            Method[] methods = model.getClass().getMethods();
-            for (Method method:methods) {
-                ParamAnnotation annotation = method.getAnnotation(ParamAnnotation.class);
-                if (annotation != null) {
-                    if (annotation.location().equals(location)) {
-                        retParametersMap.put(annotation.name(), method.getName());
-                    }
-                }
-            }
+        if (model == null)
+            return retParametersMap;
+        Method[] methods = model.getClass().getMethods();
+        for (Method method : methods) {
+            ParamAnnotation annotation = method.getAnnotation(ParamAnnotation.class);
+            if (annotation == null)
+                continue;
+            if (annotation.location().equals(location))
+                retParametersMap.put(annotation.name(), method.getName());
         }
         return retParametersMap;
     }
