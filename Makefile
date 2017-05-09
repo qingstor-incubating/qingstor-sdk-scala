@@ -30,6 +30,7 @@ generate:
         --service=qingstor --service-api-version=latest \
         --spec="./specs" --template="./template" \
         --output="./src/main/scala/com/qingstor/sdk/service"
+	@rm ./src/main/scala/com/qingstor/sdk/service/Object.scala
 	sbt scalafmt
 	@echo "OK"
 

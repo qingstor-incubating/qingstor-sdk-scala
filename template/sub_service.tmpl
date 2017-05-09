@@ -1,5 +1,5 @@
 {{- $service := .Data.Service -}}
-{{- $subService := index .Data.SubServices .CurrentSubServiceID -}}
+{{- $subServices := .Data.SubServices -}}
 package com.qingstor.sdk.service
 
 import com.qingstor.sdk.config.QSConfig
@@ -11,8 +11,10 @@ import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.service.QSJsonProtocol._
 import akka.stream.ActorMaterializer
 import scala.concurrent.{ExecutionContextExecutor, Future}
-{{- if eq $subService.Name "Bucket"}}
 import com.qingstor.sdk.service.Bucket._
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import java.io.File
+import com.qingstor.sdk.exception.QingStorException
 
 class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     implicit val system = QSConstants.QingStorSystem
@@ -22,47 +24,19 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     val bucketName: String = _bucketName
     val zone: String = _zone
 
-    {{range $_, $operation := $subService.Operations}}
-        {{template "RenderOperation" passThrough $subService $operation}}
+    {{range $_, $subService := $subServices}}
+        {{range $_, $operation := $subService.Operations}}
+            {{template "RenderOperation" passThrough $subService $operation}}
+        {{end}}
     {{end}}
 }
 
 object Bucket {
-    def apply(config: QSConfig, bucketName: String, zone: String): Bucket
-        = new Bucket(config, bucketName, zone)
+    def apply(config: QSConfig, bucketName: String, zone: String): Bucket = new Bucket(config, bucketName, zone)
 
-    {{- range $_, $operation := $subService.Operations}}
-        {{template "RenderProperty" passThrough $operation}}
-    {{- end}}
-}
-{{- else if eq $subService.Name "Object"}}
-import akka.http.scaladsl.unmarshalling.Unmarshal
-import com.qingstor.sdk.service.Object._
-import java.io.File
-import com.qingstor.sdk.exception.QingStorException
-
-class Object(_config: QSConfig, _bucketName: String, _zone: String) {
-    implicit val system = QSConstants.QingStorSystem
-    implicit val materializer = ActorMaterializer()
-    implicit val ece: ExecutionContextExecutor = system.dispatcher
-    val config: QSConfig = _config
-    val bucketName: String = _bucketName
-    val zone: String = _zone
-
-    {{range $_, $operation := $subService.Operations}}
-        {{template "RenderOperation" passThrough $subService $operation}}
+    {{range $_, $subService := $subServices}}
+        {{- range $_, $operation := $subService.Operations}}
+            {{template "RenderProperty" passThrough $operation}}
+        {{- end}}
     {{end}}
 }
-
-object Object {
-    def apply(config: QSConfig, bucketName: String, zone: String) : Object
-        = new Object(config, bucketName, zone)
-
-    def apply(bucket: Bucket): Object = new Object(
-        bucket.config, bucket.bucketName, bucket.zone)
-
-    {{range $_, $operation := $subService.Operations}}
-        {{template "RenderProperty" passThrough $operation}}
-    {{end}}
-}
-{{end}}
