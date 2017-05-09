@@ -34,7 +34,7 @@ class BucketCORSSteps extends En{
         .toList.map(_.convertTo[CORSRuleModel])
 
       val input = Bucket.PutBucketCORSInput(rules)
-      val outputFuture = BucketCORSSteps.bucket.putBucketCORS(input)
+      val outputFuture = BucketCORSSteps.bucket.putCORS(input)
       BucketCORSSteps.putBucketCORSOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -49,7 +49,7 @@ class BucketCORSSteps extends En{
   When("^get bucket CORS$", new A0 {
     override def accept(): Unit = {
       val input = Bucket.GetBucketCORSInput()
-      val outputFuture = BucketCORSSteps.bucket.getBucketCORS(input)
+      val outputFuture = BucketCORSSteps.bucket.getCORS(input)
       BucketCORSSteps.getBucketCORSOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -73,7 +73,7 @@ class BucketCORSSteps extends En{
   When("^delete bucket CORS$", new A0 {
     override def accept(): Unit = {
       val input = Bucket.DeleteBucketCORSInput()
-      val outputFuture = BucketCORSSteps.bucket.deleteBucketCORS(input)
+      val outputFuture = BucketCORSSteps.bucket.deleteCORS(input)
       BucketCORSSteps.deleteBucketCORSOutput = Await.result(outputFuture, Duration.Inf)
     }
   })

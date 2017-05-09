@@ -4,7 +4,6 @@ import java.time.ZonedDateTime
 
 import com.qingstor.sdk.model.QSModels.{ErrorMessage, Output}
 import com.qingstor.sdk.service.Bucket._
-import com.qingstor.sdk.service.Object._
 import com.qingstor.sdk.service.QingStor._
 import com.qingstor.sdk.service.Types._
 import com.qingstor.sdk.util.JsonUtil

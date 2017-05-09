@@ -8,7 +8,7 @@ import akka.stream.ActorMaterializer
 import com.qingstor.sdk.model.QSHttpResponse
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.request.QSRequest
-import com.qingstor.sdk.service.Object
+import com.qingstor.sdk.service.Bucket
 import cucumber.api.java8.StepdefBody._
 import cucumber.api.java8.En
 import com.qingstor.sdk.steps.TestUtil.TestConfig
@@ -24,7 +24,7 @@ class ObjectSteps extends En {
   private def initBucket(): Unit = {
     ObjectSteps.config = TestUtil.getQSConfig
     ObjectSteps.testConfig = TestUtil.getTestConfig
-    ObjectSteps.obj = Object(
+    ObjectSteps.bucket = Bucket(
       ObjectSteps.config,
       ObjectSteps.testConfig.bucket_name,
       ObjectSteps.testConfig.zone
@@ -36,11 +36,11 @@ class ObjectSteps extends En {
       initBucket()
       TestUtil.createTmpFile("sdk_bin", 1)
       val file = new File("/tmp/sdk_bin")
-      val input = Object.PutObjectInput(
+      val input = Bucket.PutObjectInput(
         contentLength = file.length().toInt,
         body = file
       )
-      val outputFuture = ObjectSteps.obj.putObject(arg, input)
+      val outputFuture = ObjectSteps.bucket.putObject(arg, input)
       ObjectSteps.putObjectOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -55,11 +55,11 @@ class ObjectSteps extends En {
   When("^copy object with key \"(.*)\"", new A1[String] {
     override def accept(arg: String): Unit = {
       val copyKey = "%s_copy".format(arg)
-      val input = Object.PutObjectInput(
+      val input = Bucket.PutObjectInput(
         contentLength = 0,
         xQSCopySource = Some("/%s/%s".format(ObjectSteps.testConfig.bucket_name, arg))
       )
-      val outputFuture = ObjectSteps.obj.putObject(copyKey, input)
+      val outputFuture = ObjectSteps.bucket.putObject(copyKey, input)
       ObjectSteps.putObjectOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -75,11 +75,11 @@ class ObjectSteps extends En {
     override def accept(arg: String): Unit = {
       val copyKey = arg + "_copy"
       val moveKey = arg + "_move"
-      val input = Object.PutObjectInput(
+      val input = Bucket.PutObjectInput(
         contentLength = 0,
         xQSMoveSource = Some("/%s/%s".format(ObjectSteps.testConfig.bucket_name, copyKey))
       )
-      val outputFuture = ObjectSteps.obj.putObject(moveKey, input)
+      val outputFuture = ObjectSteps.bucket.putObject(moveKey, input)
       ObjectSteps.putObjectOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -93,8 +93,8 @@ class ObjectSteps extends En {
 
   When("^get object with key \"(.*)\"$", new A1[String] {
     override def accept(arg: String): Unit = {
-      val input = Object.GetObjectInput()
-      val outputFuture = ObjectSteps.obj.getObject(arg, input)
+      val input = Bucket.GetObjectInput()
+      val outputFuture = ObjectSteps.bucket.getObject(arg, input)
       ObjectSteps.getObjectOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -115,8 +115,8 @@ class ObjectSteps extends En {
 
   When("^get object \"(.*)\" with content type \"(.*)\"", new A2[String, String] {
     override def accept(arg1: String, arg2: String): Unit = {
-      val input = Object.GetObjectInput(responseContentType = Some(arg2))
-      ObjectSteps.getObjectRequest = ObjectSteps.obj.getObjectRequest(arg1, input)
+      val input = Bucket.GetObjectInput(responseContentType = Some(arg2))
+      ObjectSteps.getObjectRequest = ObjectSteps.bucket.getObjectRequest(arg1, input)
       val outputFuture = ObjectSteps.getObjectRequest.send()
       ObjectSteps.getObjectResponse = Await.result(outputFuture, Duration.Inf)
     }
@@ -132,8 +132,8 @@ class ObjectSteps extends En {
 
   When("^get object \"(.*)\" with query signature$", new A1[String] {
     override def accept(arg: String): Unit = {
-      val input = Object.GetObjectInput()
-      val request = ObjectSteps.obj.getObjectRequest(arg, input)
+      val input = Bucket.GetObjectInput()
+      val request = ObjectSteps.bucket.getObjectRequest(arg, input)
       val uri = QSRequest.signQueries(request, 100000)
       val conn = new URL(uri.toString()).openConnection()
       conn.setConnectTimeout(5000)
@@ -152,7 +152,7 @@ class ObjectSteps extends En {
 
   When("^head object with key \"(.*)\"$", new A1[String] {
     override def accept(arg: String): Unit = {
-      val outputFuture = ObjectSteps.obj.headObject(arg, Object.HeadObjectInput())
+      val outputFuture = ObjectSteps.bucket.headObject(arg, Bucket.HeadObjectInput())
       ObjectSteps.headObjectOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -166,11 +166,11 @@ class ObjectSteps extends En {
   When("^options object \"(.*)\" with method \"(.*)\" and origin \"(.*)\"$", 
     new A3[String, String, String] {
     override def accept(arg1: String, arg2: String, arg3: String): Unit = {
-      val input = Object.OptionsObjectInput(
+      val input = Bucket.OptionsObjectInput(
         accessControlRequestMethod = arg2,
         origin = arg3
       )
-      val outputFuture = ObjectSteps.obj.optionsObject(arg1, input)
+      val outputFuture = ObjectSteps.bucket.optionsObject(arg1, input)
       ObjectSteps.optionsObjectOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -184,7 +184,7 @@ class ObjectSteps extends En {
 
   When("^delete object with key \"(.*)\"$", new A1[String] {
     override def accept(arg: String): Unit = {
-      val outputFuture = ObjectSteps.obj.deleteObject(arg, Object.DeleteObjectInput())
+      val outputFuture = ObjectSteps.bucket.deleteObject(arg, Bucket.DeleteObjectInput())
       ObjectSteps.deleteObjectOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -198,7 +198,7 @@ class ObjectSteps extends En {
   When("^delete the move object with key \"(.*)\"$", new A1[String] {
     override def accept(arg: String): Unit = {
       val moveKey = arg + "_move"
-      val outputFuture = ObjectSteps.obj.deleteObject(moveKey, Object.DeleteObjectInput())
+      val outputFuture = ObjectSteps.bucket.deleteObject(moveKey, Bucket.DeleteObjectInput())
       ObjectSteps.deleteObjectOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -213,14 +213,14 @@ class ObjectSteps extends En {
 object ObjectSteps {
   private var config: QSConfig = _
   private var testConfig: TestConfig = _
-  private var obj: Object = _
+  private var bucket: Bucket = _
 
-  private var putObjectOutput: Object.PutObjectOutput = _
+  private var putObjectOutput: Bucket.PutObjectOutput = _
   private var getObjectRequest: QSRequest = _
   private var getObjectResponse: QSHttpResponse = _
-  private var getObjectOutput: Object.GetObjectOutput = _
+  private var getObjectOutput: Bucket.GetObjectOutput = _
   private var getObjectWithQueryOutput: BufferedInputStream = _
-  private var headObjectOutput: Object.HeadObjectOutput = _
-  private var optionsObjectOutput: Object.OptionsObjectOutput = _
-  private var deleteObjectOutput: Object.DeleteObjectOutput = _
+  private var headObjectOutput: Bucket.HeadObjectOutput = _
+  private var optionsObjectOutput: Bucket.OptionsObjectOutput = _
+  private var deleteObjectOutput: Bucket.DeleteObjectOutput = _
 }

@@ -35,7 +35,7 @@ class BucketPolicySteps extends En {
         JsObject(fields).convertTo[StatementModel]
       }
       val input = Bucket.PutBucketPolicyInput(statements)
-      val outputFuture = BucketPolicySteps.bucket.putBucketPolicy(input)
+      val outputFuture = BucketPolicySteps.bucket.putPolicy(input)
       BucketPolicySteps.putBucketPolicyOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -50,7 +50,7 @@ class BucketPolicySteps extends En {
   When("^get bucket policy$", new A0 {
     override def accept(): Unit = {
       val input = Bucket.GetBucketPolicyInput()
-      val outputFuture = BucketPolicySteps.bucket.getBucketPolicy(input)
+      val outputFuture = BucketPolicySteps.bucket.getPolicy(input)
       BucketPolicySteps.getBucketPolicyOutput = Await.result(outputFuture,
         Duration.Inf)
     }
@@ -79,7 +79,7 @@ class BucketPolicySteps extends En {
   When("^delete bucket policy$", new A0 {
     override def accept(): Unit = {
       val input = Bucket.DeleteBucketPolicyInput()
-      val outputFuture = BucketPolicySteps.bucket.deleteBucketPolicy(input)
+      val outputFuture = BucketPolicySteps.bucket.deletePolicy(input)
       BucketPolicySteps.deleteBucketPolicyOutput = Await.result(outputFuture,
         Duration.Inf)
     }

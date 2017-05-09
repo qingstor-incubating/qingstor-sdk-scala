@@ -4,7 +4,7 @@ import java.io.File
 
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.exception.QingStorException
-import com.qingstor.sdk.service.Object
+import com.qingstor.sdk.service.Bucket
 import cucumber.api.java8.StepdefBody._
 import cucumber.api.java8.En
 import com.qingstor.sdk.steps.TestUtil.TestConfig
@@ -17,7 +17,7 @@ class ObjectMultipartSteps extends En {
   private def initBucket(): Unit = {
     ObjectMultipartSteps.config = TestUtil.getQSConfig
     ObjectMultipartSteps.testConfig = TestUtil.getTestConfig
-    ObjectMultipartSteps.obj = Object(
+    ObjectMultipartSteps.bucket = Bucket(
       ObjectMultipartSteps.config,
       ObjectMultipartSteps.testConfig.bucket_name,
       ObjectMultipartSteps.testConfig.zone
@@ -27,8 +27,8 @@ class ObjectMultipartSteps extends En {
   When("^initiate multipart upload with key \"(.*)\"$", new A1[String] {
     override def accept(arg: String): Unit = {
       initBucket()
-      val input = Object.InitiateMultipartUploadInput()
-      val outputFuture = ObjectMultipartSteps.obj.initiateMultipartUpload(arg, input)
+      val input = Bucket.InitiateMultipartUploadInput()
+      val outputFuture = ObjectMultipartSteps.bucket.initiateMultipartUpload(arg, input)
       ObjectMultipartSteps.initiateMultipartUploadOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -43,12 +43,12 @@ class ObjectMultipartSteps extends En {
     override def accept(arg: String): Unit = {
       TestUtil.createTmpFile(name = "sdk_bin_part_0", count = 5, bs = 1048576)
       val file = new File("/tmp/sdk_bin_part_0")
-      val input = Object.UploadMultipartInput(
+      val input = Bucket.UploadMultipartInput(
         partNumber = 0,
         uploadID = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse(""),
         body = file
       )
-      val of = ObjectMultipartSteps.obj.uploadMultipart(arg, input)
+      val of = ObjectMultipartSteps.bucket.uploadMultipart(arg, input)
       ObjectMultipartSteps.uploadMultipartOutput = Await.result(of, Duration.Inf)
       file.delete()
     }
@@ -64,12 +64,12 @@ class ObjectMultipartSteps extends En {
     override def accept(arg: String): Unit = {
       TestUtil.createTmpFile(name = "sdk_bin_part_1", count = 4, bs = 1048576)
       val file = new File("/tmp/sdk_bin_part_1")
-      val input = Object.UploadMultipartInput(
+      val input = Bucket.UploadMultipartInput(
         partNumber = 1,
         uploadID = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse(""),
         body = file
       )
-      val of = ObjectMultipartSteps.obj.uploadMultipart(arg, input)
+      val of = ObjectMultipartSteps.bucket.uploadMultipart(arg, input)
       ObjectMultipartSteps.uploadMultipartOutput = Await.result(of, Duration.Inf)
       file.delete()
     }
@@ -85,12 +85,12 @@ class ObjectMultipartSteps extends En {
     override def accept(arg: String): Unit = {
       TestUtil.createTmpFile(name = "sdk_bin_part_2", count = 3, bs = 1048576)
       val file = new File("/tmp/sdk_bin_part_2")
-      val input = Object.UploadMultipartInput(
+      val input = Bucket.UploadMultipartInput(
         partNumber = 2,
         uploadID = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse(""),
         body = file
       )
-      val of = ObjectMultipartSteps.obj.uploadMultipart(arg, input)
+      val of = ObjectMultipartSteps.bucket.uploadMultipart(arg, input)
       ObjectMultipartSteps.uploadMultipartOutput = Await.result(of, Duration.Inf)
       file.delete()
     }
@@ -105,8 +105,8 @@ class ObjectMultipartSteps extends En {
   When("""^list multipart with key "(.*)"$""", new A1[String] {
     override def accept(arg: String): Unit = {
       val id = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse("")
-      val input = Object.ListMultipartInput(uploadID = id)
-      val of = ObjectMultipartSteps.obj.listMultipart(arg, input)
+      val input = Bucket.ListMultipartInput(uploadID = id)
+      val of = ObjectMultipartSteps.bucket.listMultipart(arg, input)
       ObjectMultipartSteps.listMultipartOutput = Await.result(of, Duration.Inf)
     }
   })
@@ -127,11 +127,11 @@ class ObjectMultipartSteps extends En {
   When("""^complete multipart upload with key "(.*)"$""", new A1[String] {
     override def accept(arg: String): Unit = {
       val id = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse("")
-      val input = Object.CompleteMultipartUploadInput(
+      val input = Bucket.CompleteMultipartUploadInput(
         uploadID = id,
         objectParts = ObjectMultipartSteps.listMultipartOutput.`object_parts`
       )
-      val of = ObjectMultipartSteps.obj.completeMultipartUpload(arg, input)
+      val of = ObjectMultipartSteps.bucket.completeMultipartUpload(arg, input)
       ObjectMultipartSteps.completeMultipartUploadOutput = Await.result(of, Duration.Inf)
     }
   })
@@ -145,9 +145,9 @@ class ObjectMultipartSteps extends En {
   When("""^abort multipart upload with key "(.*)"$""", new A1[String] {
     override def accept(arg: String): Unit = {
       val id = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse("")
-      val input = Object.AbortMultipartUploadInput(id)
+      val input = Bucket.AbortMultipartUploadInput(id)
       ObjectMultipartSteps.abortMultipartUploadOutputFuture =
-        ObjectMultipartSteps.obj.abortMultipartUpload(arg, input)
+        ObjectMultipartSteps.bucket.abortMultipartUpload(arg, input)
     }
   })
 
@@ -165,8 +165,8 @@ class ObjectMultipartSteps extends En {
 
   When("""^delete the multipart object with key "(.*)"$""", new A1[String] {
     override def accept(arg: String): Unit = {
-      val input = Object.DeleteObjectInput()
-      val of = ObjectMultipartSteps.obj.deleteObject(arg, input)
+      val input = Bucket.DeleteObjectInput()
+      val of = ObjectMultipartSteps.bucket.deleteObject(arg, input)
       ObjectMultipartSteps.deleteObjectOutput = Await.result(of, Duration.Inf)
     }
   })
@@ -181,12 +181,12 @@ class ObjectMultipartSteps extends En {
 object ObjectMultipartSteps {
   private var config: QSConfig = _
   private var testConfig: TestConfig = _
-  private var obj: Object = _
+  private var bucket: Bucket = _
 
-  private var initiateMultipartUploadOutput: Object.InitiateMultipartUploadOutput = _
-  private var uploadMultipartOutput: Object.UploadMultipartOutput = _
-  private var listMultipartOutput: Object.ListMultipartOutput = _
-  private var completeMultipartUploadOutput: Object.CompleteMultipartUploadOutput = _
-  private var abortMultipartUploadOutputFuture: Future[Object.AbortMultipartUploadOutput] = _
-  private var deleteObjectOutput: Object.DeleteObjectOutput = _
+  private var initiateMultipartUploadOutput: Bucket.InitiateMultipartUploadOutput = _
+  private var uploadMultipartOutput: Bucket.UploadMultipartOutput = _
+  private var listMultipartOutput: Bucket.ListMultipartOutput = _
+  private var completeMultipartUploadOutput: Bucket.CompleteMultipartUploadOutput = _
+  private var abortMultipartUploadOutputFuture: Future[Bucket.AbortMultipartUploadOutput] = _
+  private var deleteObjectOutput: Bucket.DeleteObjectOutput = _
 }

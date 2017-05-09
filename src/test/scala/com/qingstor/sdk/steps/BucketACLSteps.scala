@@ -33,7 +33,7 @@ class BucketACLSteps extends En{
       val modelList = json.asJsObject.fields("acl").asInstanceOf[JsArray]
         .elements.toList.map(_.convertTo[ACLModel])
       val input = Bucket.PutBucketACLInput(modelList)
-      val outputFuture = BucketACLSteps.bucket.putBucketACL(input)
+      val outputFuture = BucketACLSteps.bucket.putACL(input)
       BucketACLSteps.putBucketACLOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -48,7 +48,7 @@ class BucketACLSteps extends En{
   When("^get bucket ACL$", new A0 {
     override def accept(): Unit = {
       val input = Bucket.GetBucketACLInput()
-      val outputFuture = BucketACLSteps.bucket.getBucketACL(input)
+      val outputFuture = BucketACLSteps.bucket.getACL(input)
       BucketACLSteps.getBucketACLOutput = Await.result(outputFuture, Duration.Inf)
     }
   })

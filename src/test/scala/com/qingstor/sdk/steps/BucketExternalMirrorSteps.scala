@@ -28,7 +28,7 @@ class BucketExternalMirrorSteps extends En{
       val json = arg.parseJson
       val sourceSite = json.asJsObject.fields("source_site").asInstanceOf[JsString].value
       val input = Bucket.PutBucketExternalMirrorInput(sourceSite)
-      val outputFuture = BucketExternalMirrorSteps.bucket.putBucketExternalMirror(input)
+      val outputFuture = BucketExternalMirrorSteps.bucket.putExternalMirror(input)
       BucketExternalMirrorSteps.putBucketExternalMirrorOutput = Await.result(outputFuture,
         Duration.Inf)
     }
@@ -44,7 +44,7 @@ class BucketExternalMirrorSteps extends En{
   When("^get bucket external mirror$", new A0 {
     override def accept(): Unit = {
       val input = Bucket.GetBucketExternalMirrorInput()
-      val outputFuture = BucketExternalMirrorSteps.bucket.getBucketExternalMirror(input)
+      val outputFuture = BucketExternalMirrorSteps.bucket.getExternalMirror(input)
       BucketExternalMirrorSteps.getBucketExternalMirrorOutput = Await.result(outputFuture,
         Duration.Inf)
     }
@@ -69,7 +69,7 @@ class BucketExternalMirrorSteps extends En{
   When("^delete bucket external mirror$", new A0 {
     override def accept(): Unit = {
       val input = Bucket.DeleteBucketExternalMirrorInput()
-      val outputFuture = BucketExternalMirrorSteps.bucket.deleteBucketExternalMirror(input)
+      val outputFuture = BucketExternalMirrorSteps.bucket.deleteExternalMirror(input)
       BucketExternalMirrorSteps.deleteBucketExternalMirrorOutput = Await.result(outputFuture,
         Duration.Inf)
     }

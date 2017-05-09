@@ -11,7 +11,6 @@ import cucumber.api.java8.StepdefBody._
 import cucumber.api.java8.En
 import com.qingstor.sdk.steps.TestUtil.TestConfig
 import spray.json._
-import com.qingstor.sdk.service.Object
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -39,7 +38,7 @@ class BucketSteps extends En {
   When("^put bucket$", new A0 {
     override def accept(): Unit = {
       val input = Bucket.PutBucketInput()
-      val outputFuture = BucketSteps.bucket.putBucket(input)
+      val outputFuture = BucketSteps.bucket.put(input)
       BucketSteps.putBucketOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -55,7 +54,7 @@ class BucketSteps extends En {
   When("^put same bucket again$", new A0 {
     override def accept(): Unit = {
       val input = Bucket.PutBucketInput()
-      val outputFuture = BucketSteps.bucket.putBucket(input)
+      val outputFuture = BucketSteps.bucket.put(input)
       try {
         BucketSteps.putBucketOutput2 = Await.result(outputFuture, Duration.Inf)
       } catch {
@@ -101,7 +100,7 @@ class BucketSteps extends En {
   When("^head bucket$", new A0 {
     override def accept(): Unit = {
       val input = Bucket.HeadBucketInput()
-      val outputFuture = BucketSteps.bucket.headBucket(input)
+      val outputFuture = BucketSteps.bucket.head(input)
       BucketSteps.headBucketOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -148,7 +147,7 @@ class BucketSteps extends En {
   When("^get bucket statistics$", new A0 {
     override def accept(): Unit = {
       val input = Bucket.GetBucketStatisticsInput()
-      val outputFuture = BucketSteps.bucket.getBucketStatistics(input)
+      val outputFuture = BucketSteps.bucket.getStatistics(input)
       BucketSteps.getBucketStatisticsOutput = Await.result(outputFuture, Duration.Inf)
     }
   })
@@ -186,9 +185,8 @@ class BucketSteps extends En {
   // Scenario: list multipart uploads
   Given("""^an object created by initiate multipart upload$""", new A0 {
     override def accept(): Unit = {
-      val input = Object.InitiateMultipartUploadInput()
-      BucketSteps.obj = Object(BucketSteps.bucket)
-      val of = BucketSteps.obj.initiateMultipartUpload(BucketSteps.objectKey, input)
+      val input = Bucket.InitiateMultipartUploadInput()
+      val of = BucketSteps.bucket.initiateMultipartUpload(BucketSteps.objectKey, input)
       BucketSteps.initiateMultipartUploadOutput = Await.result(of, Duration.Inf)
     }
   })
@@ -203,9 +201,9 @@ class BucketSteps extends En {
 
   Then("""^list multipart uploads count is (\d+)""", new A1[Integer] {
     override def accept(arg: Integer): Unit = {
-      val input = Object.AbortMultipartUploadInput(
+      val input = Bucket.AbortMultipartUploadInput(
         BucketSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse(""))
-      val of = BucketSteps.obj.abortMultipartUpload(BucketSteps.objectKey, input)
+      val of = BucketSteps.bucket.abortMultipartUpload(BucketSteps.objectKey, input)
       Await.result(of, Duration.Inf)
       assert(BucketSteps.listMultipartUploadsOutput.`uploads`.getOrElse(List.empty).length == arg)
     }
@@ -222,12 +220,11 @@ object BucketSteps {
   private var putBucketOutput2: Bucket.PutBucketOutput = _
   private var listObjectsOutput: Bucket.ListObjectsOutput = _
   private var headBucketOutput: Bucket.HeadBucketOutput = _
-  private var deleteBucketOutput: Bucket.DeleteBucketOutput = _
+//  private var deleteBucketOutput: Bucket.DeleteBucketOutput = _
   private var getBucketStatisticsOutput: Bucket.GetBucketStatisticsOutput = _
   private var deleteMultipleObjectsOutput: Bucket.DeleteMultipleObjectsOutput = _
 
-  private var obj: Object = _
-  private var objectKey = "list_multipart_uploads_object_key"
-  private var initiateMultipartUploadOutput: Object.InitiateMultipartUploadOutput = _
+  private val objectKey = "list_multipart_uploads_object_key"
+  private var initiateMultipartUploadOutput: Bucket.InitiateMultipartUploadOutput = _
   private var listMultipartUploadsOutput: Bucket.ListMultipartUploadsOutput = _
 }

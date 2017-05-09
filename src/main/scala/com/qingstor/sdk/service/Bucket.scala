@@ -24,8 +24,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // Delete does Delete a bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/delete.html
-  def deleteBucket(input: DeleteBucketInput): Future[DeleteBucketOutput] = {
-    val request = deleteBucketRequest(input)
+  def delete(input: DeleteBucketInput): Future[DeleteBucketOutput] = {
+    val request = deleteRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToGenericOutput[DeleteBucketOutput](
@@ -34,7 +34,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // DeleteRequest creates request and output object of DeleteBucket.
-  def deleteBucketRequest(input: DeleteBucketInput): QSRequest = {
+  def deleteRequest(input: DeleteBucketInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Bucket",
@@ -50,9 +50,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // DeleteCORS does Delete CORS information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/cors/delete_cors.html
-  def deleteBucketCORS(
+  def deleteCORS(
       input: DeleteBucketCORSInput): Future[DeleteBucketCORSOutput] = {
-    val request = deleteBucketCORSRequest(input)
+    val request = deleteCORSRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToGenericOutput[DeleteBucketCORSOutput](
@@ -61,7 +61,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // DeleteCORSRequest creates request and output object of DeleteBucketCORS.
-  def deleteBucketCORSRequest(input: DeleteBucketCORSInput): QSRequest = {
+  def deleteCORSRequest(input: DeleteBucketCORSInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Bucket CORS",
@@ -77,9 +77,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // DeleteExternalMirror does Delete external mirror of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/external_mirror/delete_external_mirror.html
-  def deleteBucketExternalMirror(input: DeleteBucketExternalMirrorInput)
+  def deleteExternalMirror(input: DeleteBucketExternalMirrorInput)
     : Future[DeleteBucketExternalMirrorOutput] = {
-    val request = deleteBucketExternalMirrorRequest(input)
+    val request = deleteExternalMirrorRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToGenericOutput[DeleteBucketExternalMirrorOutput](
@@ -88,7 +88,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // DeleteExternalMirrorRequest creates request and output object of DeleteBucketExternalMirror.
-  def deleteBucketExternalMirrorRequest(
+  def deleteExternalMirrorRequest(
       input: DeleteBucketExternalMirrorInput): QSRequest = {
     val operation = Operation(
       config = config,
@@ -105,9 +105,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // DeletePolicy does Delete policy information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/policy/delete_policy.html
-  def deleteBucketPolicy(
+  def deletePolicy(
       input: DeleteBucketPolicyInput): Future[DeleteBucketPolicyOutput] = {
-    val request = deleteBucketPolicyRequest(input)
+    val request = deletePolicyRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToGenericOutput[DeleteBucketPolicyOutput](
@@ -116,7 +116,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // DeletePolicyRequest creates request and output object of DeleteBucketPolicy.
-  def deleteBucketPolicyRequest(input: DeleteBucketPolicyInput): QSRequest = {
+  def deletePolicyRequest(input: DeleteBucketPolicyInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "DELETE Bucket Policy",
@@ -160,8 +160,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // GetACL does Get ACL information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/get_acl.html
-  def getBucketACL(input: GetBucketACLInput): Future[GetBucketACLOutput] = {
-    val request = getBucketACLRequest(input)
+  def getACL(input: GetBucketACLInput): Future[GetBucketACLOutput] = {
+    val request = getACLRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToOutput[GetBucketACLOutput](futureResponse,
@@ -169,7 +169,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // GetACLRequest creates request and output object of GetBucketACL.
-  def getBucketACLRequest(input: GetBucketACLInput): QSRequest = {
+  def getACLRequest(input: GetBucketACLInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "GET Bucket ACL",
@@ -185,8 +185,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // GetCORS does Get CORS information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/cors/get_cors.html
-  def getBucketCORS(input: GetBucketCORSInput): Future[GetBucketCORSOutput] = {
-    val request = getBucketCORSRequest(input)
+  def getCORS(input: GetBucketCORSInput): Future[GetBucketCORSOutput] = {
+    val request = getCORSRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToOutput[GetBucketCORSOutput](futureResponse,
@@ -194,7 +194,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // GetCORSRequest creates request and output object of GetBucketCORS.
-  def getBucketCORSRequest(input: GetBucketCORSInput): QSRequest = {
+  def getCORSRequest(input: GetBucketCORSInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "GET Bucket CORS",
@@ -210,9 +210,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // GetExternalMirror does Get external mirror of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/external_mirror/get_external_mirror.html
-  def getBucketExternalMirror(input: GetBucketExternalMirrorInput)
+  def getExternalMirror(input: GetBucketExternalMirrorInput)
     : Future[GetBucketExternalMirrorOutput] = {
-    val request = getBucketExternalMirrorRequest(input)
+    val request = getExternalMirrorRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToOutput[GetBucketExternalMirrorOutput](
@@ -221,7 +221,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // GetExternalMirrorRequest creates request and output object of GetBucketExternalMirror.
-  def getBucketExternalMirrorRequest(
+  def getExternalMirrorRequest(
       input: GetBucketExternalMirrorInput): QSRequest = {
     val operation = Operation(
       config = config,
@@ -238,9 +238,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // GetPolicy does Get policy information of the bucket.
   // Documentation URL: https://https://docs.qingcloud.com/qingstor/api/bucket/policy/get_policy.html
-  def getBucketPolicy(
-      input: GetBucketPolicyInput): Future[GetBucketPolicyOutput] = {
-    val request = getBucketPolicyRequest(input)
+  def getPolicy(input: GetBucketPolicyInput): Future[GetBucketPolicyOutput] = {
+    val request = getPolicyRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToOutput[GetBucketPolicyOutput](
@@ -249,7 +248,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // GetPolicyRequest creates request and output object of GetBucketPolicy.
-  def getBucketPolicyRequest(input: GetBucketPolicyInput): QSRequest = {
+  def getPolicyRequest(input: GetBucketPolicyInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "GET Bucket Policy",
@@ -265,9 +264,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // GetStatistics does Get statistics information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/get_stats.html
-  def getBucketStatistics(
+  def getStatistics(
       input: GetBucketStatisticsInput): Future[GetBucketStatisticsOutput] = {
-    val request = getBucketStatisticsRequest(input)
+    val request = getStatisticsRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToOutput[GetBucketStatisticsOutput](
@@ -276,7 +275,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // GetStatisticsRequest creates request and output object of GetBucketStatistics.
-  def getBucketStatisticsRequest(input: GetBucketStatisticsInput): QSRequest = {
+  def getStatisticsRequest(input: GetBucketStatisticsInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "GET Bucket Statistics",
@@ -292,8 +291,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // Head does Check whether the bucket exists and available.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/head.html
-  def headBucket(input: HeadBucketInput): Future[HeadBucketOutput] = {
-    val request = headBucketRequest(input)
+  def head(input: HeadBucketInput): Future[HeadBucketOutput] = {
+    val request = headRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToGenericOutput[HeadBucketOutput](
@@ -302,7 +301,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // HeadRequest creates request and output object of HeadBucket.
-  def headBucketRequest(input: HeadBucketInput): QSRequest = {
+  def headRequest(input: HeadBucketInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "HEAD Bucket",
@@ -371,8 +370,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // Put does Create a new bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/put.html
-  def putBucket(input: PutBucketInput): Future[PutBucketOutput] = {
-    val request = putBucketRequest(input)
+  def put(input: PutBucketInput): Future[PutBucketOutput] = {
+    val request = putRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToGenericOutput[PutBucketOutput](
@@ -381,7 +380,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // PutRequest creates request and output object of PutBucket.
-  def putBucketRequest(input: PutBucketInput): QSRequest = {
+  def putRequest(input: PutBucketInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket",
@@ -397,8 +396,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // PutACL does Set ACL information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/put_acl.html
-  def putBucketACL(input: PutBucketACLInput): Future[PutBucketACLOutput] = {
-    val request = putBucketACLRequest(input)
+  def putACL(input: PutBucketACLInput): Future[PutBucketACLOutput] = {
+    val request = putACLRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToGenericOutput[PutBucketACLOutput](
@@ -407,7 +406,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // PutACLRequest creates request and output object of PutBucketACL.
-  def putBucketACLRequest(input: PutBucketACLInput): QSRequest = {
+  def putACLRequest(input: PutBucketACLInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket ACL",
@@ -423,8 +422,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // PutCORS does Set CORS information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/cors/put_cors.html
-  def putBucketCORS(input: PutBucketCORSInput): Future[PutBucketCORSOutput] = {
-    val request = putBucketCORSRequest(input)
+  def putCORS(input: PutBucketCORSInput): Future[PutBucketCORSOutput] = {
+    val request = putCORSRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToGenericOutput[PutBucketCORSOutput](
@@ -433,7 +432,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // PutCORSRequest creates request and output object of PutBucketCORS.
-  def putBucketCORSRequest(input: PutBucketCORSInput): QSRequest = {
+  def putCORSRequest(input: PutBucketCORSInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket CORS",
@@ -449,9 +448,9 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // PutExternalMirror does Set external mirror of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/external_mirror/put_external_mirror.html
-  def putBucketExternalMirror(input: PutBucketExternalMirrorInput)
+  def putExternalMirror(input: PutBucketExternalMirrorInput)
     : Future[PutBucketExternalMirrorOutput] = {
-    val request = putBucketExternalMirrorRequest(input)
+    val request = putExternalMirrorRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToGenericOutput[PutBucketExternalMirrorOutput](
@@ -460,7 +459,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // PutExternalMirrorRequest creates request and output object of PutBucketExternalMirror.
-  def putBucketExternalMirrorRequest(
+  def putExternalMirrorRequest(
       input: PutBucketExternalMirrorInput): QSRequest = {
     val operation = Operation(
       config = config,
@@ -477,9 +476,8 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
 
   // PutPolicy does Set policy information of the bucket.
   // Documentation URL: https://docs.qingcloud.com/qingstor/api/bucket/policy/put_policy.html
-  def putBucketPolicy(
-      input: PutBucketPolicyInput): Future[PutBucketPolicyOutput] = {
-    val request = putBucketPolicyRequest(input)
+  def putPolicy(input: PutBucketPolicyInput): Future[PutBucketPolicyOutput] = {
+    val request = putPolicyRequest(input)
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker.unpackToGenericOutput[PutBucketPolicyOutput](
@@ -488,7 +486,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
   }
 
   // PutPolicyRequest creates request and output object of PutBucketPolicy.
-  def putBucketPolicyRequest(input: PutBucketPolicyInput): QSRequest = {
+  def putPolicyRequest(input: PutBucketPolicyInput): QSRequest = {
     val operation = Operation(
       config = config,
       apiName = "PUT Bucket Policy",
