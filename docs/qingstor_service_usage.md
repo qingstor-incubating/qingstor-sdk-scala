@@ -68,19 +68,12 @@ val input = PutBucketACLInput(
     permission = "FULL_CONTROL"
   ))
 )
-val outputFuture = bucket.putBucketACL(input)
+val outputFuture = bucket.putACL(input)
 val putBucketACLOutput = Await.result(outputFuture, Duration.Inf)
 
 // Print the HTTP status code.
 // Example: 200
 println(putBucketACLOutput.statusCode.getOrElse(-1))
-```
-
-Initialize a QingStor object
-```scala
-val qsObject = com.qingstor.sdk.service.Object(config, "test-bucket", "pek3a")
-// or
-val qsObject = com.qingstor.sdk.service.Object(bucket)
 ```
 
 Put object
@@ -92,7 +85,7 @@ val input = PutObjectInput(
   contentLength = file.length().toInt,
   body = file
 )
-val outputFuture = qsObject.putObject("test.jpg", input)
+val outputFuture = bucket.putObject("test.jpg", input)
 val putObjectOutput = Await.result(outputFuture, Duration.Inf)
 file.close()
 
@@ -103,10 +96,10 @@ println(putObjectOutput.statusCode.getOrElse(-1))
 
 Initialize Multipart Upload
 ```scala
-val input = Object.InitiateMultipartUploadInput(
+val input = InitiateMultipartUploadInput(
   contentType = Some("video/quicktime")
 )
-val outputFuture = ObjectMultipartSteps.obj.initiateMultipartUpload("QingCloudInsight.mov", input)
+val outputFuture = bucket.initiateMultipartUpload("QingCloudInsight.mov", input)
 val initiateMultipartUploadOutput = Await.result(outputFuture, Duration.Inf)
 
 // Print the upload ID.
@@ -117,12 +110,12 @@ println(initiateMultipartUploadOutput.`upload_id`.getOrElse(""))
 Upload Multipart
 ```scala
 // Upload the 1st part
-val input = Object.UploadMultipartInput(
+val input = UploadMultipartInput(
   partNumber = 0,
   uploadID = "9d37dd6ccee643075ca4e597ad65655c",
   body = file0
 )
-val of = qsObject.uploadMultipart("QingCloudInsight.mov", input)
+val of = bucket.uploadMultipart("QingCloudInsight.mov", input)
 val uploadMultipartOutput = Await.result(of, Duration.Inf)
 
 // Print the HTTP status code.
@@ -130,12 +123,12 @@ val uploadMultipartOutput = Await.result(of, Duration.Inf)
 println(uploadMultipartOutput.statusCode.getOrElse(-1))
 
 // Upload the 2nd part
-val input = Object.UploadMultipartInput(
+val input = UploadMultipartInput(
   partNumber = 1,
   uploadID = "9d37dd6ccee643075ca4e597ad65655c",
   body = file1
 )
-val of = qsObject.uploadMultipart("QingCloudInsight.mov", input)
+val of = bucket.uploadMultipart("QingCloudInsight.mov", input)
 val uploadMultipartOutput = Await.result(of, Duration.Inf)
 
 // Print the HTTP status code.
@@ -145,14 +138,14 @@ println(uploadMultipartOutput.statusCode.getOrElse(-1))
 
 Complete Multipart Upload
 ```scala
-val input = Object.CompleteMultipartUploadInput(
+val input = CompleteMultipartUploadInput(
   uploadID = "9d37dd6ccee643075ca4e597ad65655c",
   objectParts = Some(Lsit(
     ObjectPartModel(part_number = 0),
     ObjectPartModel(part_number = 1)
   ))
 )
-val outputFuture = qsObject.completeMultipartUpload("QingCloudInsight.mov", input)
+val outputFuture = bucket.completeMultipartUpload("QingCloudInsight.mov", input)
 val completeMultipartUploadOutput = Await.result(outputFuture, Duration.Inf)
 
 // Print the HTTP status code.
