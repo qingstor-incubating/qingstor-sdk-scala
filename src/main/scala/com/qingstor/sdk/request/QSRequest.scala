@@ -19,8 +19,7 @@ class QSRequest(_operation: Operation, _input: Input) {
   val operation: Operation = _operation
   val HTTPRequest: HttpRequest = build()
 
-  def send()(implicit system: ActorSystem,
-             mat: ActorMaterializer): Future[QSHttpResponse] = {
+  def send()(implicit system: ActorSystem, mat: ActorMaterializer): Future[QSHttpResponse] = {
     import system.dispatcher
     val config = ConfigFactory.parseString(s"""
          |akka.http {
@@ -34,16 +33,15 @@ class QSRequest(_operation: Operation, _input: Input) {
          |  }
          |}
       """.stripMargin).withFallback(ConfigFactory.defaultReference())
-    Http(system).singleRequest(
-      request = sign(HTTPRequest),
-      settings = ConnectionPoolSettings(config)
-    ).map(ResponseUnpacker(_, operation).unpackResponse())
+
+    Http(system).singleRequest(request = sign(HTTPRequest), settings = ConnectionPoolSettings(config))
+      .map(ResponseUnpacker(_, operation).unpackResponse())
   }
 
   private def build(): HttpRequest = {
     if (!check())
-      QSLogger.fatal(
-        "Fatal: Access Key ID or Secret Access Key can't be empty")
+      QSLogger.fatal("Fatal: Access Key ID or Secret Access Key can't be empty")
+
     val builder = RequestBuilder(operation, input)
     builder.build
   }
@@ -51,8 +49,8 @@ class QSRequest(_operation: Operation, _input: Input) {
   private def sign(request: HttpRequest = HTTPRequest): HttpRequest = {
     val accessKeyID = operation.config.accessKeyId
     val secretAccessKey = operation.config.secretAccessKey
-    val authString =
-      QSSigner.getHeadAuthorization(request, accessKeyID, secretAccessKey)
+    val authString = QSSigner.getHeadAuthorization(request, accessKeyID, secretAccessKey)
+
     request.addHeader(RawHeader("Authorization", authString))
   }
 
@@ -68,20 +66,21 @@ class QSRequest(_operation: Operation, _input: Input) {
 }
 
 object QSRequest {
-  def apply(operation: Operation, input: Input): QSRequest =
-    new QSRequest(operation, input)
+  def apply(operation: Operation, input: Input): QSRequest = new QSRequest(operation, input)
   def apply(operation: Operation): QSRequest = new QSRequest(operation, null)
 
   def signQueries(request: QSRequest, liveTime: Long): Uri = {
     val expires = System.currentTimeMillis() + liveTime
     val accessKeyID = request.operation.config.accessKeyId
     val secretAccessKey = request.operation.config.secretAccessKey
-    val authQueries =
-      QSSigner.getQueryAuthorization(request.HTTPRequest,
-                                     accessKeyID,
-                                     secretAccessKey,
-                                     expires)
+    val authQueries = QSSigner.getQueryAuthorization(
+      request.HTTPRequest,
+      accessKeyID,
+      secretAccessKey,
+      expires
+    )
     val oriQueries = request.HTTPRequest.uri.query().toMap
+
     request.HTTPRequest.uri.withQuery(Uri.Query(oriQueries ++ authQueries))
   }
 }

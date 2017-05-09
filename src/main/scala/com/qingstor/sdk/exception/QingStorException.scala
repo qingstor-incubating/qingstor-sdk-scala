@@ -3,6 +3,7 @@ package com.qingstor.sdk.exception
 import com.qingstor.sdk.model.QSModels.ErrorMessage
 
 class QingStorException(error: ErrorMessage) extends Throwable {
+
   def errorMessage: ErrorMessage = error
 
   override def getCause: Throwable = super.getCause

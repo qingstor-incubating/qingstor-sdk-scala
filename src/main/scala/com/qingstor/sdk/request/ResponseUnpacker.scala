@@ -30,51 +30,41 @@ class ResponseUnpacker(_response: HttpResponse, _operation: Operation) {
 
   private def setupStatusCode(obj: Any) = {
     val statusCode = response.status.intValue()
-    QSRequestUtil.invokeMethod(obj,
-                               "setStatusCode",
-                               Array(int2Integer(statusCode)))
+    QSRequestUtil.invokeMethod(obj, "setStatusCode", Array(int2Integer(statusCode)))
   }
 
   private def setupHeaders(obj: Any) = {
-    if (ResponseUnpacker.isRightStatusCode(response.status.intValue(),
-                                           operation.statusCodes)) {
-      val headersNameAndGetMethodname =
-        QSRequestUtil.getResponseParams(obj, QSConstants.ParamsLocationHeader)
+    if (ResponseUnpacker.isRightStatusCode(response.status.intValue(), operation.statusCodes)) {
+      val headersNameAndGetMethodname = QSRequestUtil.getResponseParams(obj, QSConstants.ParamsLocationHeader)
       for ((headerName, methodName) <- headersNameAndGetMethodname) {
         val header = response.headers.find(h => h.name().equals(headerName))
         if (header.isDefined) {
           val setMethodName = methodName.replaceFirst("get", "set")
-          QSRequestUtil.invokeMethod(obj,
-                                     setMethodName,
-                                     Array(header.get.value()))
+          QSRequestUtil.invokeMethod(obj, setMethodName, Array(header.get.value()))
         }
       }
     }
   }
 
-  private def setupEntity(obj: Any) = {
-    QSRequestUtil.invokeMethod(obj, "setEntity", Array(response.entity))
-  }
+  private def setupEntity(obj: Any) = QSRequestUtil.invokeMethod(obj, "setEntity", Array(response.entity))
 }
 
 object ResponseUnpacker {
-  def apply(response: HttpResponse, operation: Operation) =
-    new ResponseUnpacker(response, operation)
+  def apply(response: HttpResponse, operation: Operation) = new ResponseUnpacker(response, operation)
 
-  def isRightStatusCode(code: Int,
-                        rightCodes: Array[Int] = Array[Int](200)): Boolean = {
+  def isRightStatusCode(code: Int, rightCodes: Array[Int] = Array[Int](200)): Boolean =
     rightCodes.contains(code)
-  }
 
   def unpackToGenericOutput[T <: Output: ClassTag](
-      futureResponse: Future[QSHttpResponse],
-      rightStatusCodes: Array[Int])(
+    futureResponse: Future[QSHttpResponse],
+    rightStatusCodes: Array[Int]
+  )(
       implicit system: ActorSystem,
       mat: ActorMaterializer,
-      ec: ExecutionContextExecutor): Future[T] = {
+      ec: ExecutionContextExecutor
+  ): Future[T] = {
     futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             rightStatusCodes)) {
+      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, rightStatusCodes)) {
         val output = classTag[T].runtimeClass.newInstance().asInstanceOf[T]
         output.statusCode = Option(response.getStatusCode)
         output.requestID = Option(response.getRequestID)
@@ -89,40 +79,37 @@ object ResponseUnpacker {
   }
 
   def unpackToOutput[T <: Output: JsonFormat: ClassTag](
-      futureResponse: Future[QSHttpResponse],
-      rightStatusCodes: Array[Int])(
+    futureResponse: Future[QSHttpResponse],
+    rightStatusCodes: Array[Int]
+  )(
       implicit system: ActorSystem,
       mat: ActorMaterializer,
-      ec: ExecutionContextExecutor): Future[T] = {
+      ec: ExecutionContextExecutor
+  ): Future[T] = {
     futureResponse.flatMap { response =>
-      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                                             rightStatusCodes)) {
+      if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, rightStatusCodes))
         ResponseUnpacker.unpackToOutput[T](response)
-      } else {
+      else
         ResponseUnpacker.unpackToErrorMessage(response).map { error =>
           error.statusCode = Option(response.getStatusCode)
           throw QingStorException(error)
         }
-      }
     }
   }
 
   def unpackToOutput[T <: Output: JsonFormat](response: QSHttpResponse)(
-      implicit system: ActorSystem,
-      mat: ActorMaterializer,
-      ec: ExecutionContextExecutor): Future[T] = {
+      implicit system: ActorSystem, mat: ActorMaterializer, ec: ExecutionContextExecutor
+  ): Future[T] =
     Unmarshal(response.getEntity).to[JsValue].map { json =>
       val output = json.convertTo[T]
       output.statusCode = Option(response.getStatusCode)
       output.requestID = Option(response.getRequestID)
       output
     }
-  }
 
   def unpackToErrorMessage(response: QSHttpResponse)(
-      implicit system: ActorSystem,
-      mat: ActorMaterializer,
-      ec: ExecutionContextExecutor): Future[ErrorMessage] = {
+      implicit system: ActorSystem, mat: ActorMaterializer, ec: ExecutionContextExecutor
+  ): Future[ErrorMessage] =
     response.getEntity.contentType match {
       case ContentTypes.`application/json` =>
         val errorFuture = Unmarshal(response.getEntity).to[JsValue]
@@ -135,5 +122,4 @@ object ResponseUnpacker {
           )
         }
     }
-  }
 }

@@ -4,11 +4,10 @@ import java.time.format.DateTimeFormatter
 import java.time._
 
 object TimeUtil {
-  def zonedDateTimeToString(time: ZonedDateTime = ZonedDateTime.now()): String = {
+  def zonedDateTimeToString(time: ZonedDateTime = ZonedDateTime.now()): String =
     DateTimeFormatter.RFC_1123_DATE_TIME
       .withZone(ZoneOffset.UTC)
       .format(time)
-  }
 
   def stringToZonedDateTime(time: String, zoneId: ZoneId = ZoneOffset.UTC): ZonedDateTime = {
     val temp = DateTimeFormatter.RFC_1123_DATE_TIME
@@ -17,7 +16,5 @@ object TimeUtil {
     ZonedDateTime.from(temp)
   }
 
-  def stringToUnixInt(time: String): Long = {
-    stringToZonedDateTime(time).toInstant.toEpochMilli
-  }
+  def stringToUnixInt(time: String): Long = stringToZonedDateTime(time).toInstant.toEpochMilli
 }

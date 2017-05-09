@@ -19,7 +19,9 @@ object QSJsonProtocol extends DefaultJsonProtocol {
     override def read(json: JsValue): ZonedDateTime =
       ZonedDateTime.parse(json.asInstanceOf[JsString].value)
   }
+
   implicit val zonedDateTimeFormat = ZonedDateTimeJson
+
   object GranteeModelFormat extends RootJsonFormat[GranteeModel] {
     override def read(json: JsValue): GranteeModel = {
       val obj = json.asJsObject.fields
@@ -45,37 +47,23 @@ object QSJsonProtocol extends DefaultJsonProtocol {
       JsObject(maps)
     }
   }
+
   implicit val granteeModelFormat = GranteeModelFormat
-  implicit val aCLModelFormat: RootJsonFormat[ACLModel] =
-    jsonFormat2(ACLModel)
-  implicit val bucketModelFormat: RootJsonFormat[BucketModel] =
-    jsonFormat4(BucketModel)
-  implicit val iPAddressModelFormat: RootJsonFormat[IPAddressModel] =
-    jsonFormat1(IPAddressModel)
-  implicit val isNullModelFormat: RootJsonFormat[IsNullModel] =
-    jsonFormat1(IsNullModel)
-  implicit val notIPAddressModelFormat: RootJsonFormat[NotIPAddressModel] =
-    jsonFormat1(NotIPAddressModel)
-  implicit val stringLikeModelFormat: RootJsonFormat[StringLikeModel] =
-    jsonFormat1(StringLikeModel)
-  implicit val stringNotLikeModelFormat: RootJsonFormat[StringNotLikeModel] =
-    jsonFormat1(StringNotLikeModel)
-  implicit val conditionModelFormat: RootJsonFormat[ConditionModel] =
-    jsonFormat5(ConditionModel)
-  implicit val cORSRuleModelFormat: RootJsonFormat[CORSRuleModel] =
-    jsonFormat5(CORSRuleModel)
-  implicit val keyModelFormat: RootJsonFormat[KeyModel] =
-    jsonFormat7(KeyModel)
-  implicit val keyDeleteErrorModelFormat: RootJsonFormat[KeyDeleteErrorModel] =
-    jsonFormat3(KeyDeleteErrorModel)
-  implicit val objectPartModelFormat: RootJsonFormat[ObjectPartModel] =
-    jsonFormat4(ObjectPartModel)
-  implicit val ownerModelFormat: RootJsonFormat[OwnerModel] =
-    jsonFormat2(OwnerModel)
-  implicit val statementModelFormat: RootJsonFormat[StatementModel] =
-    jsonFormat6(StatementModel)
-  implicit val uploadsModelFormat: RootJsonFormat[UploadsModel] =
-    jsonFormat3(UploadsModel)
+  implicit val aCLModelFormat: RootJsonFormat[ACLModel] = jsonFormat2(ACLModel)
+  implicit val bucketModelFormat: RootJsonFormat[BucketModel] = jsonFormat4(BucketModel)
+  implicit val iPAddressModelFormat: RootJsonFormat[IPAddressModel] = jsonFormat1(IPAddressModel)
+  implicit val isNullModelFormat: RootJsonFormat[IsNullModel] = jsonFormat1(IsNullModel)
+  implicit val notIPAddressModelFormat: RootJsonFormat[NotIPAddressModel] = jsonFormat1(NotIPAddressModel)
+  implicit val stringLikeModelFormat: RootJsonFormat[StringLikeModel] = jsonFormat1(StringLikeModel)
+  implicit val stringNotLikeModelFormat: RootJsonFormat[StringNotLikeModel] = jsonFormat1(StringNotLikeModel)
+  implicit val conditionModelFormat: RootJsonFormat[ConditionModel] = jsonFormat5(ConditionModel)
+  implicit val cORSRuleModelFormat: RootJsonFormat[CORSRuleModel] = jsonFormat5(CORSRuleModel)
+  implicit val keyModelFormat: RootJsonFormat[KeyModel] = jsonFormat7(KeyModel)
+  implicit val keyDeleteErrorModelFormat: RootJsonFormat[KeyDeleteErrorModel] = jsonFormat3(KeyDeleteErrorModel)
+  implicit val objectPartModelFormat: RootJsonFormat[ObjectPartModel] = jsonFormat4(ObjectPartModel)
+  implicit val ownerModelFormat: RootJsonFormat[OwnerModel] = jsonFormat2(OwnerModel)
+  implicit val statementModelFormat: RootJsonFormat[StatementModel] = jsonFormat6(StatementModel)
+  implicit val uploadsModelFormat: RootJsonFormat[UploadsModel] = jsonFormat3(UploadsModel)
 
   object ErrorMessageFormat extends RootJsonFormat[ErrorMessage] {
     override def read(json: JsValue): ErrorMessage = {
@@ -118,34 +106,24 @@ object QSJsonProtocol extends DefaultJsonProtocol {
       JsObject(map)
     }
   }
+
   implicit val errorMessageFormat = ErrorMessageFormat
-  implicit val listBucketsOutputFormat: RootJsonFormat[ListBucketsOutput] =
-    jsonFormat2(ListBucketsOutput)
-  implicit val deleteMultipleObjectsOutputFormat
-    : RootJsonFormat[DeleteMultipleObjectsOutput] =
+  implicit val listBucketsOutputFormat: RootJsonFormat[ListBucketsOutput] = jsonFormat2(ListBucketsOutput)
+  implicit val deleteMultipleObjectsOutputFormat: RootJsonFormat[DeleteMultipleObjectsOutput] =
     jsonFormat2(DeleteMultipleObjectsOutput)
-  implicit val getBucketACLOutputFormat: RootJsonFormat[GetBucketACLOutput] =
-    jsonFormat2(GetBucketACLOutput)
-  implicit val getBucketCORSOutputFormat: RootJsonFormat[GetBucketCORSOutput] =
-    jsonFormat1(GetBucketCORSOutput)
-  implicit val getBucketExternalMirrorOutputFormat
-    : RootJsonFormat[GetBucketExternalMirrorOutput] =
+  implicit val getBucketACLOutputFormat: RootJsonFormat[GetBucketACLOutput] = jsonFormat2(GetBucketACLOutput)
+  implicit val getBucketCORSOutputFormat: RootJsonFormat[GetBucketCORSOutput] = jsonFormat1(GetBucketCORSOutput)
+  implicit val getBucketExternalMirrorOutputFormat: RootJsonFormat[GetBucketExternalMirrorOutput] =
     jsonFormat1(GetBucketExternalMirrorOutput)
-  implicit val getBucketPolicyOutputFormat
-    : RootJsonFormat[GetBucketPolicyOutput] =
+  implicit val getBucketPolicyOutputFormat: RootJsonFormat[GetBucketPolicyOutput] =
     jsonFormat1(GetBucketPolicyOutput)
-  implicit val getBucketStatisticsOutputFormat
-    : RootJsonFormat[GetBucketStatisticsOutput] =
+  implicit val getBucketStatisticsOutputFormat: RootJsonFormat[GetBucketStatisticsOutput] =
     jsonFormat7(GetBucketStatisticsOutput)
-  implicit val listObjectsOutputFormat: RootJsonFormat[ListObjectsOutput] =
-    jsonFormat9(ListObjectsOutput)
-  implicit val listMultipartOutputFormat: RootJsonFormat[ListMultipartOutput] =
-    jsonFormat2(ListMultipartOutput)
-  implicit val initiateMultipartUploadOutputFormat
-    : RootJsonFormat[InitiateMultipartUploadOutput] =
+  implicit val listObjectsOutputFormat: RootJsonFormat[ListObjectsOutput] = jsonFormat9(ListObjectsOutput)
+  implicit val listMultipartOutputFormat: RootJsonFormat[ListMultipartOutput] = jsonFormat2(ListMultipartOutput)
+  implicit val initiateMultipartUploadOutputFormat: RootJsonFormat[InitiateMultipartUploadOutput] =
     jsonFormat4(InitiateMultipartUploadOutput)
-  implicit val listMultipartUploadsOutputFormat:
-    RootJsonFormat[ListMultipartUploadsOutput] =
+  implicit val listMultipartUploadsOutputFormat: RootJsonFormat[ListMultipartUploadsOutput] =
     jsonFormat8(ListMultipartUploadsOutput)
 
   object OptionJsonFormat extends RootJsonFormat[Option[Any]] {
@@ -186,6 +164,7 @@ object QSJsonProtocol extends DefaultJsonProtocol {
       case _ => deserializationError("""Can't deserialize Json: "%s", type: "%s"""".format(json, json.getClass))
     }
   }
+
   implicit val optionJsonFormat = OptionJsonFormat
 
   object AnyJsonFormat extends JsonFormat[Any]{
@@ -225,5 +204,6 @@ object QSJsonProtocol extends DefaultJsonProtocol {
       case _ => deserializationError("""Can't deserialize Json: "%s", type: "%s"""".format(json, json.getClass))
     }
   }
+
   implicit val anyRefJsonFormat = AnyJsonFormat
 }

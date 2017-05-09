@@ -19,14 +19,13 @@ class RequestBuilder(op: Operation, in: Input) {
   val parsedHeaders: Map[String, String] = parseHeaders()
   val parsedBody: RequestEntity = parseBody()
 
-  def build: HttpRequest = {
+  def build: HttpRequest =
     HttpRequest()
       .withUri(parseUri)
       .withMethod(parseHttpMethod)
       .withProtocol(HttpProtocols.`HTTP/1.1`)
       .withHeaders(buildHeader())
       .withEntity(parsedBody)
-  }
 
   private def parseHttpMethod = operation.method.toUpperCase match {
     case "GET" => HttpMethods.GET
@@ -43,18 +42,16 @@ class RequestBuilder(op: Operation, in: Input) {
       HttpMethods.GET
   }
 
-  private def parseParams(): Map[String, String] = {
+  private def parseParams(): Map[String, String] =
     QSRequestUtil
       .getRequestParams(input, QSConstants.ParamsLocationParam)
       .asInstanceOf[Map[String, String]]
-  }
 
-  private def parseHost(config: QSConfig, zone: String): String = {
+  private def parseHost(config: QSConfig, zone: String): String =
     if (apiName.equals(QSConstants.APIGETService) || zone == null || zone.isEmpty)
       config.host
     else
       zone + "." + config.host
-  }
 
   private def parseUri: Uri = {
     val scheme = operation.config.protocol
@@ -62,26 +59,30 @@ class RequestBuilder(op: Operation, in: Input) {
     val zone = operation.zone
     val port =operation.config.port
     val objectKey = operation.objectKey.replace("%", "%25")
-    val requestURI = operation.requestUri
-      .replace(QSConstants.BucketNamePlaceHolder, operation.bucketName)
-      .replace(QSConstants.ObjectKeyPlaceHolder, Uri.Path(objectKey).toString())
-    val queries = if (parsedParams.isEmpty) ""
+    val requestURI =
+      operation.requestUri
+        .replace(QSConstants.BucketNamePlaceHolder, operation.bucketName)
+        .replace(QSConstants.ObjectKeyPlaceHolder, Uri.Path(objectKey).toString())
+    val queries =
+      if (parsedParams.isEmpty) ""
       else if (requestURI.contains("?")) "&" + Uri.Query(parsedParams)
       else "?" + Uri.Query(parsedParams)
+
     Uri(s"$scheme://$host:$port$requestURI$queries")
   }
 
   private def parseHeaders(): Map[String, String] = {
     var headers = Map.empty[String, String]
-    if (input != null) {
-      headers = QSRequestUtil
-        .getRequestParams(input, QSConstants.ParamsLocationHeader)
+    if (input != null)
+      headers = QSRequestUtil.getRequestParams(input, QSConstants.ParamsLocationHeader)
         .asInstanceOf[Map[String, String]]
-    }
+
     headers.foreach { entry =>
       val key = entry._1
-      val value = if (key.equals("Date")) entry._2
+      val value =
+        if (key.equals("Date")) entry._2
         else Uri.Path(entry._2.replace("%", "%25")).toString()
+
       headers += (key -> value)
     }
     if (headers.getOrElse("Date", "").isEmpty) {
@@ -94,18 +95,14 @@ class RequestBuilder(op: Operation, in: Input) {
 
   private def parseBody(): RequestEntity = {
     if (input != null) {
-      val elements =
-        QSRequestUtil.getRequestParams(input, QSConstants.ParamsLocationElement)
+      val elements = QSRequestUtil.getRequestParams(input, QSConstants.ParamsLocationElement)
       if (elements.nonEmpty) {
         val bytes = JsonUtil.encode(elements).compactPrint.getBytes
-        HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType,
-          ContentTypes.`application/json`), bytes)
+        HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType, ContentTypes.`application/json`), bytes)
       } else {
-        val body: Map[String, AnyRef] = QSRequestUtil
-          .getRequestParams(input, QSConstants.ParamsLocationBody)
+        val body: Map[String, AnyRef] = QSRequestUtil.getRequestParams(input, QSConstants.ParamsLocationBody)
         if (body.isEmpty)
-          HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType,
-            ContentTypes.NoContentType), ByteString.empty)
+          HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType, ContentTypes.NoContentType), ByteString.empty)
         else if (body.contains("Body")) {
           val Body = body.getOrElse("Body", "")
           Body match {
@@ -120,13 +117,11 @@ class RequestBuilder(op: Operation, in: Input) {
           }
         } else {
           val bytes = JsonUtil.encode(body).compactPrint.getBytes
-          HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType,
-            ContentTypes.`application/json`), bytes)
+          HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType, ContentTypes.`application/json`), bytes)
         }
       }
     } else {
-      HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType,
-        ContentTypes.NoContentType), ByteString.empty)
+      HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType, ContentTypes.NoContentType), ByteString.empty)
     }
   }
 
@@ -143,8 +138,7 @@ class RequestBuilder(op: Operation, in: Input) {
 }
 
 object RequestBuilder {
-  def apply(operation: Operation, input: Input): RequestBuilder =
-    new RequestBuilder(operation, input)
+  def apply(operation: Operation, input: Input): RequestBuilder = new RequestBuilder(operation, input)
 
   def eitherGetOrElse[B](either: Either[_, B], or: B): B = either match {
     case Right(r) => r

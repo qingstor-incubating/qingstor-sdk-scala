@@ -6,28 +6,19 @@ import com.qingstor.sdk.service.QSJsonProtocol._
 object JsonUtil {
 
   // encode given Json string to AST Json
-  def encode(content: String): JsValue = {
-    if (content != null && content.nonEmpty )
-      content.parseJson
-    else
-      null
-  }
+  def encode(content: String): JsValue =
+    if (content != null && content.nonEmpty ) content.parseJson
+    else null
 
   // encode given Map to AST Json
-  def encode(content: Map[String, Any]): JsValue = {
-    if (content != null && content.nonEmpty)
-      content.toJson
-    else
-      null
-  }
+  def encode(content: Map[String, Any]): JsValue =
+    if (content != null && content.nonEmpty) content.toJson
+    else null
 
   // encode given List to AST Json
-  def encode(content: List[Any]): JsValue = {
-    if (content != null && content.nonEmpty)
-      content.toJson
-    else
-      null
-  }
+  def encode(content: List[Any]): JsValue =
+    if (content != null && content.nonEmpty) content.toJson
+    else null
 
   // decode given json string to type T
   def decode[T :JsonFormat](json: String): T = json.parseJson.convertTo[T]

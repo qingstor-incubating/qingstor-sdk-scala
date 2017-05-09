@@ -24,33 +24,28 @@ object QSRequestUtil {
   }
 
   // parse Content-Type of a file according to its extension
-  def parseContentType(file: File): ContentType = {
-    if (file == null)
-      ContentTypes.NoContentType
-    else
-      ContentType(parseMediaType(file.getName), charset)
-  }
+  def parseContentType(file: File): ContentType =
+    if (file == null) ContentTypes.NoContentType
+    else ContentType(parseMediaType(file.getName), charset)
 
-  def parseMediaType(fileName: String): MediaType = {
-    if (fileName == null)
+  def parseMediaType(fileName: String): MediaType =
+    if (fileName == null) {
       null
-    else {
+    } else {
       val extension = parseFileExtension(fileName)
       MediaTypes.forExtension(extension)
     }
-  }
 
-  def parseFileExtension(fileName: String): String = {
-    if (fileName == null || fileName == "")
+  def parseFileExtension(fileName: String): String =
+    if (fileName == null || fileName == "") {
       ""
-    else {
+    } else {
       val extPos = fileName.lastIndexOf(".")
       if (extPos == -1)
         ""
       else
         fileName.substring(extPos + 1)
     }
-  }
 
   private val charset = () => HttpCharsets.`UTF-8`
 }

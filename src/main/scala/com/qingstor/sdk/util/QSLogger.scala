@@ -21,21 +21,13 @@ object QSLogger {
     this.level = level
   }
 
-  def debug(msg: String): Unit = {
-    logger.log(Level.ALL, msg)
-  }
+  def debug(msg: String): Unit = logger.log(Level.ALL, msg)
 
-  def info(msg: String): Unit = {
-    logger.log(Level.INFO, msg)
-  }
+  def info(msg: String): Unit = logger.log(Level.INFO, msg)
 
-  def warn(msg: String): Unit = {
-    logger.log(Level.WARNING, msg)
-  }
+  def warn(msg: String): Unit = logger.log(Level.WARNING, msg)
 
-  def error(msg: String): Unit = {
-    logger.log(Level.SEVERE, msg)
-  }
+  def error(msg: String): Unit = logger.log(Level.SEVERE, msg)
 
   def fatal(msg: String): Unit = {
     logger.log(Level.SEVERE, msg)
