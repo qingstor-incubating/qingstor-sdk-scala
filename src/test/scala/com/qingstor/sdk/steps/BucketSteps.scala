@@ -201,6 +201,20 @@ class BucketSteps extends En {
 
   Then("""^list multipart uploads count is (\d+)""", new A1[Integer] {
     override def accept(arg: Integer): Unit = {
+      assert(BucketSteps.listMultipartUploadsOutput.`uploads`.getOrElse(List.empty).length == arg)
+    }
+  })
+
+  When("""^list multipart uploads with prefix$""", new A0 {
+    override def accept(): Unit = {
+      val input = Bucket.ListMultipartUploadsInput(prefix = Some(BucketSteps.prefix))
+      val of = BucketSteps.bucket.listMultipartUploads(input)
+      BucketSteps.listMultipartUploadsOutput = Await.result(of, Duration.Inf)
+    }
+  })
+
+  Then("""^list multipart uploads with prefix count is (\d+)""", new A1[Integer] {
+    override def accept(arg: Integer): Unit = {
       val input = Bucket.AbortMultipartUploadInput(
         BucketSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse(""))
       val of = BucketSteps.bucket.abortMultipartUpload(BucketSteps.objectKey, input)
@@ -215,6 +229,7 @@ object BucketSteps {
   private var testConfig: TestConfig = _
   private var bucket: Bucket = _
   private val newBucketName: String = "test" + System.currentTimeMillis()
+  private val prefix: String = "list"
 
   private var putBucketOutput: Bucket.PutBucketOutput = _
   private var putBucketOutput2: Bucket.PutBucketOutput = _
