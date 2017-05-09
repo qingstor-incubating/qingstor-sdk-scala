@@ -54,7 +54,7 @@ import com.qingstor.sdk.service.QingStor
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class Demo extends App {
+object Demo extends App {
   val config = QSConfig("ACCESS_KEY_ID", "SECRET_ACCESS_KEY")
 
   // Initialize service object for QingStor.
@@ -72,6 +72,8 @@ class Demo extends App {
 
   // Print the first bucket name.
   println(listBucketsOutput.`buckets`.flatMap(_.head.`name`).getOrElse("No buckets"))
+  
+  System.exit(0)
 }
 ```
 
