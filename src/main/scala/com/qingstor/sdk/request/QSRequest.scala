@@ -39,8 +39,11 @@ class QSRequest(_operation: Operation, _input: Input) {
   }
 
   private def build(): HttpRequest = {
-    if (!check())
-      QSLogger.fatal("Fatal: Access Key ID or Secret Access Key can't be empty")
+    require(operation.config != null, "Configuration can't be empty")
+    val id = operation.config.accessKeyId
+    val secret = operation.config.secretAccessKey
+    require(id != null && secret != null && id != "" && secret != "",
+      "Access Key ID or Secret Access Key can't be empty")
 
     val builder = RequestBuilder(operation, input)
     builder.build
@@ -52,16 +55,6 @@ class QSRequest(_operation: Operation, _input: Input) {
     val authString = QSSigner.getHeadAuthorization(request, accessKeyID, secretAccessKey)
 
     request.addHeader(RawHeader("Authorization", authString))
-  }
-
-  private def check(): Boolean = {
-    if (operation.config != null) {
-      val id = operation.config.accessKeyId
-      val secret = operation.config.secretAccessKey
-      id != null && secret != null && id != "" && secret != ""
-    } else {
-      false
-    }
   }
 }
 
