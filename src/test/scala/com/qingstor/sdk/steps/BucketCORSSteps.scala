@@ -5,11 +5,11 @@ import java.util.NoSuchElementException
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.service.Bucket
 import com.qingstor.sdk.service.Types.CORSRuleModel
+import com.qingstor.sdk.service.QSCodec.QSTypesCodec.decodeCORSRuleModel
 import cucumber.api.java8.StepdefBody._
 import cucumber.api.java8.En
 import com.qingstor.sdk.steps.TestUtil.TestConfig
-import spray.json._
-import com.qingstor.sdk.service.QSJsonProtocol.cORSRuleModelFormat
+import io.circe.parser._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -29,11 +29,11 @@ class BucketCORSSteps extends En{
   When("^put bucket CORS:$", new A1[String] {
     override def accept(arg: String): Unit = {
       initBucket()
-      val json = arg.parseJson
-      val rules = json.asJsObject.fields("cors_rules").asInstanceOf[JsArray].elements
-        .toList.map(_.convertTo[CORSRuleModel])
-
-      val input = Bucket.PutBucketCORSInput(rules)
+      val maps = parse(arg).right.flatMap(_.as[Map[String, List[CORSRuleModel]]]) match {
+        case Left(failure) => throw failure
+        case Right(m) => m
+      }
+      val input = Bucket.PutBucketCORSInput(maps("cors_rules"))
       val outputFuture = BucketCORSSteps.bucket.putCORS(input)
       BucketCORSSteps.putBucketCORSOutput = Await.result(outputFuture, Duration.Inf)
     }
@@ -42,7 +42,7 @@ class BucketCORSSteps extends En{
   Then("^put bucket CORS status code is (\\d+)$", new A1[Integer] {
     override def accept(arg: Integer): Unit = {
       val status = BucketCORSSteps.putBucketCORSOutput.statusCode.getOrElse(-1)
-      assert(status == arg) 
+      assert(status == arg)
     }
   })
 
@@ -63,8 +63,8 @@ class BucketCORSSteps extends En{
 
   And("get bucket CORS should have allowed origin \"(.*)\"$", new A1[String] {
     override def accept(arg: String): Unit = {
-      val hasAO = BucketCORSSteps.getBucketCORSOutput.`cors_rules`
-        .map(_.exists(_.`allowed_origin` == arg))
+      val hasAO = BucketCORSSteps.getBucketCORSOutput.cORSRules
+        .map(_.exists(_.allowedOrigin == arg))
       if (hasAO.isEmpty || !hasAO.get)
         throw new NoSuchElementException("""Allowed origin: "%s" not found in bucket CORS""".format(arg))
     }

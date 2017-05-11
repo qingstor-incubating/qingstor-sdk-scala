@@ -8,8 +8,9 @@ import com.qingstor.sdk.service.Types.BucketModel
 import com.qingstor.sdk.annotation.ParamAnnotation
 import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.service.QingStor._
-import com.qingstor.sdk.service.QSJsonProtocol._
+import com.qingstor.sdk.exception.QingStorException
 import scala.concurrent.{ExecutionContextExecutor, Future}
+import com.qingstor.sdk.service.QSCodec.QSOutputCodec._
 
 // QingStorService: QingStor provides low-cost and reliable online storage service with unlimited storage space, high read and write performance, high reliability and data safety, fine-grained access control, and easy to use API.
 class QingStor(_config: QSConfig) {
@@ -25,7 +26,11 @@ class QingStor(_config: QSConfig) {
     val operation = request.operation
     val futureResponse = request.send()
     ResponseUnpacker
-      .unpackToOutput[ListBucketsOutput](futureResponse, operation.statusCodes)
+      .unpackWithElements[ListBucketsOutput](futureResponse, operation)
+      .map({
+        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Right(output) => output
+      })
   }
 
   // ListBucketsRequest creates request and output object of ListBuckets.
@@ -53,14 +58,16 @@ object QingStor {
 
     @ParamAnnotation(location = QSConstants.ParamsLocationHeader,
                      name = "Location")
-    def getLocation = this.location
+    def getLocation: Option[String] =
+      this.location
 
   }
+
   case class ListBucketsOutput(
       // Buckets information
-      `buckets`: Option[List[BucketModel]] = None,
+      buckets: Option[List[BucketModel]] = None,
       // Bucket count
-      `count`: Option[Int] = None
+      count: Option[Int] = None
   ) extends Output
 
 }

@@ -1,6 +1,7 @@
 package com.qingstor.sdk.constant
 
 import akka.actor.ActorSystem
+import io.circe.Printer
 
 import scala.io.Source
 
@@ -39,4 +40,6 @@ object QSConstants {
   val ObjectKeyPlaceHolder: String = "{objectKey}"
 
   val UserAgent: String = s"qingstor-sdk-scala/$getSDKVersion (Scala $scalaVersion; $osName $arch)"
+
+  val printer = Printer(preserveOrder = true, dropNullKeys = true, indent = "")
 }

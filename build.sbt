@@ -11,11 +11,13 @@ libraryDependencies ++= {
   Seq(
     "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-    "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
     "org.yaml" % "snakeyaml" % "1.17",
     "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     "info.cukes" % "cucumber-java8" % cucumberVersion % "test",
-    "info.cukes" % "cucumber-junit" % cucumberVersion % "test"
+    "info.cukes" % "cucumber-junit" % cucumberVersion % "test",
+    "de.heikoseeberger" %% "akka-http-circe" % "1.15.0",
+    "io.circe" %% "circe-generic" % "0.7.1",
+    "io.circe" %% "circe-parser" % "0.7.1"
   )
 }
 

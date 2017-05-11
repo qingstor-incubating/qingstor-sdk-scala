@@ -4,8 +4,8 @@ import java.io.{BufferedInputStream, File}
 import java.net.URL
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.model.HttpResponse
 import akka.stream.ActorMaterializer
-import com.qingstor.sdk.model.QSHttpResponse
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.request.QSRequest
 import com.qingstor.sdk.service.Bucket
@@ -30,7 +30,7 @@ class ObjectSteps extends En {
       ObjectSteps.testConfig.zone
     )
   }
-  
+
   When("^put object with key \"(.*)\"$", new A1[String] {
     override def accept(arg: String): Unit = {
       initBucket()
@@ -124,7 +124,7 @@ class ObjectSteps extends En {
 
   Then("^get object content type is \"(.*)\"$", new A1[String] {
     override def accept(arg: String): Unit = {
-      val entity = ObjectSteps.getObjectResponse.getEntity
+      val entity = ObjectSteps.getObjectResponse.entity
       val contentType = entity.contentType.toString()
       assert(arg.contains(contentType))
     }
@@ -163,7 +163,7 @@ class ObjectSteps extends En {
     }
   })
 
-  When("^options object \"(.*)\" with method \"(.*)\" and origin \"(.*)\"$", 
+  When("^options object \"(.*)\" with method \"(.*)\" and origin \"(.*)\"$",
     new A3[String, String, String] {
     override def accept(arg1: String, arg2: String, arg3: String): Unit = {
       val input = Bucket.OptionsObjectInput(
@@ -217,7 +217,7 @@ object ObjectSteps {
 
   private var putObjectOutput: Bucket.PutObjectOutput = _
   private var getObjectRequest: QSRequest = _
-  private var getObjectResponse: QSHttpResponse = _
+  private var getObjectResponse: HttpResponse = _
   private var getObjectOutput: Bucket.GetObjectOutput = _
   private var getObjectWithQueryOutput: BufferedInputStream = _
   private var headObjectOutput: Bucket.HeadObjectOutput = _

@@ -1,174 +1,173 @@
 package com.qingstor.sdk.service
 
-import java.time.ZonedDateTime
-
 object Types {
   case class ACLModel(
-      `grantee`: GranteeModel,
+      grantee: GranteeModel,
       // Permission for this grantee
       // permission's available values: READ, WRITE, FULL_CONTROL
-      `permission`: String
+      permission: String
   ) {
 
-    require(`grantee` != null, "`grantee` can't be empty")
+    require(grantee != null, "grantee can't be empty")
 
-    require(`permission` != null, "`permission` can't be empty")
-    require(`permission`.nonEmpty, """`permission` can't be empty""")
+    require(permission != null, "permission can't be empty")
+    require(permission.nonEmpty, """permission can't be empty""")
 
-    require("READ, WRITE, FULL_CONTROL".split(", ").contains(`permission`),
-            """`permission` can only be one of "READ, WRITE, FULL_CONTROL" """)
+    require("READ, WRITE, FULL_CONTROL".split(", ").contains(permission),
+            """permission can only be one of "READ, WRITE, FULL_CONTROL" """)
 
   }
   case class BucketModel(
       // Created time of the bucket
-      `created`: Option[String] = None,
+      created: Option[String] = None,
       // QingCloud Zone ID
-      `location`: Option[String] = None,
+      location: Option[String] = None,
       // Bucket name
-      `name`: Option[String] = None,
+      name: Option[String] = None,
       // URL to access the bucket
-      `url`: Option[String] = None
+      uRL: Option[String] = None
   ) {}
   case class ConditionModel(
-      `ip_address`: Option[IPAddressModel] = None,
-      `is_null`: Option[IsNullModel] = None,
-      `not_ip_address`: Option[NotIPAddressModel] = None,
-      `string_like`: Option[StringLikeModel] = None,
-      `string_not_like`: Option[StringNotLikeModel] = None
+      iPAddress: Option[IPAddressModel] = None,
+      isNull: Option[IsNullModel] = None,
+      notIPAddress: Option[NotIPAddressModel] = None,
+      stringLike: Option[StringLikeModel] = None,
+      stringNotLike: Option[StringNotLikeModel] = None
   ) {}
   case class CORSRuleModel(
       // Allowed headers
-      `allowed_headers`: Option[List[String]] = None,
+      allowedHeaders: Option[List[String]] = None,
       // Allowed methods
-      `allowed_methods`: List[String],
+      allowedMethods: List[String],
       // Allowed origin
-      `allowed_origin`: String,
+      allowedOrigin: String,
       // Expose headers
-      `expose_headers`: Option[List[String]] = None,
+      exposeHeaders: Option[List[String]] = None,
       // Max age seconds
-      `max_age_seconds`: Option[Int] = None
+      maxAgeSeconds: Option[Int] = None
   ) {
 
-    require(`allowed_methods` != null, "`allowed_methods` can't be empty")
-    require(`allowed_methods`.nonEmpty, """`allowed_methods` can't be empty""")
+    require(allowedMethods != null, "allowedMethods can't be empty")
+    require(allowedMethods.nonEmpty, """allowedMethods can't be empty""")
 
-    require(`allowed_origin` != null, "`allowed_origin` can't be empty")
-    require(`allowed_origin`.nonEmpty, """`allowed_origin` can't be empty""")
+    require(allowedOrigin != null, "allowedOrigin can't be empty")
+    require(allowedOrigin.nonEmpty, """allowedOrigin can't be empty""")
 
   }
   case class GranteeModel(
       // Grantee user ID
-      `id`: Option[String] = None,
+      iD: Option[String] = None,
       // Grantee group name
-      `name`: Option[String] = None,
+      name: Option[String] = None,
       // Grantee type
-      // type's available values: user, group
-      `type`: String
+      // typ's available values: user, group
+      typ: String
   ) {
 
-    require(`type` != null, "`type` can't be empty")
-    require(`type`.nonEmpty, """`type` can't be empty""")
+    require(typ != null, "typ can't be empty")
+    require(typ.nonEmpty, """typ can't be empty""")
 
-    require("user, group".split(", ").contains(`type`),
-            """`type` can only be one of "user, group" """)
+    require("user, group".split(", ").contains(typ),
+            """typ can only be one of "user, group" """)
 
   }
   case class IPAddressModel(
       // Source IP
-      `source_ip`: Option[List[String]] = None
+      sourceIP: Option[List[String]] = None
   ) {}
   case class IsNullModel(
       // Refer url
-      `Referer`: Option[Boolean] = None
+      referer: Option[Boolean] = None
   ) {}
   case class KeyModel(
       // Object created time
-      `created`: Option[String] = None,
+      created: Option[String] = None,
       // Whether this key is encrypted
-      `encrypted`: Option[Boolean] = None,
+      encrypted: Option[Boolean] = None,
       // MD5sum of the object
-      `etag`: Option[String] = None,
+      etag: Option[String] = None,
       // Object key
-      `key`: Option[String] = None,
+      key: Option[String] = None,
       // MIME type of the object
-      `mime_type`: Option[String] = None,
+      mimeType: Option[String] = None,
       // Last modified time in unix time format
-      `modified`: Option[Int] = None,
+      modified: Option[Int] = None,
       // Object content size
-      `size`: Option[Int] = None
+      size: Option[Int] = None
   ) {}
   case class KeyDeleteErrorModel(
       // Error code
-      `code`: Option[String] = None,
+      code: Option[String] = None,
       // Object key
-      `key`: Option[String] = None,
+      key: Option[String] = None,
       // Error message
-      `message`: Option[String] = None
+      message: Option[String] = None
   ) {}
   case class NotIPAddressModel(
       // Source IP
-      `source_ip`: Option[List[String]] = None
+      sourceIP: Option[List[String]] = None
   ) {}
   case class ObjectPartModel(
       // Object part created time
-      `created`: Option[String] = None,
+      created: Option[String] = None,
       // MD5sum of the object part
-      `etag`: Option[String] = None,
+      etag: Option[String] = None,
       // Object part number
-      `part_number`: Int,
+      partNumber: Int,
       // Object part size
-      `size`: Option[Int] = None
+      size: Option[Int] = None
   ) {}
   case class OwnerModel(
       // User ID
-      `id`: Option[String] = None,
+      iD: Option[String] = None,
       // Username
-      `name`: Option[String] = None
+      name: Option[String] = None
   ) {}
   case class StatementModel(
       // QingStor API methods
-      `action`: List[String],
-      `condition`: Option[ConditionModel] = None,
+      action: List[String],
+      condition: Option[ConditionModel] = None,
       // Statement effect
       // effect's available values: allow, deny
-      `effect`: String,
+      effect: String,
       // Bucket policy id, must be unique
-      `id`: String,
+      iD: String,
       // The resources to apply bucket policy
-      `resource`: Option[List[String]] = None,
+      resource: Option[List[String]] = None,
       // The user to apply bucket policy
-      `user`: List[String]
+      user: List[String]
   ) {
 
-    require(`action` != null, "`action` can't be empty")
-    require(`action`.nonEmpty, """`action` can't be empty""")
+    require(action != null, "action can't be empty")
+    require(action.nonEmpty, """action can't be empty""")
 
-    require(`effect` != null, "`effect` can't be empty")
-    require(`effect`.nonEmpty, """`effect` can't be empty""")
+    require(effect != null, "effect can't be empty")
+    require(effect.nonEmpty, """effect can't be empty""")
 
-    require("allow, deny".split(", ").contains(`effect`),
-            """`effect` can only be one of "allow, deny" """)
-    require(`id` != null, "`id` can't be empty")
-    require(`id`.nonEmpty, """`id` can't be empty""")
+    require("allow, deny".split(", ").contains(effect),
+            """effect can only be one of "allow, deny" """)
+    require(iD != null, "iD can't be empty")
+    require(iD.nonEmpty, """iD can't be empty""")
 
-    require(`user` != null, "`user` can't be empty")
-    require(`user`.nonEmpty, """`user` can't be empty""")
+    require(user != null, "user can't be empty")
+    require(user.nonEmpty, """user can't be empty""")
 
   }
   case class StringLikeModel(
       // Refer url
-      `Referer`: Option[List[String]] = None
+      referer: Option[List[String]] = None
   ) {}
   case class StringNotLikeModel(
       // Refer url
-      `Referer`: Option[List[String]] = None
+      referer: Option[List[String]] = None
   ) {}
   case class UploadsModel(
       // Object part created time
-      `created`: Option[String] = None,
+      created: Option[String] = None,
       // Object key
-      `key`: Option[String] = None,
+      key: Option[String] = None,
       // Object upload id
-      `upload_id`: Option[String] = None
+      uploadID: Option[String] = None
   ) {}
+
 }

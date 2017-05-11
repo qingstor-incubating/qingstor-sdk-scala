@@ -1,6 +1,7 @@
 package com.qingstor.sdk.model
 
 import com.qingstor.sdk.config.QSConfig
+import io.circe.{Decoder, Encoder}
 
 object QSModels {
 
@@ -29,4 +30,11 @@ object QSModels {
     bucketName: String = "",
     objectKey: String = ""
   )
+
+  implicit val decodeErrorMessage: Decoder[ErrorMessage] = Decoder.forProduct5(
+    "request_id", "status_code", "code", "message", "url"
+  )(ErrorMessage.apply)
+  implicit val encodeErrorMessage: Encoder[ErrorMessage] = Encoder.forProduct5(
+    "request_id", "status_code", "code", "message", "url"
+  )(e => (e.requestID, e.statusCode, e.code, e.message, e.url))
 }

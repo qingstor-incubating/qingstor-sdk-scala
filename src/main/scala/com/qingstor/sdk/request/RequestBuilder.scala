@@ -8,7 +8,7 @@ import akka.util.ByteString
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.constant.QSConstants
 import com.qingstor.sdk.model.QSModels.{Input, Operation}
-import com.qingstor.sdk.util.{JsonUtil, QSLogger, QSRequestUtil, TimeUtil}
+import com.qingstor.sdk.util.{QSLogger, QSRequestUtil, TimeUtil}
 
 class RequestBuilder(op: Operation, in: Input) {
   private val operation = op
@@ -97,13 +97,13 @@ class RequestBuilder(op: Operation, in: Input) {
     if (input != null) {
       val elements = QSRequestUtil.getRequestParams(input, QSConstants.ParamsLocationElement)
       if (elements.nonEmpty) {
-        val bytes = JsonUtil.encode(elements).compactPrint.getBytes
+        val bytes = elements.getOrElse(QSConstants.ParamsLocationElement, "").asInstanceOf[String].getBytes
         HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType, ContentTypes.`application/json`), bytes)
       } else {
         val body: Map[String, AnyRef] = QSRequestUtil.getRequestParams(input, QSConstants.ParamsLocationBody)
         if (body.isEmpty)
           HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType, ContentTypes.NoContentType), ByteString.empty)
-        else if (body.contains("Body")) {
+        else {
           val Body = body.getOrElse("Body", "")
           Body match {
             case bodyString: String =>
@@ -115,9 +115,6 @@ class RequestBuilder(op: Operation, in: Input) {
             case bytes: Array[Byte] =>
               HttpEntity(bytes)
           }
-        } else {
-          val bytes = JsonUtil.encode(body).compactPrint.getBytes
-          HttpEntity(RequestBuilder.eitherGetOrElse(givenContentType, ContentTypes.`application/json`), bytes)
         }
       }
     } else {

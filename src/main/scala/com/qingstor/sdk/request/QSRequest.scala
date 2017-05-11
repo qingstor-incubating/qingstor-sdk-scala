@@ -7,9 +7,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.ActorMaterializer
 import com.qingstor.sdk.constant.QSConstants
-import com.qingstor.sdk.model.QSHttpResponse
 import com.qingstor.sdk.model.QSModels._
-import com.qingstor.sdk.util.QSLogger
 import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.Future
@@ -19,9 +17,9 @@ class QSRequest(_operation: Operation, _input: Input) {
   val operation: Operation = _operation
   val HTTPRequest: HttpRequest = build()
 
-  def send()(implicit system: ActorSystem, mat: ActorMaterializer): Future[QSHttpResponse] = {
-    import system.dispatcher
-    val config = ConfigFactory.parseString(s"""
+  def send()(implicit system: ActorSystem, mat: ActorMaterializer): Future[HttpResponse] = {
+    val config = ConfigFactory.parseString(
+      s"""
          |akka.http {
          |  host-connection-pool {
          |    client {
@@ -32,10 +30,10 @@ class QSRequest(_operation: Operation, _input: Input) {
          |    max-retries = ${operation.config.connectionRetries}
          |  }
          |}
-      """.stripMargin).withFallback(ConfigFactory.defaultReference())
+      """.stripMargin
+    ).withFallback(ConfigFactory.defaultReference())
 
     Http(system).singleRequest(request = sign(HTTPRequest), settings = ConnectionPoolSettings(config))
-      .map(ResponseUnpacker(_, operation).unpackResponse())
   }
 
   private def build(): HttpRequest = {

@@ -3,14 +3,14 @@ package com.qingstor.sdk.steps
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.service.Bucket
 import com.qingstor.sdk.service.Types.StatementModel
+import com.qingstor.sdk.service.QSCodec.QSTypesCodec.decodeStatementModel
 import cucumber.api.java8.StepdefBody._
 import cucumber.api.java8.En
 import com.qingstor.sdk.steps.TestUtil.TestConfig
-import spray.json._
-import com.qingstor.sdk.service.QSJsonProtocol.statementModelFormat
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import io.circe.parser._
 
 class BucketPolicySteps extends En {
 
@@ -27,12 +27,21 @@ class BucketPolicySteps extends En {
   When("^put bucket policy:$", new A1[String] {
     override def accept(arg: String): Unit = {
       initBucket()
-      val statements = arg.parseJson.asJsObject.fields("statement").asInstanceOf[JsArray]
-        .elements.toList.map {json =>
-        val originFields = json.asJsObject.fields
-        val array = JsArray(Vector(JsString(BucketPolicySteps.testConfig.bucket_name + "/*")))
-        val fields = originFields + ("resource" -> array)
-        JsObject(fields).convertTo[StatementModel]
+      val map = parse(arg).right.flatMap(_.as[Map[String, List[StatementModel]]]) match {
+        case Left(failure) => throw failure
+        case Right(m) => m
+      }
+      val tmp = map("statement")
+      var statements: List[StatementModel] = null
+      if (tmp.length == 1) {
+        statements = List(StatementModel(
+          action = tmp.head.action,
+          effect = tmp.head.effect,
+          iD = tmp.head.iD,
+          condition = tmp.head.condition,
+          user = tmp.head.user,
+          resource = Some(List(s"${BucketPolicySteps.bucket.bucketName}/*"))
+        ))
       }
       val input = Bucket.PutBucketPolicyInput(statements)
       val outputFuture = BucketPolicySteps.bucket.putPolicy(input)
@@ -67,7 +76,7 @@ class BucketPolicySteps extends En {
     override def accept(arg: String): Unit = {
       val hasReferer = BucketPolicySteps.getBucketPolicyOutput.`statement`.map{ statements =>
         statements.exists{ statement =>
-          statement.`condition`.get.`string_like`.get.`Referer`.get.contains(arg)
+          statement.condition.get.stringLike.get.referer.get.contains(arg)
         }
       }
       if (!hasReferer.get)

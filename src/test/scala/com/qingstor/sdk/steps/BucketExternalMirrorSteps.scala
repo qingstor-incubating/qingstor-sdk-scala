@@ -5,7 +5,8 @@ import com.qingstor.sdk.service.Bucket
 import cucumber.api.java8.StepdefBody._
 import cucumber.api.java8.En
 import com.qingstor.sdk.steps.TestUtil.TestConfig
-import spray.json._
+import io.circe.Json
+import io.circe.parser._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -25,8 +26,11 @@ class BucketExternalMirrorSteps extends En{
   When("^put bucket external mirror:$", new A1[String] {
     override def accept(arg: String): Unit = {
       initBucket()
-      val json = arg.parseJson
-      val sourceSite = json.asJsObject.fields("source_site").asInstanceOf[JsString].value
+      val json = parse(arg) match {
+        case Left(_) => Json.Null
+        case Right(j) => j
+      }
+      val sourceSite = json.asObject.get.toMap("source_site").asString.getOrElse("")
       val input = Bucket.PutBucketExternalMirrorInput(sourceSite)
       val outputFuture = BucketExternalMirrorSteps.bucket.putExternalMirror(input)
       BucketExternalMirrorSteps.putBucketExternalMirrorOutput = Await.result(outputFuture,
@@ -61,7 +65,7 @@ class BucketExternalMirrorSteps extends En{
   And("^get bucket external mirror should have source_site \"(.*)\"$", new A1[String] {
     override def accept(arg: String): Unit = {
       val sourceSite = BucketExternalMirrorSteps.getBucketExternalMirrorOutput
-        .`source_site`.getOrElse("")
+        .sourceSite.getOrElse("")
       assert(sourceSite == arg)
     }
   })

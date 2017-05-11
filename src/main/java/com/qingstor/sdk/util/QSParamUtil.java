@@ -62,16 +62,15 @@ public class QSParamUtil {
     public static Object invokeMethod(Object model, String methodName, Object[] params)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
         Method method;
+        Class<?> fieldType = null;
         if (methodName.startsWith("get"))
             method = model.getClass().getMethod(methodName);
         else {
             String fieldName;
-            Class<?> fieldType = null;
             if (methodName.startsWith("set")) {
                 fieldName = methodName.replaceFirst("set", "");
                 fieldName = String.valueOf(fieldName.charAt(0)).toLowerCase() + fieldName.substring(1);
-            }
-            else {
+            } else {
                 fieldName = methodName;
             }
             try {
@@ -84,6 +83,8 @@ public class QSParamUtil {
 
         if (params == null)
             return method.invoke(model, (Object []) null);
+        if (fieldType.getName().equals(scala.Option.class.getTypeName()))
+            params[0] = scala.Option.apply(params[0]);
         return method.invoke(model, params);
     }
 }

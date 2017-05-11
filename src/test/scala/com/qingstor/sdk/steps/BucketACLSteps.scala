@@ -5,17 +5,17 @@ import java.util.NoSuchElementException
 import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.service.Bucket
 import com.qingstor.sdk.service.Types.ACLModel
+import com.qingstor.sdk.service.QSCodec.QSTypesCodec.decodeACLModel
 import cucumber.api.java8.StepdefBody._
 import cucumber.api.java8.En
 import com.qingstor.sdk.steps.TestUtil.TestConfig
-import spray.json._
-import com.qingstor.sdk.service.QSJsonProtocol.aCLModelFormat
+import io.circe.parser._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 class BucketACLSteps extends En{
-  
+
   private def initBucket(): Unit = {
     BucketACLSteps.config = TestUtil.getQSConfig
     BucketACLSteps.testConfig = TestUtil.getTestConfig
@@ -29,10 +29,11 @@ class BucketACLSteps extends En{
   When("^put bucket ACL:$", new A1[String] {
     override def accept(arg: String): Unit = {
       initBucket()
-      val json = arg.parseJson
-      val modelList = json.asJsObject.fields("acl").asInstanceOf[JsArray]
-        .elements.toList.map(_.convertTo[ACLModel])
-      val input = Bucket.PutBucketACLInput(modelList)
+      val maps = parse(arg).right.flatMap(_.as[Map[String, List[ACLModel]]]) match {
+        case Left(failure) => throw failure
+        case Right(m) => m
+      }
+      val input = Bucket.PutBucketACLInput(maps("acl"))
       val outputFuture = BucketACLSteps.bucket.putACL(input)
       BucketACLSteps.putBucketACLOutput = Await.result(outputFuture, Duration.Inf)
     }
@@ -62,9 +63,9 @@ class BucketACLSteps extends En{
 
   And("^get bucket ACL should have grantee name \"(.*)\"$", new A1[String] {
     override def accept(arg: String): Unit = {
-      val hasThisName = BucketACLSteps.getBucketACLOutput.`acl`.map{ modleList =>
+      val hasThisName = BucketACLSteps.getBucketACLOutput.aCL.map{ modleList =>
         modleList.exists { model =>
-          model.`grantee`.`name`.nonEmpty && model.`grantee`.`name`.get.equals(arg)
+          model.grantee.name.nonEmpty && model.grantee.name.get.equals(arg)
         }
       }
       if (hasThisName.isEmpty || !hasThisName.get)

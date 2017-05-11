@@ -45,7 +45,7 @@ class ObjectMultipartSteps extends En {
       val file = new File("/tmp/sdk_bin_part_0")
       val input = Bucket.UploadMultipartInput(
         partNumber = 0,
-        uploadID = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse(""),
+        uploadID = ObjectMultipartSteps.initiateMultipartUploadOutput.uploadID.getOrElse(""),
         body = file
       )
       val of = ObjectMultipartSteps.bucket.uploadMultipart(arg, input)
@@ -66,7 +66,7 @@ class ObjectMultipartSteps extends En {
       val file = new File("/tmp/sdk_bin_part_1")
       val input = Bucket.UploadMultipartInput(
         partNumber = 1,
-        uploadID = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse(""),
+        uploadID = ObjectMultipartSteps.initiateMultipartUploadOutput.uploadID.getOrElse(""),
         body = file
       )
       val of = ObjectMultipartSteps.bucket.uploadMultipart(arg, input)
@@ -87,7 +87,7 @@ class ObjectMultipartSteps extends En {
       val file = new File("/tmp/sdk_bin_part_2")
       val input = Bucket.UploadMultipartInput(
         partNumber = 2,
-        uploadID = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse(""),
+        uploadID = ObjectMultipartSteps.initiateMultipartUploadOutput.uploadID.getOrElse(""),
         body = file
       )
       val of = ObjectMultipartSteps.bucket.uploadMultipart(arg, input)
@@ -104,7 +104,7 @@ class ObjectMultipartSteps extends En {
 
   When("""^list multipart with key "(.*)"$""", new A1[String] {
     override def accept(arg: String): Unit = {
-      val id = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse("")
+      val id = ObjectMultipartSteps.initiateMultipartUploadOutput.uploadID.getOrElse("")
       val input = Bucket.ListMultipartInput(uploadID = id)
       val of = ObjectMultipartSteps.bucket.listMultipart(arg, input)
       ObjectMultipartSteps.listMultipartOutput = Await.result(of, Duration.Inf)
@@ -126,10 +126,10 @@ class ObjectMultipartSteps extends En {
 
   When("""^complete multipart upload with key "(.*)"$""", new A1[String] {
     override def accept(arg: String): Unit = {
-      val id = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse("")
+      val id = ObjectMultipartSteps.initiateMultipartUploadOutput.uploadID.getOrElse("")
       val input = Bucket.CompleteMultipartUploadInput(
         uploadID = id,
-        objectParts = ObjectMultipartSteps.listMultipartOutput.`object_parts`
+        objectParts = ObjectMultipartSteps.listMultipartOutput.objectParts
       )
       val of = ObjectMultipartSteps.bucket.completeMultipartUpload(arg, input)
       ObjectMultipartSteps.completeMultipartUploadOutput = Await.result(of, Duration.Inf)
@@ -144,17 +144,18 @@ class ObjectMultipartSteps extends En {
 
   When("""^abort multipart upload with key "(.*)"$""", new A1[String] {
     override def accept(arg: String): Unit = {
-      val id = ObjectMultipartSteps.initiateMultipartUploadOutput.`upload_id`.getOrElse("")
-      val input = Bucket.AbortMultipartUploadInput(id)
-      ObjectMultipartSteps.abortMultipartUploadOutputFuture =
-        ObjectMultipartSteps.bucket.abortMultipartUpload(arg, input)
+      ObjectMultipartSteps.multipartKey = arg
     }
   })
 
   Then("""^abort multipart upload status code is (\d+)$""", new A1[Integer] {
     override def accept(arg: Integer): Unit = {
       try {
-        Await.result(ObjectMultipartSteps.abortMultipartUploadOutputFuture, Duration.Inf)
+        val id = ObjectMultipartSteps.initiateMultipartUploadOutput.uploadID.getOrElse("")
+        val input = Bucket.AbortMultipartUploadInput(id)
+        val of = ObjectMultipartSteps.bucket.abortMultipartUpload(ObjectMultipartSteps.multipartKey, input)
+        val output = Await.result(of, Duration.Inf)
+        println(output.statusCode)
       } catch {
         case ex: QingStorException =>
           val error = ex.errorMessage
@@ -187,6 +188,6 @@ object ObjectMultipartSteps {
   private var uploadMultipartOutput: Bucket.UploadMultipartOutput = _
   private var listMultipartOutput: Bucket.ListMultipartOutput = _
   private var completeMultipartUploadOutput: Bucket.CompleteMultipartUploadOutput = _
-  private var abortMultipartUploadOutputFuture: Future[Bucket.AbortMultipartUploadOutput] = _
   private var deleteObjectOutput: Bucket.DeleteObjectOutput = _
+  private var multipartKey: String = _
 }
