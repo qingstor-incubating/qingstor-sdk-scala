@@ -3,14 +3,37 @@
 {{- $customizedTypes := .Data.CustomizedTypes -}}
 package com.qingstor.sdk.service
 
-import java.time.ZonedDateTime
-
 object Types {
     {{- range $_, $customizedType := $customizedTypes}}
         case class {{$customizedType.ID | camelCase}}Model (
-            {{template "PropertyParameters" passThrough $customizedType 1 "output" 0}}
+            {{template "PropertyParameters" passThrough $customizedType 1 0}}
         ) {
-            {{template "PropertyValidation" passThrough $customizedType "output"}}
+            {{template "PropertyValidation" passThrough $customizedType}}
         }
     {{- end}}
+{{/*
+    object TypesCodec {
+    {{- range $_, $customizedType := $customizedTypes}}
+        {{$length := len $customizedType.Properties}}
+        {{- $firstID := $customizedType | firstPropertyIDInCustomizedType -}}
+        implicit val decode{{$customizedType.ID | camelCase}}Model: Decoder[{{$customizedType.ID | camelCase}}Model] =
+        Decoder.forProduct{{$length}}(
+        {{range $property := $customizedType.Properties -}}
+            {{- if ne $firstID $property.ID}},{{- end}} "{{$property.Name}}"
+        {{- end}}
+        )({{$customizedType.ID | camelCase}}Model.apply)
+
+        implicit val encode{{$customizedType.ID | camelCase}}Model: Encoder[{{$customizedType.ID | camelCase}}Model] =
+        Encoder.forProduct{{$length}}(
+        {{range $property := $customizedType.Properties -}}
+            {{- if ne $firstID $property.ID}},{{- end}} "{{$property.Name}}"
+        {{- end}}
+        )(m => (
+        {{- range $property := $customizedType.Properties -}}
+            {{- if ne $firstID $property.ID}},{{- end}} m.{{if eq $property.ID "type" -}}typ{{- else -}}{{$property.ID | camelCase | lowerFirst}}{{- end}}
+        {{- end -}}
+        ))
+    {{- end}}
+    }
+*/}}
 }

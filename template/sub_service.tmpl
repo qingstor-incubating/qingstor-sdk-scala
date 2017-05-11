@@ -6,15 +6,17 @@ import com.qingstor.sdk.config.QSConfig
 import com.qingstor.sdk.model.QSModels._
 import com.qingstor.sdk.request.{QSRequest, ResponseUnpacker}
 import com.qingstor.sdk.service.Types._
+import com.qingstor.sdk.service.QSCodec.QSTypesCodec._
 import com.qingstor.sdk.annotation.ParamAnnotation
 import com.qingstor.sdk.constant.QSConstants
-import com.qingstor.sdk.service.QSJsonProtocol._
 import akka.stream.ActorMaterializer
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import com.qingstor.sdk.service.Bucket._
-import akka.http.scaladsl.unmarshalling.Unmarshal
 import java.io.File
 import com.qingstor.sdk.exception.QingStorException
+import com.qingstor.sdk.service.QSCodec.QSOutputCodec._
+import io.circe._
+import io.circe.syntax._
 
 class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     implicit val system = QSConstants.QingStorSystem

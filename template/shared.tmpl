@@ -66,108 +66,84 @@
 {{define "PropertyParameters"}}
     {{- $data := index . 0 -}}
     {{- $shouldIgnoreFirstComma := index . 1 -}}
-    {{- $io := index . 2 -}}
-    {{- $shouldUseVar := index . 3 -}}
+    {{- $shouldUseVar := index . 2 -}}
 
-    {{- if $shouldIgnoreFirstComma}}
-        {{- $firstID := $data | firstPropertyIDInCustomizedType -}}
-        {{- range $property := $data.Properties}}
-            {{- if ne $firstID $property.ID}},{{- end}}
-            {{if $property.Description -}}
-                // {{$property.Description}}
-            {{end -}}
-            {{if $property.Enum -}}
-                // {{$property.ID | camelCase | lowerFirst}}'s available values: {{$property.Enum | commaConnected}}
-            {{end -}}
-            {{- if eq $io "input"}}
-                {{$property.ID | camelCase | lowerFirst -}}:
-            {{- else if eq $io "output"}}
-                {{- if $shouldUseVar}}
-                    var `{{$property.Name}}`:
-                {{- else}}
-                    `{{$property.Name}}`:
-                {{- end}}
-            {{- end}}
-            {{template "PropertyType" passThrough $property $property.IsRequired}}
-            {{- if not $property.IsRequired}} = None {{- end}}
+    {{- $firstID := $data | firstPropertyIDInCustomizedType -}}
+    {{- range $property := $data.Properties}}
+        {{- if or (not $shouldIgnoreFirstComma) (ne $firstID $property.ID)}},{{- end}}
+        {{if $property.Description -}}
+            // {{$property.Description}}
+        {{end -}}
+        {{if $property.Enum -}}
+            // {{if eq $property.ID "type" -}}typ{{- else -}}{{$property.ID | camelCase | lowerFirst}}{{- end -}}'s available values: {{$property.Enum | commaConnected}}
+        {{end -}}
+        {{- if $shouldUseVar }}
+            var {{if eq $property.ID "type" -}}typ{{- else -}}{{$property.ID | camelCase | lowerFirst}}{{- end -}}:
+        {{- else}}
+            {{if eq $property.ID "type" -}}typ{{- else -}}{{$property.ID | camelCase | lowerFirst}}{{- end -}}:
         {{- end}}
-    {{- else}}
-        {{- range $property := $data.Properties}},
-            {{if $property.Description -}}
-                // {{$property.Description}}
-            {{end -}}
-            {{if $property.Enum -}}
-                // {{$property.ID | camelCase | lowerFirst}}'s available values: {{$property.Enum | commaConnected}}
-            {{end -}}
-            {{- if eq $io "input"}}
-                {{$property.ID | camelCase | lowerFirst -}}:
-            {{- else if eq $io "output"}}
-                {{- if $shouldUseVar}}
-                    var `{{$property.Name}}`:
-                {{- else}}
-                    `{{$property.Name}}`:
-                {{- end}}
-            {{- end}}
-            {{- template "PropertyType" passThrough $property $property.IsRequired -}}
-            {{- if not $property.IsRequired}} = None {{- end}}
-        {{- end}}
+        {{template "PropertyType" passThrough $property $property.IsRequired}}
+        {{- if not $property.IsRequired}} = None {{- end}}
     {{- end}}
 {{end}}
 
 {{define "PropertyMethods"}}
-    {{- $properties := index . 0 -}}
+    {{- $data := index . 0 -}}
     {{- $location := index . 1 -}}
+    {{- $prefix := index . 2 -}}
+    {{- $properties := $data.Properties -}}
 
-    {{- range $property := $properties}}
-        @ParamAnnotation(location = {{$location}}, name = "{{$property.Name | normalized}}")
-        def get{{- $property.ID | camelCase}} = this.{{- $property.ID | camelCase | lowerFirst}}
+    {{- if and (eq $prefix "get") (eq $location "QSConstants.ParamsLocationElement")}}
+        @ParamAnnotation(location = {{$location}}, name = QSConstants.ParamsLocationElement)
+        def getElements: String = JsonObject.fromMap(Map(
+        {{- $firstID := $data | firstPropertyIDInCustomizedType -}}
+        {{- range $property := $properties}}
+            {{- if ne $firstID $property.ID }},{{end}}
+            {{- if and (eq $property.Name "objects") (eq ($property.ExtraType | camelCase) "Key")}}
+                "{{$property.Name}}" -> {{$property.ID | camelCase | lowerFirst}}.sortBy(_.key).asJson
+            {{- else}}
+                "{{$property.Name}}" -> {{$property.ID | camelCase | lowerFirst}}.asJson
+            {{- end}}
+        {{- end}}
+        )).asJson.pretty(QSConstants.printer)
+    {{- else}}
+        {{- range $property := $properties}}
+            @ParamAnnotation(location = {{$location}}, name = "{{$property.Name | normalized}}")
+            {{- if eq $prefix "get" }}
+                def get{{- $property.ID | camelCase}}: {{template "PropertyType" passThrough $property $property.IsRequired}}=
+                    this.{{- $property.ID | camelCase | lowerFirst}}
+            {{- else }}
+                def set{{- $property.ID | camelCase}}({{- $property.ID | camelCase | lowerFirst}}:
+                    {{template "PropertyType" passThrough $property $property.IsRequired}}): Unit =
+                    this.{{- $property.ID | camelCase | lowerFirst}} = {{- $property.ID | camelCase | lowerFirst}}
+            {{- end}}
+        {{- end}}
     {{- end}}
 {{end}}
 
 {{define "PropertyValidation"}}
     {{- $data := index . 0 -}}
-    {{- $io := index . 1 -}}
 
     {{- range $property := $data.Properties -}}
-        {{if ne $property.Type "integer"}}
+        {{if and (ne $property.Type "integer") (ne $property.Type "long")}}
             {{- if $property.IsRequired}}
-                {{- if eq $io "input"}}
-                    require({{$property.ID | camelCase | lowerFirst}} != null,
-                        "{{$property.ID | camelCase | lowerFirst}} can't be empty")
-                    {{- if  or (eq $property.Type "string") (eq $property.Type "array") (eq $property.Type "map")}}
-                        require({{$property.ID | camelCase | lowerFirst -}}.nonEmpty,
-                            """{{$property.ID | camelCase | lowerFirst}} can't be empty""")
-                    {{- end}}
-                {{- else if eq $io "output"}}
-                    require(`{{$property.Name}}` != null,
-                        "`{{$property.Name}}` can't be empty")
-                    {{- if  or (eq $property.Type "string") (eq $property.Type "array") (eq $property.Type "map")}}
-                        require(`{{$property.Name}}`.nonEmpty,
-                            """`{{$property.Name}}` can't be empty""")
-                    {{- end}}
+                require({{if eq $property.ID "type" -}}typ{{- else -}}{{$property.ID | camelCase | lowerFirst}}{{- end -}} != null,
+                    "{{if eq $property.ID "type" -}}typ{{- else -}}{{$property.ID | camelCase | lowerFirst}}{{- end}} can't be empty")
+                {{- if  or (eq $property.Type "string") (eq $property.Type "array") (eq $property.Type "map")}}
+                    require({{if eq $property.ID "type" -}}typ{{- else -}}{{$property.ID | camelCase | lowerFirst}}{{- end -}}.nonEmpty,
+                        """{{if eq $property.ID "type" -}}typ{{- else -}}{{$property.ID | camelCase | lowerFirst}}{{- end}} can't be empty""")
                 {{- end}}
             {{- end}}
         {{end}}
         {{- if gt (len $property.Enum) 0}}
-            {{- if eq $io "input"}}
-                {{- if eq $property.Type "string"}}
-                    require("{{$property.Enum | commaConnected}}".split(", ").contains({{$property.ID | camelCase | lowerFirst}}),
-                        """{{$property.ID | camelCase | lowerFirst}} can only be one of "{{$property.Enum | commaConnected}}" """)
-                {{- end}}
-                {{- if eq $property.Type "array"}}
-                    require({{$property.ID | camelCase | lowerFirst}}.forall("{{$property.Enum | commaConnected}}".split(", ").contains(_)),
-                        """{{$property.ID | camelCase | lowerFirst}} can only be part of "{{$property.Enum | commaConnected}}"""")
-                {{- end}}
-            {{- else if eq $io "output"}}
-                {{- if eq $property.Type "string"}}
-                    require("{{$property.Enum | commaConnected}}".split(", ").contains(`{{$property.Name}}`),
-                        """`{{$property.Name}}` can only be one of "{{$property.Enum | commaConnected}}" """)
-                {{- end}}
-                {{- if eq $property.Type "array"}}
-                    require(`{{$property.Name}}`.forall("{{$property.Enum | commaConnected}}".split(", ").contains(_)),
-                        """`{{$property.Name}}` can only be part of "{{$property.Enum | commaConnected}}"""")
-                {{- end}}
-            {{- end }}
+            {{- if eq $property.Type "string"}}
+                require("{{$property.Enum | commaConnected}}".split(", ").contains({{if eq $property.ID "type" -}}typ{{- else -}}{{$property.ID | camelCase | lowerFirst}}{{- end -}}),
+                    """{{if eq $property.ID "type" -}}typ{{- else -}}{{$property.ID | camelCase | lowerFirst}}{{- end}} can only be one of "{{$property.Enum | commaConnected}}" """)
+            {{- end}}
+            {{- if eq $property.Type "array"}}
+                require({{$property.ID | camelCase | lowerFirst}}.forall("{{$property.Enum | commaConnected}}".split(", ").contains(_)),
+                    """{{$property.ID | camelCase | lowerFirst}} can only be part of "{{$property.Enum | commaConnected}}"""")
+            {{- end}}
         {{- end}}
     {{- end}}
 {{end}}
@@ -212,129 +188,15 @@
         {{- end}}
         val operation = request.operation
         val futureResponse = request.send()
-        {{- if not (or $hasResponseBodyString $hasResponseBodyBinary)}}
-            {{- if and $hasResponseHeaders $hasResponseElements}}
-                futureResponse.flatMap { response =>
-                    if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                        operation.statusCodes)) {
-
-                        ResponseUnpacker.unpackToOutput[{{- $opID -}}Output](response).map { out =>
-                            {{- range $property := $response.Headers.Properties}}
-                                {{- if $property.IsRequired}}
-                                    {{- if eq $property.Name "Content-Length"}}
-                                        out.`{{$property.Name}}` = response.getEntity.contentLengthOption.getOrElse(0)
-                                    {{- else if eq $property.Name "Content-Type"}}
-                                        out.`{{$property.Name}}` = response.getEntity.contentType.toString()
-                                    {{- else}}
-                                        out.`{{$property.Name}}` = response.get{{- $property.ID | camelCase -}}
-                                    {{- end}}
-                                {{- else}}
-                                    {{- if eq $property.Name "Content-Length"}}
-                                        out.`{{$property.Name}}` = response.getEntity.contentLengthOption.map(_.toInt)
-                                    {{- else if eq $property.Name "Content-Type"}}
-                                        out.`{{$property.Name}}` = Option(response.getEntity.contentType.toString())
-                                    {{- else}}
-                                        out.`{{$property.Name}}` = Option(response.get{{- $property.ID | camelCase -}})
-                                    {{- end}}
-                                {{- end}}
-                            {{- end}}
-                            out.statusCode = Option(response.getStatusCode)
-                            out.requestID = Option(response.getRequestID)
-                            out
-                        }
-                    } else {
-                        ResponseUnpacker.unpackToErrorMessage(response).map { error =>
-                            error.statusCode = Option(response.getStatusCode)
-                            throw QingStorException(error)
-                        }
-                    }
-                }
-            {{- else if and $hasResponseHeaders (not $hasResponseElements)}}
-                futureResponse.flatMap { response =>
-                    if (ResponseUnpacker.isRightStatusCode(response.getStatusCode,
-                        operation.statusCodes)) {
-                            val out = {{$opID}}Output(
-                                {{- $firstID := $response.Headers | firstPropertyIDInCustomizedType -}}
-                                {{- range $property := $response.Headers.Properties}}
-                                    {{- if ne $firstID $property.ID}},{{- end}}
-                                    {{- if $property.IsRequired}}
-                                        {{- if eq $property.Name "Content-Length"}}
-                                            `{{$property.Name}}` = response.getEntity.contentLengthOption.getOrElse(0)
-                                        {{- else if eq $property.Name "Content-Type"}}
-                                            `{{$property.Name}}` = response.getEntity.contentType.toString()
-                                        {{- else}}
-                                            `{{$property.Name}}` = response.get{{- $property.ID | camelCase -}}
-                                        {{- end}}
-                                    {{- else}}
-                                        {{- if eq $property.Name "Content-Length"}}
-                                            `{{$property.Name}}` = response.getEntity.contentLengthOption.map(_.toInt)
-                                        {{- else if eq $property.Name "Content-Type"}}
-                                            `{{$property.Name}}` = Option(response.getEntity.contentType.toString())
-                                        {{- else}}
-                                            `{{$property.Name}}` = Option(response.get{{- $property.ID | camelCase -}})
-                                        {{- end}}
-                                    {{- end}}
-                                {{- end}}
-
-                            )
-                            out.statusCode = Option(response.getStatusCode)
-                            out.requestID = Option(response.getRequestID)
-                            Future(out)
-                        } else {
-                            ResponseUnpacker.unpackToErrorMessage(response).map { error =>
-                                error.statusCode = Option(response.getStatusCode)
-                                throw QingStorException(error)
-                        }
-                    }
-                }
-            {{- else if $hasResponseElements}}
-                ResponseUnpacker.unpackToOutput[{{- $opID -}}Output](futureResponse, operation.statusCodes)
-            {{- else}}
-                ResponseUnpacker.unpackToGenericOutput[{{- $opID -}}Output](futureResponse, operation.statusCodes)
-            {{- end}}
-        {{- else}}
-            futureResponse.flatMap { response =>
-                if (ResponseUnpacker.isRightStatusCode(response.getStatusCode, operation.statusCodes)) {
-                    Unmarshal(response.getEntity).to[Array[Byte]].map { bytes =>
-                        val out = {{$opID}}Output(
-                            body = bytes
-                            {{- range $property := $response.Headers.Properties}},
-                                {{- if $property.IsRequired}}
-                                    {{- if eq $property.Name "Content-Length"}}
-                                        `{{$property.Name}}` = response.getEntity.contentLengthOption.getOrElse(0)
-                                    {{- else if eq $property.Name "Content-Type"}}
-                                        `{{$property.Name}}` = response.getEntity.contentType.toString()
-                                    {{- else}}
-                                        `{{$property.Name}}` = response.get{{- $property.ID | camelCase -}}
-                                    {{- end}}
-                                {{- else}}
-                                    {{- if eq $property.Name "Content-Length"}}
-                                        `{{$property.Name}}` = response.getEntity.contentLengthOption.map(_.toInt)
-                                    {{- else if eq $property.Name "Content-Type"}}
-                                        `{{$property.Name}}` = Option(response.getEntity.contentType.toString())
-                                    {{- else}}
-                                        `{{$property.Name}}` = Option(response.get{{- $property.ID | camelCase -}})
-                                    {{- end}}
-                                {{- end}}
-                            {{- end}}
-                        )
-                        out.statusCode = Option(response.getStatusCode)
-                        out.requestID = Option(response.getRequestID)
-                        out
-                    }
-                } else {
-                    ResponseUnpacker.unpackToErrorMessage(response).map { error =>
-                        error.statusCode = Option(response.getStatusCode)
-                        throw QingStorException(error)
-                    }
-                }
-            }
-        {{- end}}
+        ResponseUnpacker.unpackWith{{- if not $hasResponseElements -}}out{{- end -}}Elements[{{- $opID -}}Output](futureResponse, operation).map({
+            case Left(errorMessage) => throw QingStorException(errorMessage)
+            case Right(output) => output
+        })
     }
 
     {{if $operation.Description -}}
         {{- if eq $belongs "Bucket" -}}
-            // {{replace $opID "Bucket" "" -1}}Request creates request and output object of {{$opID}}.
+            // {{replace $opID "Bucket" "" -1}}Request creates request of {{$opID}}.
         {{- else -}}
             // {{$opID}}Request creates request and output object of {{$opID}}.
         {{- end -}}
@@ -395,87 +257,84 @@
     {{- if $hasInput}}
         case class {{$operation.ID}}Input (
             {{if $hasRequestParams -}}
-                {{template "PropertyParameters" passThrough $request.Params 1 "input" 0}}
+                {{template "PropertyParameters" passThrough $request.Params 1 0}}
             {{end -}}
             {{if $hasRequestHeaders -}}
-                {{template "PropertyParameters" passThrough $request.Headers (not $hasRequestParams) "input" 0}}
+                {{template "PropertyParameters" passThrough $request.Headers (not $hasRequestParams) 0}}
             {{end -}}
             {{if $hasRequestElements -}}
-                {{template "PropertyParameters" passThrough $request.Elements (not (or $hasRequestHeaders $hasRequestParams)) "input" 0}}
+                {{template "PropertyParameters" passThrough $request.Elements (not (or $hasRequestHeaders $hasRequestParams)) 0}}
             {{end -}}
             {{if (or $hasRequestBodyString $hasRequestBodyBinary) -}}
-                {{if (or $hasRequestElements $hasRequestHeaders $hasRequestParams) -}}
-                    {{if eq $request.Body.Type "string"}}
-                        ,body: String
-                    {{else if eq $request.Body.Type "binary"}}
-                        ,body: File
-                    {{end -}}
-                    {{- if not $request.Body.IsRequired}}= null{{end}}
-                    {{if $request.Body.Description -}}
-                        // {{$request.Body.Description}}
-                    {{- end}}
-                {{else -}}
-                    {{if eq $request.Body.Type "string"}}
-                        body: string
-                    {{else if eq $request.Body.Type "binary"}}
-                        body: File
-                    {{end}}
-                    {{- if not $request.Body.IsRequired}}= null{{end}}
-                    {{if $request.Body.Description -}}
-                        // {{$request.Body.Description}}
-                    {{- end}}
-                {{end -}}
+                {{- if (or $hasRequestElements $hasRequestHeaders $hasRequestParams) -}},{{- end}}
+                {{if $request.Body.Description -}}
+                    // {{$request.Body.Description}}
+                {{- end}}
+                {{if eq $request.Body.Type "string"}}
+                    body: string
+                {{else if eq $request.Body.Type "binary"}}
+                    body: File
+                {{end}}
+                {{- if not $request.Body.IsRequired}}= null{{end}}
             {{end -}}
             ) extends Input {
-            {{template "PropertyValidation" passThrough $request.Params "input"}}
-            {{template "PropertyValidation" passThrough $request.Headers "input"}}
-            {{template "PropertyValidation" passThrough $request.Elements "input"}}
+            {{template "PropertyValidation" passThrough $request.Params}}
+            {{template "PropertyValidation" passThrough $request.Headers}}
+            {{template "PropertyValidation" passThrough $request.Elements}}
             {{if $hasRequestParams -}}
-                {{template "PropertyMethods" passThrough $request.Params.Properties "QSConstants.ParamsLocationParam"}}
+                {{template "PropertyMethods" passThrough $request.Params "QSConstants.ParamsLocationParam" "get" }}
             {{end}}
             {{if $hasRequestHeaders -}}
-                {{template "PropertyMethods" passThrough $request.Headers.Properties "QSConstants.ParamsLocationHeader"}}
+                {{template "PropertyMethods" passThrough $request.Headers "QSConstants.ParamsLocationHeader" "get" }}
             {{end}}
             {{if $hasRequestElements -}}
-                {{template "PropertyMethods" passThrough $request.Elements.Properties "QSConstants.ParamsLocationElement"}}
+                {{template "PropertyMethods" passThrough $request.Elements "QSConstants.ParamsLocationElement" "get" }}
             {{end}}
             {{if (or $hasRequestBodyString $hasRequestBodyBinary) -}}
                 @ParamAnnotation(location = QSConstants.ParamsLocationBody, name = "Body")
-                def getBody = this.body
+                def getBody: {{if eq $request.Body.Type "string"}}String{{else}}File{{end}} = this.body
             {{end}}
         }
     {{- else}}
         case class {{$operation.ID}}Input () extends Input
     {{- end}}
 
-    {{- if $hasOutput}}
+    {{if $hasOutput}}
+        {{- if $hasResponseElements}}
         case class {{$operation.ID -}}Output (
+        {{- else }}
+        class {{$operation.ID -}}Output (
+        {{- end}}
             {{if $hasResponseHeaders -}}
-                {{template "PropertyParameters" passThrough $response.Headers 1 "output" (and $hasResponseHeaders $hasResponseElements)}}
+                {{template "PropertyParameters" passThrough $response.Headers 1 1 }}
             {{end -}}
             {{if $hasResponseElements -}}
-                {{template "PropertyParameters" passThrough $response.Elements (not $hasResponseHeaders) "output" 0}}
+                {{template "PropertyParameters" passThrough $response.Elements (not $hasResponseHeaders) 0}}
             {{end -}}
             {{if (or $hasResponseBodyString $hasResponseBodyBinary)}}
-                {{if (or $hasResponseElements $hasResponseHeaders)}}
-                    {{if $response.Body.Description -}}
-                        // {{$response.Body.Description}}
-                    {{- end}}
-                    {{if or $hasResponseBodyString $hasResponseBodyBinary}}
-                        ,body: Array[Byte]
-                    {{end}}
-                    {{- if not $response.Body.IsRequired}}= null{{end}}
-                {{else -}}
-                    {{if $response.Body.Description -}}
-                        // {{$response.Body.Description}}
-                    {{- end}}
-                    {{if or $hasResponseBodyString $hasResponseBodyBinary}}
-                        body: Array[Byte]
-                    {{end}}
-                    {{- if not $response.Body.IsRequired}}= null{{end}}
-                {{end}}
+                {{if (or $hasResponseElements $hasResponseHeaders)}},{{- end}}
+                {{if $response.Body.Description -}}
+                    // {{$response.Body.Description}}
+                {{- end}}
+                {{if or $hasResponseBodyString $hasResponseBodyBinary}}
+                    var body: Array[Byte] = Array.emptyByteArray
+                {{end -}}
             {{end}}
             ) extends Output
+            {{- if or $hasResponseHeaders $hasResponseBodyString $hasResponseBodyBinary}}{
+                def this() = {
+                    this(None)
+                }
+
+                {{if $hasResponseHeaders -}}
+                    {{template "PropertyMethods" passThrough $response.Headers "QSConstants.ParamsLocationHeader" "set" }}
+                {{end}}
+                {{if (or $hasResponseBodyString $hasResponseBodyBinary) -}}
+                    @ParamAnnotation(location = QSConstants.ParamsLocationBody, name = "Body")
+                    def setBody(body: Array[Byte]): Unit = this.body = body
+                {{end}}
+            }
+            {{end}}
     {{- else }}
         case class {{$operation.ID -}}Output() extends Output
     {{- end}}
