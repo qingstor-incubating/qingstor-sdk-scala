@@ -2,7 +2,7 @@ package com.qingstor.sdk.util
 
 import java.util.logging.{Logger, Level}
 
-object QSLogger {
+private[sdk] object QSLogger {
   private val logger = Logger.getLogger(this.getClass.getName)
   private var level = "warn"
   logger.setLevel(Level.WARNING)

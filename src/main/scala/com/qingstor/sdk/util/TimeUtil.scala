@@ -3,7 +3,7 @@ package com.qingstor.sdk.util
 import java.time.format.DateTimeFormatter
 import java.time._
 
-object TimeUtil {
+private[sdk] object TimeUtil {
   def zonedDateTimeToString(time: ZonedDateTime = ZonedDateTime.now()): String =
     DateTimeFormatter.RFC_1123_DATE_TIME
       .withZone(ZoneOffset.UTC)

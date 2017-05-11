@@ -4,7 +4,7 @@ import java.io.File
 
 import akka.http.scaladsl.model._
 
-object QSRequestUtil {
+private[sdk] object QSRequestUtil {
   // get all the non-null and non-None params of the specified location from Input
   def getRequestParams(any: Any, location: String): Map[String, AnyRef] = {
     val jMap = QSParamUtil.getRequestParams(any, location)
