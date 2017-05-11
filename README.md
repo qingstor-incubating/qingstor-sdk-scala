@@ -10,15 +10,7 @@ the third-party QingStor SDK for the Scala programing language
 
 ### Installation
 
-This SDK is available from maven central. The latest release is `1.0.0-alpha` 
-and is built against Scala 2.11.x, and 2.12.x.
-
-If you use [sbt](http://www.scala-sbt.org/index.html), you can include this 
-SDK in your project with
-
-```sbtshell
-libraryDependencies += "" %%  "" % "1.0.0-alpha"
-```
+Refer to the [Installation Guide](https://github.com/cheerx/qingstor-sdk-scala/blob/master/docs/installation.md), and have this SDK installed.
 
 ### Preparation
 
