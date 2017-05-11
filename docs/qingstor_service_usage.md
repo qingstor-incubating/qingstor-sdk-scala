@@ -31,11 +31,11 @@ println(listBucketsOutput.statusCode.getOrElse(-1))
 
 // Print the count of buckets.
 // Example: 5
-println(listBucketsOutput.`count`.getOrElse(-1))
+println(listBucketsOutput.count.getOrElse(-1))
 
 // Print the first bucket name.
 // Example: "test-bucket"
-println(listBucketsOutput.`buckets`.flatMap(_.head.`name`).getOrElse("No buckets"))
+println(listBucketsOutput.buckets.flatMap(_.head.name).getOrElse("No buckets"))
 ```
 
 Initialize a QingStor bucket
@@ -54,7 +54,7 @@ println(listObjectsOutput.statusCode.getOrElse(-1))
 
 // Print the key count.
 // Example: 7
-println(listObjectsOutput.`keys`.map(_.length).getOrElse(-1))
+println(listObjectsOutput.keys.map(_.length).getOrElse(-1))
 ```
 
 Set ACL of the bucket
@@ -62,7 +62,7 @@ Set ACL of the bucket
 val input = PutBucketACLInput(
   aCL = List(ACLModel(
     grantee = GranteeModel(
-      `type` = "user",
+      typ = "user",
       id = Some("usr-xxxxxxxx")
     ),
     permission = "FULL_CONTROL"
@@ -104,7 +104,7 @@ val initiateMultipartUploadOutput = Await.result(outputFuture, Duration.Inf)
 
 // Print the upload ID.
 // Example: "9d37dd6ccee643075ca4e597ad65655c"
-println(initiateMultipartUploadOutput.`upload_id`.getOrElse(""))
+println(initiateMultipartUploadOutput.uploadID.getOrElse(""))
 ```
 
 Upload Multipart
@@ -141,8 +141,8 @@ Complete Multipart Upload
 val input = CompleteMultipartUploadInput(
   uploadID = "9d37dd6ccee643075ca4e597ad65655c",
   objectParts = Some(Lsit(
-    ObjectPartModel(part_number = 0),
-    ObjectPartModel(part_number = 1)
+    ObjectPartModel(partNumber = 0),
+    ObjectPartModel(partNumber = 1)
   ))
 )
 val outputFuture = bucket.completeMultipartUpload("QingCloudInsight.mov", input)

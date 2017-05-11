@@ -68,10 +68,10 @@ object Demo extends App {
   println(listBucketsOutput.statusCode.getOrElse(-1))
 
   // Print the count of buckets.
-  println(listBucketsOutput.`count`.getOrElse(-1))
+  println(listBucketsOutput.count.getOrElse(-1))
 
   // Print the first bucket name.
-  println(listBucketsOutput.`buckets`.flatMap(_.head.`name`).getOrElse("No buckets"))
+  println(listBucketsOutput.buckets.flatMap(_.head.name).getOrElse("No buckets"))
   
   System.exit(0)
 }
