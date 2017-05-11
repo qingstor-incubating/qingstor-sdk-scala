@@ -2,7 +2,7 @@
 
 ## Requirement
 
-This SDK isn't available from maven central now. The latest release is `1.0.0` 
+This SDK isn't available from maven central now. The latest release is `2.0.0` 
 and is built against Scala 2.11.x, and 2.12.x.
 
 ## Install from maven
@@ -13,7 +13,7 @@ If you use [sbt](http://www.scala-sbt.org/index.html), you can include this
 SDK in your project with
 
 ```sbtshell
-libraryDependencies += "com.qingstor" %%  "qingstor-sdk-scala" % "1.0.0"
+libraryDependencies += "com.qingstor" %%  "qingstor-sdk-scala" % "2.0.0"
 ```
 
 ## Install from binary release
