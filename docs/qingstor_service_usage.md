@@ -40,7 +40,7 @@ println(listBucketsOutput.buckets.flatMap(_.head.name).getOrElse("No buckets"))
 
 Initialize a QingStor bucket
 ```scala
-val bucket = Bucket(config, "test-bucke", "pek3a")
+val bucket = Bucket(config, "test-bucket", "pek3a")
 ```
 
 List objects in the bucket
