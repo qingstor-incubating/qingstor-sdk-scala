@@ -1,5 +1,5 @@
 name := "qingstor-sdk-scala"
-version := "1.0.0"
+version := "2.0.0"
 scalaVersion := "2.12.2"
 organization := "com.qingstor"
 crossScalaVersions := Seq("2.12.2", "2.11.0")
@@ -26,6 +26,6 @@ scalacOptions ++= Seq("-deprecation", "-unchecked")
 trapExit := false
 
 assemblyOutputPath in assembly := file(
-  s"release/${name.value}-${version.value}-fat_${scalaVersion.value}.jar")
+  s"release/${name.value}-v${version.value}_${scalaBinaryVersion.value}_fat.jar")
 test in assembly := {}
 logLevel in assembly := Level.Error
