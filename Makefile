@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-CROSS_SCALA_VERSIONS=2.12.1 2.11.0
+CROSS_SCALA_VERSIONS=2.12.2 2.11.0
 
 .PHONY: help
 help:
