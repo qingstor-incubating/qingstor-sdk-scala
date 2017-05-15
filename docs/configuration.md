@@ -3,7 +3,7 @@
 ## Summary
 
 This SDK uses a class called "QSConfig" to store and manage configuration, read 
-comments of public functions in ["QSConfig.scala"](https://github.com/cheerx/qingstor-sdk-scala/blob/master/src/main/scala/com/qingstor/sdk/config/QSConfig.scala) 
+comments of public functions in ["QSConfig.scala"](https://github.com/yunify/qingstor-sdk-scala/blob/master/src/main/scala/com/qingstor/sdk/config/QSConfig.scala) 
 for details.
 
 Except for Access Key, you can also configure the API endpoint for private cloud 

@@ -1,8 +1,8 @@
 # QingStor SDK for Scala
 
-[![Build Status](https://travis-ci.org/cheerx/qingstor-sdk-scala.svg?branch=master)](https://travis-ci.org/cheerx/qingstor-sdk-scala)
+[![Build Status](https://travis-ci.org/yunify/qingstor-sdk-scala.svg?branch=master)](https://travis-ci.org/yunify/qingstor-sdk-scala)
 [![API Reference](http://img.shields.io/badge/api-reference-green.svg)](http://docs.qingcloud.com/qingstor/)
-[![License](http://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/cheerx/qingstor-sdk-scala/blob/master/LICENSE)
+[![License](http://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/yunify/qingstor-sdk-scala/blob/master/LICENSE)
 
 the third-party QingStor SDK for the Scala programing language
 
@@ -10,7 +10,7 @@ the third-party QingStor SDK for the Scala programing language
 
 ### Installation
 
-Refer to the [Installation Guide](https://github.com/cheerx/qingstor-sdk-scala/blob/master/docs/installation.md), and have this SDK installed.
+Refer to the [Installation Guide](https://github.com/yunify/qingstor-sdk-scala/blob/master/docs/installation.md), and have this SDK installed.
 
 ### Preparation
 
@@ -29,8 +29,8 @@ secret_access_key: 'SECRET_ACCESS_KEY_EXAMPLE'
 Now you are ready to code. You can read the detailed guides in the list below to 
 have a clear understanding or just take the quick start code example.
 
-Checkout our [releases](https://github.com/cheerx/qingstor-sdk-scala/releases) and 
-[change log](https://github.com/cheerx/qingstor-sdk-scala/blob/master/CHANGELOG.md) 
+Checkout our [releases](https://github.com/yunify/qingstor-sdk-scala/releases) and 
+[change log](https://github.com/yunify/qingstor-sdk-scala/blob/master/CHANGELOG.md) 
 for information about the latest features, bug fixes and new ideas.
 
 - [Configuration Guide](docs/configuration.md)
@@ -77,7 +77,7 @@ object Demo extends App {
 
 ## Contributing
 
-1. Fork it ( https://github.com/cheerx/qingstor-sdk-scala/fork )
+1. Fork it ( https://github.com/yunify/qingstor-sdk-scala/fork )
 2. Create your feature branch (`git checkout -b new-feature`)
 3. Commit your changes (`git commit -asm 'Add some feature'`)
 4. Push to the branch (`git push origin new-feature`)

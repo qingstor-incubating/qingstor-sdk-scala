@@ -18,7 +18,7 @@ libraryDependencies += "com.qingstor" %%  "qingstor-sdk-scala" % "2.0.0"
 
 ## Install from binary release
 
-You can download jar from [release](https://github.com/cheerx/qingstor-sdk-scala/releases) page and put it into `lib` directory.
+You can download jar from [release](https://github.com/yunify/qingstor-sdk-scala/releases) page and put it into `lib` directory.
 `qingstor-sdk-scala_xxx_fat.jar` are packed with all dependencies, `qingstor-sdk-scala_xxx.jar` are packed without dependency.
 You should add dependencies below to your sbt file before use these packed without dependency.
 
