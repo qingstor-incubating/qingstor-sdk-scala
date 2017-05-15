@@ -4,7 +4,7 @@
 [![API Reference](http://img.shields.io/badge/api-reference-green.svg)](http://docs.qingcloud.com/qingstor/)
 [![License](http://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/yunify/qingstor-sdk-scala/blob/master/LICENSE)
 
-the third-party QingStor SDK for the Scala programing language
+the official QingStor SDK for the Scala programing language
 
 ## Getting Started
 
@@ -86,3 +86,7 @@ object Demo extends App {
 ## LICENSE
 
 The Apache License (Version 2.0, January 2004).
+
+## HISTORY
+
+This project was originally developed by [Cheerx](https://github.com/cheerx) as a third-party QingStor SDK for Scala. Later on, it was accepted to be the official QingStor SDK for Scala by QingStor team. It will be maintained by both QingStor team and Cheerx.
