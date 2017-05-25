@@ -28,7 +28,7 @@ class QingStor(_config: QSConfig) {
     ResponseUnpacker
       .unpackWithElements[ListBucketsOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
