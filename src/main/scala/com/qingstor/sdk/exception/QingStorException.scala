@@ -35,7 +35,3 @@ class QingStorException(error: ErrorMessage) extends Throwable {
     "QingStor exception:\n\t%s".format(errorMessage)
   }
 }
-
-object QingStorException {
-  def apply(error: ErrorMessage): QingStorException = new QingStorException(error)
-}

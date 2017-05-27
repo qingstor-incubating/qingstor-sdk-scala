@@ -33,7 +33,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[DeleteBucketOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -63,7 +63,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[DeleteBucketCORSOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -94,7 +94,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       .unpackWithoutElements[DeleteBucketExternalMirrorOutput](futureResponse,
                                                                operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -126,7 +126,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       .unpackWithoutElements[DeleteBucketPolicyOutput](futureResponse,
                                                        operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -157,7 +157,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       .unpackWithElements[DeleteMultipleObjectsOutput](futureResponse,
                                                        operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -187,7 +187,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithElements[GetBucketACLOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -216,7 +216,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithElements[GetBucketCORSOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -247,7 +247,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       .unpackWithElements[GetBucketExternalMirrorOutput](futureResponse,
                                                          operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -277,7 +277,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithElements[GetBucketPolicyOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -307,7 +307,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithElements[GetBucketStatisticsOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -336,7 +336,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[HeadBucketOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -367,7 +367,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       .unpackWithElements[ListMultipartUploadsOutput](futureResponse,
                                                       operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -397,7 +397,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithElements[ListObjectsOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -426,7 +426,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[PutBucketOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -455,7 +455,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[PutBucketACLOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -484,7 +484,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[PutBucketCORSOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -515,7 +515,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       .unpackWithoutElements[PutBucketExternalMirrorOutput](futureResponse,
                                                             operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -545,7 +545,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[PutBucketPolicyOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -577,7 +577,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       .unpackWithoutElements[AbortMultipartUploadOutput](futureResponse,
                                                          operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -612,7 +612,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       .unpackWithoutElements[CompleteMultipartUploadOutput](futureResponse,
                                                             operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -645,7 +645,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[DeleteObjectOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -677,7 +677,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[GetObjectOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -711,7 +711,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[HeadObjectOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -744,7 +744,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
       .unpackWithElements[InitiateMultipartUploadOutput](futureResponse,
                                                          operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -777,7 +777,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithElements[ListMultipartOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -809,7 +809,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[OptionsObjectOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -841,7 +841,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[PutObjectOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }
@@ -873,7 +873,7 @@ class Bucket(_config: QSConfig, _bucketName: String, _zone: String) {
     ResponseUnpacker
       .unpackWithoutElements[UploadMultipartOutput](futureResponse, operation)
       .map({
-        case Left(errorMessage) => throw QingStorException(errorMessage)
+        case Left(errorMessage) => throw new QingStorException(errorMessage)
         case Right(output) => output
       })
   }

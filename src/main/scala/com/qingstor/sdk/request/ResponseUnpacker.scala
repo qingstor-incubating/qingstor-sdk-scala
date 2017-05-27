@@ -44,7 +44,7 @@ object ResponseUnpacker {
           case Left(failure) =>
             val requestID = parseRequestID(response).getOrElse("Can't parse request_id")
             val error = ErrorMessage(requestID = requestID, message = Some(failure.message))
-            throw QingStorException(error)
+            throw new QingStorException(error)
           case Right(t) => t
         }
         setupStatusCodeAndRequestID(output, response)
@@ -86,7 +86,7 @@ object ResponseUnpacker {
             val requestID = parseRequestID(response).getOrElse("Can't parse request_id")
             val error = ErrorMessage(requestID = requestID, message = Some(failure.message),
               statusCode = Some(response.status.intValue()))
-            throw QingStorException(error)
+            throw new QingStorException(error)
           case Right(errorMessage) =>
             errorMessage.statusCode = Some(response.status.intValue())
             errorMessage
